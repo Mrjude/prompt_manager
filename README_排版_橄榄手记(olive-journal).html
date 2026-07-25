@@ -1,0 +1,1448 @@
+<section style="max-width:677px;margin:0 auto;padding:8px;box-sizing:border-box;background:#fdfdf8;color:#4d4f46;font-family:'IBM Plex Sans',-apple-system,system-ui,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;line-height:1.75;">
+
+  <!-- 1. 头图卡（组件2 hero-card） -->
+  <section style="background:#fdfdf8;border:1px solid #bfc1b7;border-radius:6px;overflow:hidden;font-family:'IBM Plex Sans',-apple-system,system-ui,sans-serif;">
+    <section style="padding:28px 24px 22px;">
+      <section style="display:flex;align-items:center;gap:8px;margin-bottom:22px;">
+        <span style="width:8px;height:8px;background:#1e1f23;border-radius:50%;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:3px;color:#65675e;"><span leaf="">内部技术手册</span></span>
+        <span style="flex:1;height:1px;background:#bfc1b7;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <span style="font-size:10px;color:#9ea096;font-weight:500;font-variant-numeric:tabular-nums;"><span leaf="">2026.07.15</span></span>
+      </section>
+      <section style="display:flex;align-items:stretch;gap:18px;">
+        <section style="flex:1;min-width:0;">
+          <p style="font-size:24px;font-weight:800;color:#23251d;margin:0 0 10px;line-height:1.15;letter-spacing:-0.75px;">
+            <span leaf="">Prompt Manager&nbsp;·&nbsp;</span><span style="border-bottom:3px solid #e5e7e0;"><span leaf="">一体化管理平台</span></span>
+          </p>
+          <section style="display:flex;align-items:center;gap:4px;margin-bottom:12px;">
+            <span style="width:22px;height:3px;background:#1e1f23;border-radius:2px;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+            <span style="width:8px;height:3px;background:#bfc1b7;border-radius:2px;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+          </section>
+          <p style="font-size:13px;color:#65675e;margin:0;line-height:1.7;"><span leaf="">面向多科室 × 多平台的客服 / 销售对话场景，统一管控提示词、知识库与流程树。</span></p>
+        </section>
+        <section style="flex-shrink:0;width:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#eeefe9;border:1px dashed #bfc1b7;border-radius:6px;padding:8px;">
+          <svg width="72" height="72" viewBox="0 0 64 64" aria-hidden="true" style="display:block;">
+            <ellipse cx="32" cy="36" rx="22" ry="18" fill="none" stroke="#4d4f46" stroke-width="2"></ellipse>
+            <circle cx="26" cy="30" r="3" fill="#4d4f46"></circle>
+            <circle cx="38" cy="30" r="3" fill="#4d4f46"></circle>
+            <path d="M28 40 Q32 44 36 40" fill="none" stroke="#4d4f46" stroke-width="1.5"></path>
+            <path d="M12 34 L8 28 M52 34 L56 28" stroke="#bfc1b7" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <span style="font-size:8px;font-weight:700;color:#9ea096;letter-spacing:1px;margin-top:4px;"><span leaf="">DOODLE</span></span>
+        </section>
+      </section>
+    </section>
+    <section style="background:#1e1f23;padding:11px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+      <p style="font-size:12px;color:rgba(255,255,255,0.92);margin:0;font-weight:600;"><span leaf="">一站式的提示词管理 · 知识库 · 流程树解析 · LLM 多版本与 Agent 服务</span></p>
+      <section style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="background:#e5e7e0;color:#23251d;padding:3px 8px;border-radius:4px;font-size:8px;font-weight:700;border:1px solid #bfc1b7;"><span leaf="">主服务 8900</span></span>
+        <span style="background:#e5e7e0;color:#23251d;padding:3px 8px;border-radius:4px;font-size:8px;font-weight:700;border:1px solid #bfc1b7;"><span leaf="">Agent 8901</span></span>
+      </section>
+    </section>
+  </section>
+
+  <!-- 2. 开篇引言段落（组件10） -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">Prompt Manager 是一套面向多科室 × 多平台的客服 / 销售对话场景的<span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">一体化平台</span></span>，把提示词、知识库、流程树与 Agent 能力收拢到同一处。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 2b. 功能清单（组件13 无序列表） -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">提示词管理：科室 × 平台 × 场景三维索引 + 变量引擎 + 版本回滚 + WebSocket 热更新。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">知识库管理：11 类知识标签 + <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">bot_id</span></span> 机器人维度 + 通用记录合并检索。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">流程树管理：上传流程图 / 客服对话截图，多模态或 OCR + LLM 抽象为纯自然语言描述。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">LLM 多版本配置：维护多个 OpenAI 兼容 API，一键切换激活。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">Agent 服务：独立 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">8901</span></span> 端口，提供对话、图片直读、流程图谱和跨库搜索。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">Python 客户端 SDK：本地缓存 + 轮询 / WebSocket 双通道热更新。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">登录与权限：内置账号体系，按提示词 / 知识库 / 流程树三大模块细分查看 / 编辑 / 删除权限。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 2c. 端口说明 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">主服务 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">8900</span></span>，Agent 服务 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">8901</span></span>，两者<span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">共享同一 SQLite 数据库</span></span>。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 分割线 -->
+  <section style="margin-top:24px;">
+    <hr style="border:none;height:2px;background:#bfc1b7;margin:0;">
+  </section>
+
+  <!-- 01 项目结构 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">01</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">项目结构</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">STRUCTURE</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">主服务 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">backend/</span></span> 与 Agent 服务 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">agent/</span></span> 同仓共存，前端为单文件 Vue。</span>
+      </p>
+    </section>
+  </section>
+
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">text</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">prompt_manager/</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── backend/　　# 主服务（默认 8900）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── main.py　　# FastAPI：REST + WebSocket + 登录鉴权中间件</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── database.py　　# SQLite CRUD、内存缓存、变量解析、用户/会话、LLM 多版本</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── models.py　　# Pydantic 模型</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── prompt_manager.db　　# SQLite（首次启动自动建表 + 幂等迁移）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── flow_data/　　# 流程树原始文件 + LLM 调用日志</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　└── start.sh</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── agent/　　# Agent 服务（默认 8901）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── main.py　　# /api/chat、流程树管理、图片直解析、文件直链</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── llm_client.py　　# OpenAI 兼容客户端（chat / chat_with_image(s)）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　├── flow_parser_service.py　　# 统一流程树解析：视觉能力探测 + OCR 兜底 + 自然语言清洗</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　　└── start.sh</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── frontend/index.html　　# 主管理界面（Vue 3 CDN 单文件）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── agent_frontend/　　# Agent 前端（index.html + app.js + style.css）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── client_sdk/prompt_client.py　　# PromptClient：提示词 + 知识库 + 流程树描述</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── knowledge_retriever.py　　# KnowledgeRetriever：TF-IDF + 可选语义检索</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── pyproject.toml　　# SDK 打包（prompt-manager-client）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">├── start.sh　　# 一键启动主服务 + Agent</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">└── README.md</span></p>
+    </section>
+  </section>
+
+  <!-- 02 架构与数据流 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">02</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">架构与数据流</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">ARCHITECTURE</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">text</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">┌────────────────────────┐　　　　┌────────────────────────┐</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　主服务 (8900)　　　　│　同库　│　Agent 服务 (8901)　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　- 提示词/知识库/流程树 │◀──────▶│　- LLM 对话　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　- 用户/权限/登录　　│　SQLite　│　- 流程图/对话截图解析 │</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　- LLM 多版本配置　　│　　　　│　- 图片直读 parse_image│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">│　- WebSocket 广播　　│　　　　│　- 跨库搜索/文件直链　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">└─────────▲──────────────┘　　　　└──────────▲─────────────┘</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│ HTTP / WS　　　　　　　　　　│ HTTP</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　┌──────┴──────┐　　　　　　┌──────┴──────┐</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　│　主前端 SPA　│　　　　　　│　Agent 前端　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　└─────────────┘　　　　　　└─────────────┘</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　▼</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　┌─────────────┐</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　│　PromptClient│　业务服务通过 SDK 拉取已解析提示词/知识库/流程描述</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　└─────────────┘</span></p>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">主服务与 Agent 共享同一 SQLite 文件（<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">PROMPT_DB_PATH</span></span>）。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">Agent 通过 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">PROMPT_MANAGER_URL</span></span> 从主服务读取激活的 LLM 配置。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">主服务通过 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">sys.path.insert("../agent")</span></span> 直接复用 Agent 的 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">flow_parser_service</span></span>，避免解析实现分叉。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">LLM 调用日志：<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">backend/flow_data/api_logs/llm_api_YYYYMMDD.jsonl</span></span> + <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">flow_parser_YYYYMMDD.log</span></span>。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 03 数据库表 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">03</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">数据库表</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">DATABASE</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;">
+        <section style="width:18%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">表</span></section>
+        <section style="width:42%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">关键字段</span></section>
+        <section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section>
+      </section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">prompts</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">name UNIQUE, department/platform/scene, content, variables, variable_bindings, version, is_active</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">当前激活提示词</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">prompt_versions</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">prompt_id, version, content, change_log</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">全量版本历史</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">knowledge_bases</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">(department, platform) UNIQUE, content</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">JSON 数组：[{text, type, bot_id}, ...]</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">flow_trees</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">(department, platform) UNIQUE, description</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">流程树库（按科室+平台分组）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">flow_records</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">flow_id, file_name, file_type, file_path, description, structure, status, error</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">一次上传 = 一条记录；description 为纯自然语言</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">settings</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">key, value</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">旧版 LLM 配置兼容存储</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">llm_versions</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">name, base_url, api_key, model_name, is_active</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">LLM 多版本，激活时同步写入 settings</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">users</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">username UNIQUE, password_hash, role, can_prompt_*/can_knowledge_*/can_flow_*, is_active</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">登录账号 + 页面权限</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">auth_sessions</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">token, user_id, expires_at</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">登录会话（默认 30 天）</span></section></section>
+      <section style="display:flex;"><section style="width:18%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">bot_ids</span></section><section style="width:42%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">bot_id UNIQUE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">机器人 ID 白名单（前端下拉候选）</span></section></section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">flow_records.status ∈ {pending, parsing, success, partial, failed, unparsed}</span></span>。</span>
+      </p>
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">启动 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">init_db()</span></span> 时会：</span>
+      </p>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">幂等建表；对旧 prompts 补 variables、variable_bindings 列；对旧 users 补 9 个 can_* 权限列。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">把旧「纯字符串数组」知识库内容迁移为 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">{text, type: 答疑, bot_id: 9378}</span></span> 对象数组。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">若不存在默认管理员，自动创建 <span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">admin / admin123456</span></span> 并赋满权限；已存在则强制刷新为 admin 且 9 项权限全开。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 04 元数据枚举 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">04</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">元数据枚举</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">ENUMS</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;">
+        <section style="width:26%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">维度</span></section>
+        <section style="width:74%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">取值</span></section>
+      </section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:26%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">科室 department</span></section><section style="width:74%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">hair 植发 · dentistry 口腔 · dermatology 皮肤 · ophthalmology 眼科 · pediatrics 儿科 · beauty 医美 · general 通用</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:26%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">平台 platform</span></section><section style="width:74%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">xhs 小红书 · bd 百度 · dy 抖音 · kuaishou 快手 · wechat 微信 · general 通用</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:26%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">场景 scene</span></section><section style="width:74%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">system_prompt 系统提示词 · warmup 暖场语 · knowledge 知识模板 · action_desc 动作描述 · score 评分 · general 通用</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:26%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">知识标签 KB_TYPES</span></section><section style="width:74%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">答疑 · 问诊 · 套联 · 流程 · 默认认知 · 额外 · 问诊约束 · 答疑约束 · 套联约束 · 核心约束 · 违禁词</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:26%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">内置机器人 ID</span></section><section style="width:74%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">7422 / 8714 / 8686 / 8542 / 8771 / 9125 / 9378 / 10122 / 10569 / 9352 / 9358 / 9682</span></section></section>
+      <section style="display:flex;"><section style="width:26%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">内置变量</span></section><section style="width:74%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">{公司} {域中文} {域英文} {时间} {轮次} {轮次k} {套联描述} {动作描述} {知识描述} {暖场描述}</span></section></section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">{公司}</span></span> 通过 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">ROBOT_COMPANY_MAP</span></span> 由 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">robot_id</span></span> 映射为 <span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">雍禾 / 碧莲盛 / 唐森</span></span>。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 05 API 概览 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">05</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">API 概览</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">API</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="background:#fdfdf8;border:1px solid #bfc1b7;border-radius:6px;overflow:hidden;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="padding:10px 16px;background:#1e1f23;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:2px;color:#ffffff;"><span leaf="">API 前缀</span></p>
+        <span style="font-size:10px;color:rgba(255,255,255,0.65);"><span leaf="">BASE URL</span></span>
+      </section>
+      <section style="padding:16px 18px 18px;background:#eeefe9;">
+        <p style="margin:0;font-size:14px;line-height:1.9;color:#4d4f46;text-align:justify;"><span leaf="">主服务前缀 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">http://localhost:8900</span></span>，Agent 前缀 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">http://localhost:8901</span></span>。字段详情见 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">http://localhost:8900/docs</span></span>。</span></p>
+      </section>
+    </section>
+  </section>
+
+  <!-- 5.1 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">登录与权限</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.1</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">方法</span></section><section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">路径</span></section><section style="width:44%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/auth/login</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">用户名密码登录，返回 token + user</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/auth/me</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">当前登录用户（Header Authorization: Bearer 或 cookie pm_token）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/auth/logout</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">注销 token</span></section></section>
+      <section style="display:flex;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET/POST/PUT/DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/users[/{id}]</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">admin：账号 CRUD（role ∈ {admin, normal}）</span></section></section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">权限中间件白名单（无需登录）：<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/auth/login</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/auth/heartbeat</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/v1/*</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/meta/*</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/settings/*</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/docs</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/openapi.json</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/favicon.ico</span></span>。其他 /api/** 未登录返回 <span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">401</span></span>；不满足对应 can_* 位返回 403。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 5.2 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">提示词</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.2</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">方法</span></section><section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">路径</span></section><section style="width:44%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/prompts</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">创建</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/prompts</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">列表（department / platform / scene / keyword，分页）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET / PUT / DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/prompts/{id}</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">详情 / 更新（内容变更版本+1） / 软删除</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/prompts/{id}/versions</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">版本历史</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/prompts/{id}/rollback</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">回滚到指定版本</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/prompts/{id}/versions/{vid}</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">删除某条历史版本（禁止删当前版本）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/fetch?department&platform&scene&current_version</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">三维查询（命中内存缓存）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/fetch/{name}?current_version</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">按名称查询</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/resolve</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">变量解析：返回填充好的提示词</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/batch_fetch</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">批量按名称获取</span></section></section>
+      <section style="display:flex;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/sync</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">全量同步（供 SDK 冷启动）</span></section></section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">调试：<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/stats</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/debug/cache</span></span>、<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/debug/db</span></span>、POST <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">/api/debug/reload_cache</span></span>。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 5.3 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">知识库</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.3</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">方法</span></section><section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">路径</span></section><section style="width:44%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/knowledge</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">创建（(department, platform) 唯一）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/knowledge</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">列表（department / platform / keyword）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET / PUT / DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/knowledge/{id}</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">详情 / 更新 content / 删除</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/knowledge</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">供 SDK 拉取（公开只读）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/meta/kb_types</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">知识标签枚举（含约束/违禁词类）</span></section></section>
+      <section style="display:flex;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET / POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/meta/bot_ids</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">机器人 ID 枚举（GET 查询、POST 追加，POST 需知识库编辑权限）</span></section></section>
+    </section>
+  </section>
+
+  <!-- 5.4 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">流程树</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.4</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">方法</span></section><section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">路径</span></section><section style="width:44%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_trees</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">创建流程树库（科室+平台 唯一）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_trees</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">列表</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET / PUT / DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_trees/{flow_id}</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">详情 / 改描述 / 删除（级联删记录）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_trees/{flow_id}/records</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">库下所有解析记录</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_trees/{flow_id}/records/upload</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">上传图片/PDF + 可选自动解析（主服务异步、Agent 同步）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET / PUT / DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_records/{record_id}</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">单条记录</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_records/{record_id}/reparse</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">重新解析</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/flow_records/search（Agent）</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">跨库搜索：department / platform / keyword，附 file_url</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/files/{flow_id}/{file_name}（Agent）</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">直链访问上传文件</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/parse_image（Agent）</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">上传图片直接解析（不入库）</span></section></section>
+      <section style="display:flex;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/v1/flow_records/search（主服务）</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">供 SDK 拉取流程树描述（公开只读）</span></section></section>
+    </section>
+  </section>
+
+  <!-- 5.5 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">LLM 配置</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.5</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">方法</span></section><section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">路径</span></section><section style="width:44%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/settings/llm</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">当前激活配置（api_key 掩码）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/settings/llm/raw</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">原始配置（Agent 内部调用）</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">PUT</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/settings/llm</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">兼容旧接口直接保存</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET / POST / PUT / DELETE</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/settings/llm/versions[/{id}]</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">多版本 CRUD（**** 的 api_key 保持不变）</span></section></section>
+      <section style="display:flex;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/settings/llm/versions/{id}/activate</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">激活（同步写入 settings 与 llm_versions.is_active）</span></section></section>
+    </section>
+  </section>
+
+  <!-- 5.6 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">Agent 通用</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.6</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">方法</span></section><section style="width:40%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">路径</span></section><section style="width:44%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/llm/status</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">检查激活配置是否完整</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/llm/refresh</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">清空 LLM 配置缓存重新拉取</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/llm/test</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">一句话探活</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">POST</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/chat</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">通用对话（OpenAI 兼容）</span></section></section>
+      <section style="display:flex;"><section style="width:16%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">GET</span></section><section style="width:40%;padding:10px 12px;font-size:13px;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">/api/meta/departments / /api/meta/platforms</span></section><section style="width:44%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">元数据</span></section></section>
+    </section>
+  </section>
+
+  <!-- 5.7 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">WebSocket</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">05.7</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">ws://localhost:8900/ws/updates</span></span></span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">提示词 创建 / 更新 / 删除 / 回滚 事件实时广播；SDK 会自动订阅并刷新对应本地缓存。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 06 提示词使用指南 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">06</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">提示词使用指南</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">PROMPTS</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <!-- 6.1 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">USAGE</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">通过 SDK（推荐）</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">06.1</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">python</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">from client_sdk import PromptClient　　# or: from prompt_client import PromptClient</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">client = PromptClient(base_url="http://localhost:8900")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">client.preload()　　# 预加载提示词 + 知识库 + 流程树描述到本地缓存</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">client.start_auto_update(interval=30)　　# 30s 轮询热更新</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># client.start_ws_update()　　# 或走 WebSocket，需 pip install websocket-client</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 拿原文</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">content = client.get_content("hair_xhs_system")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 拿"已解析变量"的提示词（最常用）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">prompt = client.get_resolved(</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　name="hair_xhs_system",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　robot_id="9125",　　# {公司} → 雍禾/碧莲盛/唐森</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　department="hair",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　current_round=3,　　# {轮次} → 第3轮，{轮次k} → 3</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　action_desc="\n回复意图：问诊、套联",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　knowledge_desc="米诺地尔是常用外用药……",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　warmup_desc="",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　connect_desc="留下联系方式可以安排专业医生……",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　extra_variables={"custom_marker": "客服话术片段"},　　# 结合 variable_bindings 使用</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">)</span></p>
+    </section>
+  </section>
+
+  <!-- 6.2 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">USAGE</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">直接 HTTP</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">06.2</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 按名称取</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl http://localhost:8900/api/v1/fetch/hair_xhs_system</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 三维取</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl "http://localhost:8900/api/v1/fetch?department=hair&platform=xhs&scene=system_prompt"</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 变量解析</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl -X POST http://localhost:8900/api/v1/resolve \</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　-H "Content-Type: application/json" \</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　-d '{"name":"hair_xhs_system","robot_id":"9125","current_round":3,"action_desc":"\n回复意图：问诊"}'</span></p>
+    </section>
+  </section>
+
+  <!-- 6.3 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">USAGE</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">变量解析规则</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">06.3</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="background:#fdfdf8;border:1px solid #bfc1b7;border-radius:6px;overflow:hidden;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="padding:10px 16px;background:#1e1f23;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:2px;color:#ffffff;"><span leaf="">优先级</span></p>
+        <span style="font-size:10px;color:rgba(255,255,255,0.65);"><span leaf="">RESOLVE ORDER</span></span>
+      </section>
+      <section style="padding:16px 18px 18px;background:#eeefe9;">
+        <p style="margin:0;font-size:14px;line-height:1.9;color:#4d4f46;text-align:justify;"><span leaf=""><span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">variable_bindings 映射 &gt; 内置变量 &gt; variables 自定义变量 &gt; extra_variables 直接替换</span></span>。</span></p>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">内置变量</span></strong>：由 resolve_prompt_variables 自动填充，见「元数据枚举」。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">variable_bindings</span></strong>：管理页面在“变量映射”里维护，格式 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">{"变量名": "占位符标记"}</span></span>，可把外部字段绑定到任意自定义标记：</span></section></li>
+      </ul>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">json</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">{</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　"warmup_desc": "{暖场占位符}",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　"knowledge_desc": "{知识占位符}"</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">}</span></p>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">extra_variables</span></strong>：在 resolve 调用里传入，键名与 variable_bindings 对应，可动态注入。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 07 知识库使用指南 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">07</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">知识库使用指南</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">KNOWLEDGE</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <!-- 7.1 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">FORMAT</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">内容格式</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">07.1</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">json</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">[</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　{"text": "雄激素性脱发表现为头皮渐进性毛发稀疏……", "type": "答疑", "bot_id": "9378"},</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　{"text": "请问您脱发持续多长时间了？",　"type": "问诊", "bot_id": "9378"},</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　{"text": "留下联系方式可以安排专业医生……",　"type": "套联", "bot_id": "9378"},</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　{"text": "禁止提及具体药品名和价格……",　"type": "违禁词", "bot_id": ""}</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">]</span></p>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">type ∈ KB_TYPES。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">bot_id 为空字符串表示「通用记录」：SDK 在按 bot_id 过滤时，会<span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">同时命中该 bot_id 的记录和 bot_id == “” 的通用记录</span></span>。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">旧「纯字符串数组」格式启动时自动迁移。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 7.2 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">USAGE</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">通过 SDK 使用</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">07.2</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">python</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 全部条目文本</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">items = client.get_knowledge(department="hair", platform="xhs")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 按知识标签过滤</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">qa = client.get_knowledge(department="hair", platform="xhs", knowledge_type="答疑")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 按机器人 ID 过滤（会同时命中 bot_id="" 的通用记录）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">kb_9378 = client.get_knowledge(department="hair", platform="xhs", bot_id="9378")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 详情列表（含 type / bot_id）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">details = client.get_knowledge_detail(department="hair", platform="xhs")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 拼接为单段文本，便于直接插入 prompt</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">text = client.get_knowledge_text(</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　department="hair", platform="xhs",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　knowledge_type="问诊", bot_id="9378", separator="\n"</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">)</span></p>
+    </section>
+  </section>
+
+  <!-- 7.3 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">RETRIEVER</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">通过检索器</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">07.3</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">python</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">from knowledge_retriever import KnowledgeRetriever</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">retriever = KnowledgeRetriever(base_url="http://localhost:8900")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">retriever.preload(department="hair", platform="xhs")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">history = [</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　{"role": "user", "content": "最近掉头发很严重怎么办"},</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　{"role": "assistant", "content": "请问您掉发持续多长时间了？"},</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">]</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 关键词检索（默认 TF-IDF）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">results = retriever.retrieve(history, "hair", "xhs", top_k=5)</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 按类型 / 机器人过滤</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">kb = retriever.retrieve(history, "hair", "xhs", top_k=5, knowledge_type="答疑", bot_id="9378")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 直接拿拼接文本，便于喂给 prompt</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">kb_text = retriever.retrieve_as_text(history, "hair", "xhs", top_k=5, separator="\n")</span></p>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">启用<span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">语义检索</span></span>（可选）：</span>
+      </p>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">pip install sentence-transformers numpy</span></p>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">python</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">retriever = KnowledgeRetriever(</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　base_url="http://localhost:8900",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　use_semantic=True,</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　semantic_model="shibing624/text2vec-base-chinese",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">)</span></p>
+    </section>
+  </section>
+
+  <!-- 08 流程树使用指南 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">08</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">流程树使用指南</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">FLOW TREE</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">流程树把「业务流程图」或「客服对话截图」抽象为<span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">纯自然语言</span></span>的流程逻辑，用于直接拼进 prompt。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 8.1 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">PIPELINE</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">解析流水线</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">08.1</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">text</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">上传文件 (image / pdf)</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　├── save_uploaded_file: 落盘到 backend/flow_data/{flow_id}/{ts}_{name}</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　└── parse_file　(可异步执行)</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　├── (PDF)　pdf_to_images: PyMuPDF 优先，pdf2image 兜底，200 DPI</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　├── run_skill_parser: 调 dialogue-flow-parser skill 只取 OCR 文本</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│　　　　└─ 缺依赖时自动 fallback 到内置 rapidocr（进程内 或 跨解释器）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　├── _probe_vision_capability: 探测当前激活 LLM 是否真的能读图</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│　　　　(发一张 1×1 探测图 + 单字问答；结果按 base_url+model 缓存)</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　├── 若支持视觉　→ llm.chat_with_image(SYSTEM_PROMPT + OCR 锚点)</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│　　若不支持　→ llm.chat(SYSTEM_PROMPT + OCR 文本)</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　│</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　　　└── _clean_to_natural: 剥离 Markdown / JSON / 列表 / 编号 / 树形线</span></p>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">flow_records.description</span></span> 存<span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">纯自然语言段落</span></span>；structure 只保存最小页面元信息（页数 / 每页状态 / OCR 长度）。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">status ∈ {pending, parsing, success, partial, failed, unparsed}。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">系统提示词能同时识别 A) 流程图 和 B) 客服对话截图，并把对话抽象为「如果访客… 则客服… 否则…」的循环流程逻辑，敏感信息（城市名/门店名/时间戳/姓名/手机号）自动脱敏。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 8.2 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">MATRIX</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">视觉 / OCR 兼容矩阵</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">08.2</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:34%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">LLM 是否支持图片输入</span></section><section style="width:33%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">处理路径</span></section><section style="width:33%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">依赖</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:34%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">支持（如 qwen-vl-max、gpt-4o、glm-4v）</span></section><section style="width:33%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">多模态直读 + OCR 锚点</span></section><section style="width:33%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">LLM 视觉能力</span></section></section>
+      <section style="display:flex;"><section style="width:34%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">不支持（如 deepseek-v4-flash）</span></section><section style="width:33%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">OCR 抽文本 + 纯文本 chat 抽象</span></section><section style="width:33%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">rapidocr_onnxruntime（推荐）或 paddleocr</span></section></section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">视觉能力探测结果按 (base_url, model) 缓存，切换 LLM 版本时会自动重探。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">OCR Python 解释器探测顺序：OCR_PYTHON → sys.executable → /data/miniconda3/bin/python3 → /usr/bin/python3 → which python3。找到装了 rapidocr_onnxruntime 的即用。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">建议给服务运行环境装一次 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">pip install rapidocr_onnxruntime</span></span>，兜底才最稳。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 8.3 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">UPLOAD</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">上传与查询</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">08.3</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># ① 主服务：上传到指定流程树库（自动异步解析）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl -X POST http://localhost:8900/api/flow_trees/1/records/upload \</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　 -F "file=@flow.png" -F "auto_parse=true"</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># ② 拉取记录详情（轮询 status 直到 success / failed）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl http://localhost:8900/api/flow_records/123</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># ③ 重新解析</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl -X POST http://localhost:8900/api/flow_records/123/reparse</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># ④ 跨库搜索（Agent 端，附 file_url）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl "http://localhost:8901/api/flow_records/search?department=hair&platform=xhs&keyword=留资"</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># ⑤ 一次性解析图片不入库（Agent 端）</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">curl -X POST http://localhost:8901/api/parse_image -F "file=@flow.png"</span></p>
+    </section>
+  </section>
+
+  <!-- 8.4 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">JOIN</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">把流程描述拼给提示词</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">08.4</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">python</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 方式一：SDK 一步到位</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">flow_desc = client.get_flow_descriptions(department="hair", platform="xhs")</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">prompt = client.get_resolved(</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　name="hair_xhs_system",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　robot_id="9125",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　current_round=3,</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">　　action_desc=f"\n业务流程参考：\n{flow_desc}",</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">)</span></p>
+    </section>
+  </section>
+
+  <!-- 09 LLM 配置与多版本切换 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">09</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">LLM 配置与多版本切换</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">LLM</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">在主前端右上角「齿轮」图标进入 LLM 版本管理。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">支持维护多个 OpenAI 兼容 API 版本（base_url / api_key / model_name），一键激活。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">api_key</span></span> 在 GET /api/settings/llm 返回时会掩码，PUT 更新时若包含 **** 则不覆盖。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">激活时同步写入 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">llm_versions.is_active</span></span> 与旧格式 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">settings</span></span> 表，保证 SDK / Agent 读取一致。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">变更配置后调用 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">POST http://localhost:8901/api/llm/refresh</span></span> 或重启 Agent 让缓存生效。</span></section></li>
+      </ul>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="background:#fdfdf8;border:1px solid #bfc1b7;border-radius:6px;overflow:hidden;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="padding:10px 16px;background:#1e1f23;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:2px;color:#ffffff;"><span leaf="">多模态模型建议</span></p>
+        <span style="font-size:10px;color:rgba(255,255,255,0.65);"><span leaf="">TIP</span></span>
+      </section>
+      <section style="padding:16px 18px 18px;background:#eeefe9;">
+        <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+          <li style="margin-bottom:6px;font-size:14px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">若解析流程图，优先选支持视觉输入的模型（qwen-vl-max / qwen-vl-plus / gpt-4o / glm-4v / claude-3-5-sonnet）。</span></section></li>
+          <li style="font-size:14px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">若模型不支持图片（如 deepseek-v4-flash），系统会自动降级为 OCR + 文本 chat，仍能得到抽象流程描述。</span></section></li>
+        </ul>
+      </section>
+    </section>
+  </section>
+
+  <!-- 10 快速开始 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">10</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">快速开始</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">QUICKSTART</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <!-- 10.1 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">START</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">一键启动（主服务 + Agent）</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">10.1</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">cd prompt_manager</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">bash start.sh</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 主服务:　http://localhost:8900　　API 文档: /docs</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># Agent :　http://localhost:8901</span></p>
+    </section>
+  </section>
+
+  <!-- 10.2 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">START</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">分别启动</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">10.2</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 主服务</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">cd backend && pip install -r requirements.txt && python3 main.py　　# 8900</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># Agent 服务</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">cd agent　&& pip install -r requirements.txt && python3 main.py　　# 8901</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 建议再装 OCR：pip install rapidocr_onnxruntime</span></p>
+    </section>
+  </section>
+
+  <!-- 10.3 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">START</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">首次使用流程</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">10.3</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:decimal;"><section><span leaf="">浏览器打开 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">http://localhost:8900</span></span>。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:decimal;"><section><span leaf="">使用默认账号 <span style="border-bottom:2px solid #ed7b2f;font-weight:600;color:#23251d;"><span leaf="">admin / admin123456</span></span> 登录。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:decimal;"><section><span leaf="">右上角「齿轮」进入 LLM 配置，新增一个 OpenAI 兼容版本 → 「保存并激活」。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:decimal;"><section><span leaf="">需要解析流程图时，激活支持视觉的模型；否则任意兼容模型均可，Agent 会自动 OCR 兜底。</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:decimal;"><section><span leaf="">打开 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">http://localhost:8901</span></span> 或 POST /api/llm/test 验证连通性。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 11 Python SDK -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">11</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">Python SDK</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">SDK</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">包名：<span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">prompt-manager-client</span></span>（源码在 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">client_sdk/</span></span>）。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 11.1 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">INSTALL</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">安装</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">11.1</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 源码开发安装</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">cd prompt_manager</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">pip install -e .</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 或打包安装</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">pip install build</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">python -m build</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">pip install dist/prompt_manager_client-*.whl</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""></span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf=""># 可选依赖：WebSocket 热更新</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">pip install "prompt-manager-client[ws]"</span></p>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">发布到 PyPI：</span>
+      </p>
+    </section>
+  </section>
+  <section style="margin:0 0 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);">
+    <section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;"><span leaf="">.</span></span>
+      <span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;"><span leaf="">bash</span></span>
+    </section>
+    <section style="padding:11px 14px;">
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">pip install twine</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">python -m build</span></p>
+      <p style="margin:0;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;"><span leaf="">twine upload dist/*</span></p>
+    </section>
+  </section>
+
+  <!-- 11.2 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #bfc1b7;padding-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:3px;color:#ed7b2f;text-transform:uppercase;"><span leaf="">API</span></span>
+        <span style="font-size:18px;font-weight:800;color:#23251d;line-height:1.2;"><span leaf="">核心接口</span></span>
+        <span style="margin-left:auto;font-size:10px;color:#9ea096;font-variant-numeric:tabular-nums;"><span leaf="">11.2</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">PromptClient</span></span>（详见 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">client_sdk/prompt_client.py</span></span>）：</span>
+      </p>
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">提示词：get / get_content / get_resolved / get_version / get_all_names</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">知识库：get_knowledge / get_knowledge_detail / get_knowledge_text / get_all_knowledge / refresh_knowledge</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">流程树：get_flow_records / get_flow_descriptions / refresh_flow_records</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">生命周期：preload / on_update / start_auto_update / start_ws_update / stop</span></section></li>
+      </ul>
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf=""><span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">KnowledgeRetriever</span></span>（详见 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">knowledge_retriever.py</span></span>）：</span>
+      </p>
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">关键词检索（TF-IDF + 中文 unigram/bigram/trigram + 余弦相似度）</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">可选语义检索（use_semantic=True，需 sentence-transformers）</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">接口：preload / retrieve / retrieve_as_text / get_available_keys</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 12 环境变量 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">12</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">环境变量</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">ENV</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="border-radius:6px;overflow:hidden;border:1px solid #bfc1b7;background:#fdfdf8;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;background:#eeefe9;border-bottom:1px solid #bfc1b7;"><section style="width:32%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;"><span leaf="">变量</span></section><section style="width:34%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">默认值</span></section><section style="width:34%;padding:10px 12px;font-size:12px;font-weight:800;color:#23251d;border-left:1px solid #bfc1b7;"><span leaf="">说明</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:32%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">PROMPT_DB_PATH</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">&lt;backend&gt;/prompt_manager.db</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">SQLite 路径，主服务 / Agent 共享同一文件</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:32%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">PROMPT_MANAGER_URL</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">http://localhost:8900</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">Agent 拉取 LLM 配置的主服务地址</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:32%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">FLOW_DATA_DIR</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">&lt;backend&gt;/flow_data</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">上传文件落盘目录</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:32%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">DIALOGUE_FLOW_PARSER_SKILL</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">~/.codebuddy/skills/dialogue-flow-parser</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">OCR skill 根路径；缺失时自动降级到内置 rapidocr</span></section></section>
+      <section style="display:flex;border-bottom:1px solid #bfc1b7;"><section style="width:32%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">LLM_API_LOG_DIR</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">&lt;flow_data&gt;/api_logs</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">LLM API 调用日志目录</span></section></section>
+      <section style="display:flex;"><section style="width:32%;padding:10px 12px;font-size:13px;color:#23251d;"><span leaf="">OCR_PYTHON</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">无</span></section><section style="width:34%;padding:10px 12px;font-size:13px;color:#4d4f46;border-left:1px solid #bfc1b7;"><span leaf="">显式指定跑 OCR 的 Python 解释器（需装 rapidocr_onnxruntime）</span></section></section>
+    </section>
+  </section>
+
+  <!-- 13 前端界面速览 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">13</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">前端界面速览</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">FRONTEND</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">主前端（Vue 3 CDN 单文件）在 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">frontend/index.html</span></span>：</span>
+      </p>
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">登录页 → 主管理台。头部：科室 / 平台 / 场景 / 关键词筛选，右上角齿轮进入 LLM 配置。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">模式切换：提示词管理 / 知识库管理 / 流程树管理 / 账户管理，按登录账号权限动态显示。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">提示词管理：三维过滤、版本历史、回滚、启停、变量映射编辑器。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">知识库管理：11 类知识标签 + <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">bot_id</span></span> 双维度筛选，内容为 JSON 数组内联编辑。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">流程树管理：上传解析、缩略图预览、自然语言描述编辑、重新解析、跨库搜索。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">账户管理：admin 专用；按提示词/知识库/流程树三大模块颗粒到查看/编辑/删除。</span></section></li>
+      </ul>
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">Agent 前端 <span style="background:#eeefe9;color:#23251d;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:13px;border:1px solid #b6b7af;"><span leaf="">agent_frontend/</span></span>：</span>
+      </p>
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">左侧「流程树图库」：按科室 / 平台 / 关键词跨库搜索，缩略图卡片。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">右侧「流程树解析」：图片预览、描述编辑、重新解析、删除；「LLM 对话」：直连 /api/chat 与激活模型对话。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 14 常见问题 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">14</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">常见问题</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">FAQ</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:10px;">
+        <span style="background:#1e1f23;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;"><span leaf="">Q1</span></span>
+        <span style="font-size:15px;font-weight:700;color:#23251d;"><span leaf="">解析流程图报「未提供图片」？</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:12px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">说明当前 LLM 不支持视觉输入。系统会自动降级到 OCR + 文本 chat，只要环境装了 rapidocr_onnxruntime 就能拿到自然语言描述。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">想要更精细的图形理解，请激活视觉模型（qwen-vl-max / gpt-4o 等）。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:10px;">
+        <span style="background:#1e1f23;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;"><span leaf="">Q2</span></span>
+        <span style="font-size:15px;font-weight:700;color:#23251d;"><span leaf="">服务启动了但页面卡在「正在检查登录状态」？</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:12px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">通常是浏览器缓存旧前端。清一次浏览器缓存或强刷。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">主前端如需完全脱离外网 CDN，可将 Vue 运行时放到 frontend/vendor/vue.global.prod.js 并把 &lt;script src&gt; 改为本地路径。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:10px;">
+        <span style="background:#1e1f23;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;"><span leaf="">Q3</span></span>
+        <span style="font-size:15px;font-weight:700;color:#23251d;"><span leaf="">SDK 拿到的提示词版本没更新？</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:12px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">确认 client.start_auto_update(interval=30) 或 start_ws_update() 已启动。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">或调用 client.preload() 主动强制同步。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:10px;">
+        <span style="background:#1e1f23;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;"><span leaf="">Q4</span></span>
+        <span style="font-size:15px;font-weight:700;color:#23251d;"><span leaf="">想加自定义占位符？</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:12px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">提示词内容里写 {我的占位符}，然后在管理页「变量映射」里把变量名映射到 {我的占位符}；调用 resolve 时通过 extra_variables 传值即可。</span>
+      </p>
+    </section>
+  </section>
+
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:10px;">
+        <span style="background:#1e1f23;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;"><span leaf="">Q5</span></span>
+        <span style="font-size:15px;font-weight:700;color:#23251d;"><span leaf="">部署环境 Python 里没装 rapidocr，OCR 兜底也失败？</span></span>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:12px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">方案 1：在 Agent 服务运行环境执行 pip install rapidocr_onnxruntime。</span></section></li>
+        <li style="margin-bottom:6px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf="">方案 2：设置环境变量 OCR_PYTHON=/data/miniconda3/bin/python3 指定已装 rapidocr 的解释器，flow_parser_service 会通过子进程调用。</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 15 技术栈 -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <section style="display:flex;align-items:center;gap:14px;">
+        <section style="text-align:center;flex-shrink:0;">
+          <p style="margin:0;font-size:24px;font-weight:800;color:#23251d;line-height:1;letter-spacing:-2px;"><span leaf="">15</span></p>
+          <p style="margin:0;font-size:8px;font-weight:700;color:#9ea096;letter-spacing:2px;"><span leaf="">PART</span></p>
+        </section>
+        <span style="width:1px;height:36px;background:#bfc1b7;flex-shrink:0;display:inline-block;overflow:hidden;vertical-align:middle;font-size:0;line-height:0;"><span leaf="">&nbsp;</span></span>
+        <section>
+          <p style="margin:0 0 1px;font-size:17px;font-weight:800;color:#23251d;letter-spacing:0.2px;"><span leaf="">技术栈</span></p>
+          <p style="margin:0;font-size:11px;font-weight:600;color:#65675e;letter-spacing:1.2px;"><span leaf="">STACK</span></p>
+        </section>
+      </section>
+    </section>
+  </section>
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <ul style="margin:0;padding-left:22px;line-height:1.8;list-style-position:outside;">
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">后端</span></strong>：FastAPI + SQLite（WAL 模式）+ Pydantic v2</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">前端</span></strong>：Vue 3（CDN，零构建）</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">流程树解析</span></strong>：dialogue-flow-parser skill（OCR）+ rapidocr_onnxruntime 兜底 + OpenAI 兼容多模态 LLM</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">PDF 转图</span></strong>：PyMuPDF（fitz）优先，pdf2image 兜底，200 DPI</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">客户端 SDK</span></strong>：仅依赖 Python 标准库，可选 websocket-client（热更新）/ sentence-transformers（语义检索）</span></section></li>
+        <li style="margin-bottom:8px;font-size:15px;color:#4d4f46;list-style-type:disc;"><section><span leaf=""><strong style="color:#23251d;"><span leaf="">认证</span></strong>：token 存 auth_sessions 表，30 天过期；请求头 Authorization: Bearer &lt;token&gt; 或 cookie pm_token 均可</span></section></li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- 固定签名段落（组件10，作者占位） -->
+  <section style="margin-top:24px;">
+    <section style="font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="margin:0;font-size:14px;line-height:1.9;text-align:justify;color:#4d4f46;">
+        <span leaf="">我是 {{作者名}}，{{一句话简介，如：热衷于分享 AI 观察与干货}}。如果你觉得今天这篇有收获，欢迎<strong style="color:#23251d;"><span leaf="">点赞、在看、转发</span></strong>三连，我们下篇见。</span>
+      </p>
+    </section>
+  </section>
+
+  <!-- 结尾行动区（组件28 ending-actions） -->
+  <section style="margin-top:24px;">
+    <section style="background:#fdfdf8;border:1px solid #bfc1b7;border-radius:6px;padding:22px 16px;text-align:center;font-family:'IBM Plex Sans',-apple-system,sans-serif;">
+      <p style="font-size:13px;font-weight:700;color:#23251d;line-height:1.6;margin:0 0 14px;"><span leaf="">如果今天这篇帮到了你，欢迎点赞 · 在看 · 转发三连</span></p>
+      <section style="display:flex;justify-content:center;gap:18px;margin-bottom:14px;flex-wrap:wrap;">
+        <section style="text-align:center;color:#4d4f46;">
+          <section style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;background:#eeefe9;border-radius:6px;border:1px solid #bfc1b7;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          </section>
+          <span style="font-size:11px;font-weight:600;"><span leaf="">赞</span></span>
+        </section>
+        <section style="text-align:center;color:#4d4f46;">
+          <section style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;background:#eeefe9;border-radius:6px;border:1px solid #bfc1b7;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+          </section>
+          <span style="font-size:11px;font-weight:600;"><span leaf="">在看</span></span>
+        </section>
+        <section style="text-align:center;color:#23251d;">
+          <section style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;background:#d4c9b8;border-radius:6px;border:1px solid #b17816;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#23251d" stroke-width="1.8" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </section>
+          <span style="font-size:11px;font-weight:700;"><span leaf="">收藏</span></span>
+        </section>
+      </section>
+      <p style="line-height:1.6;font-size:10px;color:#9ea096;letter-spacing:2px;margin:0;font-weight:500;"><span leaf="">THANKS FOR READING</span></p>
+    </section>
+  </section>
+
+</section>
+
+<!-- 隐藏标记（外层容器之外） -->
+<p style="display:none;">
+  <mp-style-type data-value="3"></mp-style-type>
+</p>
+
+</section>
+
+<!-- 隐藏标记（外层容器之外） -->
+<p style="display:none;">
+  <mp-style-type data-value="3"></mp-style-type>
+</p>

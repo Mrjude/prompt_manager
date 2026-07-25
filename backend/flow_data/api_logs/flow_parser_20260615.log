@@ -1,0 +1,14 @@
+2026-06-15 00:01:57 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781452917633_小红书-瓜子脸.png (84190 bytes)
+2026-06-15 00:01:57 [INFO] flow_parser - ==================================================
+2026-06-15 00:01:57 [INFO] flow_parser - 📋 开始解析: file=小红书-瓜子脸.png, type=image
+2026-06-15 00:01:59 [INFO] flow_parser - LLM 解析: page=1/1, image=1781452917633_小红书-瓜子脸.png, ocr_len=191
+2026-06-15 00:02:03 [INFO] flow_parser - 📋 解析完成: status=success, success=1/1
+2026-06-15 00:02:03 [INFO] flow_parser - ==================================================
+2026-06-15 00:02:25 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/agent/../backend/flow_data/2/1781257526268_小红书-必须剃发吗.png
+2026-06-15 00:02:30 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781171266862_小红书-可以看到照片吗.png
+2026-06-15 00:02:39 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781169428129_小红书-菱形脸.png
+2026-06-15 00:02:48 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781170736030_小红书-仿真画线.png
+2026-06-15 00:02:54 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781168732722_小红书-后面会不会直接秃了.png
+2026-06-15 00:02:58 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781166393629_小红书-方型脸.png
+2026-06-15 00:03:03 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781167969516_小红书-疤痕体质能植发吗.png
+2026-06-15 00:03:26 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/3/1781171655612_存活率多少.pdf

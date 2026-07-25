@@ -1,0 +1,32 @@
+2026-06-17 17:18:44 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781687924908_小红书-鹅蛋脸.png (81267 bytes)
+2026-06-17 17:18:44 [INFO] flow_parser - ==================================================
+2026-06-17 17:18:44 [INFO] flow_parser - 📋 开始解析: file=小红书-鹅蛋脸.png, type=image
+2026-06-17 17:18:46 [INFO] flow_parser - 📋 解析完成: status=failed, success=0/1
+2026-06-17 17:18:46 [INFO] flow_parser - ==================================================
+2026-06-17 17:19:11 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781687951003_小红书-鹅蛋脸.png (81267 bytes)
+2026-06-17 17:19:11 [INFO] flow_parser - ==================================================
+2026-06-17 17:19:11 [INFO] flow_parser - 📋 开始解析: file=小红书-鹅蛋脸.png, type=image
+2026-06-17 17:19:12 [INFO] flow_parser - 📋 解析完成: status=failed, success=0/1
+2026-06-17 17:19:12 [INFO] flow_parser - ==================================================
+2026-06-17 17:36:06 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781687951003_小红书-鹅蛋脸.png
+2026-06-17 17:36:08 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781687924908_小红书-鹅蛋脸.png
+2026-06-17 17:36:27 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781688987136_小红书-假发.png (44072 bytes)
+2026-06-17 17:36:27 [INFO] flow_parser - ==================================================
+2026-06-17 17:36:27 [INFO] flow_parser - 📋 开始解析: file=小红书-假发.png, type=image
+2026-06-17 17:36:28 [INFO] flow_parser - 📋 解析完成: status=failed, success=0/1
+2026-06-17 17:36:28 [INFO] flow_parser - ==================================================
+2026-06-17 17:41:41 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781688987136_小红书-假发.png
+2026-06-17 17:41:54 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781689314780_小红书-不满意能修复吗.png (68107 bytes)
+2026-06-17 17:41:54 [INFO] flow_parser - ==================================================
+2026-06-17 17:41:54 [INFO] flow_parser - 📋 开始解析: file=小红书-不满意能修复吗.png, type=image
+2026-06-17 17:41:56 [INFO] flow_parser - LLM 解析: page=1/1, image=1781689314780_小红书-不满意能修复吗.png, ocr_len=191
+2026-06-17 17:42:13 [INFO] flow_parser - 📋 解析完成: status=success, success=1/1
+2026-06-17 17:42:13 [INFO] flow_parser - ==================================================
+2026-06-17 17:53:49 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781690029858_小红书-接的头发需要拆吗.png (82143 bytes)
+2026-06-17 17:53:49 [INFO] flow_parser - ==================================================
+2026-06-17 17:53:49 [INFO] flow_parser - 📋 开始解析: file=小红书-接的头发需要拆吗.png, type=image
+2026-06-17 17:53:51 [INFO] flow_parser - LLM 解析: page=1/1, image=1781690029858_小红书-接的头发需要拆吗.png, ocr_len=237
+2026-06-17 17:54:06 [INFO] flow_parser - 📋 解析完成: status=success, success=1/1
+2026-06-17 17:54:06 [INFO] flow_parser - ==================================================
+2026-06-17 18:00:01 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/agent/../backend/flow_data/2/1781367145746_小红书-菱形脸.png
+2026-06-17 18:00:05 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/agent/../backend/flow_data/2/1781367054339_小红书-光头能植发吗.png

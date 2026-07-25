@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提示词管理系统</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow:hidden;height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#2c3e50}
+
+/* Header */
+.header{background:linear-gradient(135deg,#4a90d9 0%,#357abd 100%);color:#fff;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(53,122,189,.25)}
+.header h1{font-size:17px;font-weight:600;letter-spacing:.5px}
+.header .header-actions{display:flex;align-items:center;gap:10px}
+.header .icon-btn{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,255,255,.12);color:#fff;border:none;transition:all .2s}
+.header .icon-btn:hover{background:rgba(255,255,255,.25);transform:rotate(60deg)}
+.header .icon-btn.user-btn:hover{transform:none}
+.header .icon-btn.logout-btn:hover{transform:none}
+.header .icon-btn svg{width:18px;height:18px;display:block}
+.header .user-info{font-size:12px;opacity:.9;margin-right:4px}
+
+/* Login */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4a90d9 0%,#357abd 100%);padding:24px}
+.login-card{width:360px;background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:30px}
+.login-card h2{font-size:22px;margin-bottom:6px;color:#2c3e50;text-align:center}
+.login-card .sub{font-size:13px;color:#8899aa;text-align:center;margin-bottom:24px}
+.login-card .form-group input{height:42px}
+.login-card .btn{width:100%;justify-content:center;height:40px;margin-top:8px}
+
+/* Container */
+.container{max-width:1440px;margin:0 auto;padding:14px 24px;height:100vh;overflow:hidden}
+
+/* Toolbar */
+.toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;background:#fff;padding:14px 18px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.toolbar .filter-group{display:flex;gap:10px;align-items:center}
+.toolbar input{padding:8px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;transition:all .25s;background:#fff;color:#2c3e50;min-width:200px}
+.toolbar input:hover{border-color:#b0c4de}
+.toolbar input:focus{border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.12)}
+.toolbar .spacer{flex:1}
+
+/* Custom Select */
+.select-wrap{position:relative;display:inline-block}
+.select-wrap select{appearance:none;-webkit-appearance:none;padding:8px 34px 8px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;transition:all .25s;background:#fff;color:#2c3e50;cursor:pointer;min-width:120px;font-weight:500}
+.select-wrap select:hover{border-color:#b0c4de;background:#fafbfc}
+.select-wrap select:focus{border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.12);background:#fff}
+.select-wrap::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #8899aa;pointer-events:none;transition:border-color .2s}
+.select-wrap:hover::after{border-top-color:#4a90d9}
+
+/* Buttons */
+.btn{cursor:pointer;border:none;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.btn-primary{background:#4a90d9;color:#fff}.btn-primary:hover{background:#357abd;box-shadow:0 2px 6px rgba(74,144,217,.25)}
+.btn-success{background:#52c41a;color:#fff}.btn-success:hover{background:#45a817}
+.btn-warning{background:#faad14;color:#fff}.btn-warning:hover{background:#d9910b}
+.btn-danger{background:#ff4d4f;color:#fff}.btn-danger:hover{background:#d9363e}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-outline{background:#fff;color:#4a90d9;border:1px solid #4a90d9}.btn-outline:hover{background:#f0f6ff}
+.btn-ghost{background:transparent;color:#666;border:1px solid #e0e4e8}.btn-ghost:hover{background:#f5f7fa;border-color:#ccc}
+.btn-toggle{background:#fff;color:#4a90d9;border:1px solid #4a90d9}.btn-toggle:hover{background:#f0f6ff}
+.btn-toggle.active{background:#4a90d9;color:#fff;border-color:#4a90d9}
+
+/* Main Grid */
+.main-grid{display:grid;grid-template-columns:380px 1fr;gap:18px;height:calc(94vh - 105px)}
+
+/* Card */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;overflow:hidden;height:100%}
+.card-header{padding:10px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.card-header .title{font-size:14px;font-weight:600;color:#2c3e50}
+.card-header .title span{font-weight:400;font-size:12px;color:#999;margin-left:6px}
+.card-body{padding:12px 16px;flex:1;overflow-y:auto}
+
+/* Settings Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .2s}
+.modal{background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.15);width:480px;max-width:92vw;animation:slideUp .2s}
+.modal-header{padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:16px;font-weight:600;color:#2c3e50;margin:0}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:transparent;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:#f5f5f5;color:#333}
+.modal-body{padding:20px}
+.modal-footer{padding:16px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:10px}
+.modal-group{margin-bottom:16px}
+.modal-group label{display:block;margin-bottom:6px;font-size:13px;font-weight:500;color:#555}
+.modal-group input{width:100%;padding:9px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;transition:all .2s;background:#fff;color:#2c3e50}
+.modal-group input:focus{border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.1)}
+.modal-group .hint{margin-top:4px;font-size:11px;color:#999}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Prompt List */
+.prompt-list{display:flex;flex-direction:column;gap:6px}
+.prompt-item{padding:10px 14px;border:1px solid #f0f0f0;border-radius:6px;cursor:pointer;transition:all .15s}
+.prompt-item:hover{border-color:#b0c4de;background:#f8faff}
+.prompt-item.active{border-color:#4a90d9;background:linear-gradient(135deg,#f0f6ff,#e8f0fe)}
+.prompt-item .name{font-weight:600;font-size:13px;margin-bottom:5px;color:#2c3e50}
+.prompt-item .meta{font-size:11px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.prompt-item .desc{font-size:12px;color:#999;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{padding:1px 7px;border-radius:3px;font-size:11px;font-weight:500}
+.tag-dept{color:#4a90d9;background:#e8f0fe}
+.tag-plat{color:#52c41a;background:#f0fff0}
+.tag-scene{color:#faad14;background:#fffbe6}
+.tag-ver{color:#999;background:#f5f5f5}
+.tag-file{color:#13c2c2;background:#e6fffb}
+.tag-kbtype-qa{color:#4a90d9;background:#e8f0fe}
+.tag-kbtype-consult{color:#52c41a;background:#f0fff0}
+.tag-kbtype-connect{color:#faad14;background:#fffbe6}
+.tag-kbtype-flow{color:#722ed1;background:#f9f0ff}
+.tag-kbtype-default{color:#8c8c8c;background:#f5f5f5}
+.tag-kbtype-extra{color:#eb2f96;background:#fff0f6}
+.tag-kbtype-constraint-consult{color:#08979c;background:#e6fffb}
+.tag-kbtype-constraint-qa{color:#1d39c4;background:#f0f5ff}
+.tag-kbtype-constraint-connect{color:#d46b08;background:#fff7e6}
+.tag-kbtype-core{color:#531dab;background:#f9f0ff}
+.tag-kbtype-forbidden{color:#cf1322;background:#fff1f0}
+.tag-botid{color:#13c2c2;background:#e6fffb}
+
+/* Detail */
+.detail-section{margin-bottom:14px}
+.detail-section .section-title{font-size:13px;font-weight:600;color:#2c3e50;margin-bottom:8px;padding-left:8px;border-left:3px solid #4a90d9}
+.meta-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:#666}
+.meta-row strong{color:#333}
+.content-box{background:#f8f9fb;border:1px solid #e8ecf0;border-radius:6px;padding:14px;font-size:12px;line-height:1.7;max-height:380px;overflow-y:auto;white-space:pre-wrap;font-family:'JetBrains Mono','Consolas','Monaco',monospace;color:#333;word-break:break-all}
+.prompt-content-box{min-height:620px;max-height:700px}
+
+/* Knowledge base list items */
+.kb-item{padding:12px 14px;border:1px solid #f0f0f0;border-radius:6px;cursor:pointer;transition:all .15s}
+.kb-item:hover{border-color:#b0c4de;background:#f8faff}
+.kb-item.active{border-color:#4a90d9;background:linear-gradient(135deg,#f0f6ff,#e8f0fe)}
+.kb-item .kb-title{font-weight:600;font-size:13px;margin-bottom:6px;color:#2c3e50}
+.kb-item .kb-meta{font-size:11px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.kb-item .kb-desc{font-size:12px;color:#999;margin-top:6px}
+
+/* Knowledge content preview */
+.kb-content-preview{background:#f8f9fb;border:1px solid #e8ecf0;border-radius:6px;padding:14px;font-size:12px;line-height:1.7;max-height:500px;overflow-y:auto}
+.kb-content-preview .kb-line{padding:6px 0;border-bottom:1px dashed #e0e0e0}
+.kb-content-preview .kb-line:last-child{border-bottom:none}
+
+/* Knowledge entry list */
+.kb-entry-list{display:flex;flex-direction:column;gap:8px}
+.kb-entry{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fff;border:1px solid #e8ecf0;border-radius:6px;transition:all .15s}
+.kb-entry:hover{border-color:#b0c4de;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.kb-entry .kb-entry-text{flex:1;font-size:13px;line-height:1.6;color:#333;word-break:break-all}
+.kb-entry .kb-entry-actions{display:flex;gap:6px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.kb-entry:hover .kb-entry-actions{opacity:1}
+.kb-entry-input{width:100%;display:block;padding:8px 12px;border:1px solid #4a90d9;border-radius:6px;font-size:13px;outline:none;background:#1a1a1a;color:#f0f0f0;line-height:1.6;min-height:60px;resize:vertical;box-sizing:border-box}
+.kb-add-row{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:#f8f9fb;border:1px dashed #c0c8d0;border-radius:6px}
+.kb-add-row textarea{width:100%;display:block;padding:8px 12px;border:1px solid #d9dde3;border-radius:6px;font-size:13px;outline:none;background:#fff;color:#2c3e50;min-height:60px;resize:vertical;box-sizing:border-box}
+.kb-add-row textarea:focus{border-color:#4a90d9}
+
+/* Version */
+.version-panel{background:#f8f9fb;border-radius:8px;margin-top:12px;overflow:hidden;border:1px solid #e8ecf0}
+.version-panel .vp-header{padding:10px 16px;background:#fff;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0}
+.version-list{overflow-y:auto}
+.version-item{padding:10px 16px;border-bottom:1px solid #f0f0f0;transition:background .15s}
+.version-item:last-child{border-bottom:none}
+.version-item:hover{background:#fff}
+.version-item.current{background:#f0f6ff}
+.version-item .v-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.version-item .v-num{font-weight:700;font-size:13px}
+.version-item .v-num.current-tag{color:#4a90d9}
+.version-item .v-time{font-size:11px;color:#bbb}
+.version-item .v-log{font-size:12px;color:#888;margin-bottom:5px}
+.version-item .v-actions{display:flex;gap:6px;align-items:center}
+
+/* Version Content Viewer */
+.version-content-viewer{margin-top:6px;background:#fff;border:1px solid #e0e4e8;border-radius:6px;overflow:hidden}
+.vcv-header{padding:7px 12px;background:#fafbfc;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:#4a90d9}
+.vcv-body{padding:12px;font-size:12px;line-height:1.6;white-space:pre-wrap;max-height:250px;overflow-y:auto;font-family:'JetBrains Mono','Consolas',monospace;color:#444}
+
+/* Form */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:#555}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;transition:all .25s;background:#fff;color:#2c3e50;appearance:none;-webkit-appearance:none;font-weight:500}
+.form-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238899aa'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px;cursor:pointer}
+.form-group select:hover{border-color:#b0c4de;background:#fafbfc}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.1);background:#fff}
+.form-group textarea{min-height:350px;font-family:'JetBrains Mono','Consolas','Monaco',monospace;font-size:12px;line-height:1.6;resize:vertical;appearance:auto;-webkit-appearance:auto;background:#1e1e2e;color:#abb2bf;border-color:#3e4451}
+.form-group textarea::placeholder{color:#5c6370}
+.form-group textarea:focus{background:#1e1e2e;border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.permission-matrix{max-width:520px;border:1px solid #e8ecf0;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.permission-matrix .pm-row{display:grid;grid-template-columns:1.4fr repeat(3,90px);align-items:center;min-height:42px;border-bottom:1px solid #f0f2f5}
+.permission-matrix .pm-row:last-child{border-bottom:none}
+.permission-matrix .pm-head{background:#f7faff;color:#2c3e50;font-weight:700;font-size:13px}
+.permission-matrix .pm-cell{padding:10px 14px;font-size:13px;color:#44566c;display:flex;align-items:center;justify-content:center}
+.permission-matrix .pm-name{justify-content:flex-start;font-weight:600;color:#2c3e50;background:#fbfcfe}
+.permission-matrix input[type="checkbox"]{appearance:auto;-webkit-appearance:auto;width:16px;height:16px;padding:0;margin:0;accent-color:#4a90d9;cursor:pointer;box-shadow:none}
+.permission-matrix input[type="checkbox"]:disabled{cursor:not-allowed;opacity:.75}
+.variable-hint{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:8px 12px;font-size:11px;margin-top:4px;color:#8c6900;line-height:1.5}
+.actions-bar{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+
+/* Variable Bindings */
+.var-bindings-panel{background:#f8f9fb;border:1px solid #e8ecf0;border-radius:8px;padding:12px 14px;margin-top:8px}
+.var-bindings-panel .vb-title{font-size:12px;font-weight:600;color:#555;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.var-binding-row{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.var-binding-row input{flex:1;padding:6px 10px;border:1px solid #d9dde3;border-radius:6px;font-size:12px;outline:none;background:#fff;color:#2c3e50}
+.var-binding-row input:focus{border-color:#4a90d9}
+.var-binding-row .vb-sep{color:#999;font-size:12px;font-weight:500}
+.var-binding-row .vb-del{color:#ff4d4f;cursor:pointer;font-size:18px;padding:0 4px;line-height:1;user-select:none}
+.var-binding-row .vb-del:hover{color:#d9363e}
+
+/* Badge */
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-green{background:#f0fff0;color:#52c41a}
+.badge-gray{background:#f5f5f5;color:#999}
+
+/* Empty */
+.empty-state{text-align:center;padding:60px 20px;color:#ccc;font-size:14px}
+
+/* Toast */
+.toast{position:fixed;top:24px;right:24px;padding:10px 18px;border-radius:6px;color:#fff;font-size:13px;z-index:9999;animation:toastIn .35s;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.toast-success{background:#52c41a}
+.toast-error{background:#ff4d4f}
+.toast-info{background:#4a90d9}
+.toast-parsing{animation:toastIn .35s, toastPulse 1.5s ease-in-out infinite}
+@keyframes toastIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes toastPulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#bbb}
+</style>
+</head>
+<body>
+<div id="app">
+  <div v-if="!isAuthed" class="login-page">
+    <div class="login-card">
+      <h2>提示词管理系统</h2>
+      <div class="sub">登录后进入主服务页面</div>
+      <div class="form-group">
+        <label>用户名</label>
+        <input v-model="loginForm.username" placeholder="" @keyup.enter="login">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input v-model="loginForm.password" type="password" placeholder="" @keyup.enter="login">
+      </div>
+      <button class="btn btn-primary" @click="login" :disabled="loginLoading">{{loginLoading ? '登录中...' : '登录'}}</button>
+      <div v-if="loginError" style="color:#ff4d4f;font-size:12px;margin-top:12px;text-align:center">{{loginError}}</div>
+    </div>
+  </div>
+
+  <template v-else>
+  <!-- Header -->
+  <div class="header">
+    <h1>提示词管理系统</h1>
+    <div class="header-actions">
+      <span class="user-info">{{currentUser.username}} · {{currentUser.role === 'admin' ? '高级权限' : '普通权限'}}</span>
+      <button v-if="isAdmin" class="icon-btn user-btn" title="账户和权限管理" @click="switchMode('users')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </button>
+      <button class="icon-btn" title="Agent 服务" onclick="location.href='http://'+location.hostname+':8901'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="10" rx="2"/>
+          <circle cx="8.5" cy="16" r="1.5" fill="currentColor"/>
+          <circle cx="15.5" cy="16" r="1.5" fill="currentColor"/>
+          <path d="M12 2a5 5 0 0 0-5 5v4h10V7a5 5 0 0 0-5-5z"/>
+          <line x1="12" y1="7" x2="12" y2="9"/>
+          <circle cx="12" cy="6" r="0.5" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="icon-btn" title="LLM API 设置" @click="openSettings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <button class="icon-btn logout-btn" title="退出登录" @click="logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div v-if="settingsOpen" class="modal-overlay" @click.self="settingsOpen=false">
+    <div class="modal" style="max-width:680px">
+      <div class="modal-header">
+        <h3>LLM API 版本管理</h3>
+        <button class="modal-close" @click="settingsOpen=false">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 版本列表 -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <label style="font-weight:600">已保存的版本</label>
+            <button class="btn btn-success btn-sm" @click="addLLMVersion">+ 新增版本</button>
+          </div>
+          <div v-if="llmVersions.length === 0" style="color:#999;padding:12px;text-align:center">暂无版本，请点击"新增版本"添加</div>
+          <div v-for="v in llmVersions" :key="v.id"
+               style="border:1px solid #e8e8e8;border-radius:6px;padding:10px 12px;margin-bottom:8px;position:relative"
+               :style="{borderColor: v.is_active ? '#52c41a' : '#e8e8e8', background: v.is_active ? '#f6ffed' : '#fff'}">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <span style="font-weight:600">{{ v.name || '未命名' }}</span>
+                <span v-if="v.is_active" style="color:#52c41a;font-size:12px;margin-left:6px">● 当前激活</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button v-if="!v.is_active" class="btn btn-sm" style="background:#52c41a;color:#fff;padding:2px 10px" @click="activateVersion(v.id)">激活</button>
+                <button class="btn btn-sm" style="padding:2px 10px" @click="editLLMVersion(v)">编辑</button>
+                <button v-if="!v.is_active" class="btn btn-sm" style="padding:2px 10px;color:#ff4d4f" @click="removeLLMVersion(v.id)">删除</button>
+              </div>
+            </div>
+            <div style="color:#888;font-size:12px;margin-top:4px">
+              {{ v.base_url }} &nbsp;|&nbsp; {{ v.model_name }} &nbsp;|&nbsp; Key: {{ v.api_key ? v.api_key.slice(0,4) + '****' : '无' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 编辑表单 -->
+        <div v-if="llmEditShow" style="border-top:1px solid #eee;padding-top:14px">
+          <div style="font-weight:600;margin-bottom:8px">{{ llmEditIsNew ? '新增版本' : '编辑版本' }}</div>
+          <div class="modal-group">
+            <label>版本名称</label>
+            <input v-model="llmEditForm.name" placeholder="例如: 生产环境、测试环境">
+          </div>
+          <div class="modal-group">
+            <label>Base URL</label>
+            <input v-model="llmEditForm.base_url" placeholder="例如: https://api.openai.com/v1">
+          </div>
+          <div class="modal-group">
+            <label>API Key</label>
+            <input v-model="llmEditForm.api_key" type="password" placeholder="输入 API 密钥">
+            <div class="hint" v-if="!llmEditIsNew && llmEditForm.api_key && llmEditForm.api_key.includes('****')">留空或含掩码则不修改</div>
+          </div>
+          <div class="modal-group">
+            <label>Model Name</label>
+            <input v-model="llmEditForm.model_name" placeholder="例如: gpt-4o, qwen-max">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" @click="saveLLMVersion">保存</button>
+            <button class="btn btn-ghost" @click="llmEditShow=false">取消</button>
+            <label style="display:flex;align-items:center;gap:4px;margin-left:auto;font-size:13px;color:#666">
+              <input type="checkbox" v-model="llmEditAndActivate"> 保存后立即激活
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" @click="settingsOpen=false">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div v-if="ftUploadShow" class="modal-overlay" @click.self="ftCancelUpload">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <h3>上传流程树图片/PDF</h3>
+        <button class="modal-close" @click="ftCancelUpload">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-group">
+          <label>选择文件（支持图片和PDF）</label>
+          <input type="file" ref="ftFileInput" @change="ftOnFileChange" accept="image/*,.pdf">
+          <div class="hint">支持上传 PNG、JPG、GIF、WEBP 图片或 PDF 文件，上传后将自动解析流程树结构</div>
+        </div>
+        <div class="modal-group">
+          <label>机器人ID（可选，留空表示通用）</label>
+          <select v-model="ftUploadBotId" style="width:100%;padding:8px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px">
+            <option value="">通用（空）</option>
+            <option v-for="b in kbBotIds" :key="b" :value="b">{{b}}</option>
+            <option value="__custom__">自定义...</option>
+          </select>
+          <input v-if="ftUploadBotId === '__custom__'" v-model="ftUploadBotIdCustom" placeholder="输入自定义机器人ID" style="margin-top:8px;width:100%;padding:8px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" @click="ftCancelUpload">取消</button>
+        <button class="btn btn-primary" :disabled="!ftUploadFile" @click="ftUploadFileSubmit">上传并解析</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="filter-group">
+        <div class="select-wrap">
+          <select v-model="filterDept" @change="onFilterChange">
+            <option value="">全部科室</option>
+            <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+          </select>
+        </div>
+        <div class="select-wrap">
+          <select v-model="filterPlat" @change="onFilterChange">
+            <option value="">全部平台</option>
+            <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+          </select>
+        </div>
+        <div class="select-wrap" v-if="mode === 'prompt'">
+          <select v-model="filterScene" @change="onFilterChange">
+            <option value="">全部场景</option>
+            <option v-for="s in scenes" :key="s.key" :value="s.key">{{s.label}}</option>
+          </select>
+        </div>
+        <div class="select-wrap" v-if="mode === 'knowledge'">
+          <select v-model="filterKbType" @change="onFilterChange">
+            <option value="">全部类型</option>
+            <option v-for="t in kbTypes" :key="t" :value="t">{{t}}</option>
+          </select>
+        </div>
+        <div class="select-wrap" v-if="mode === 'knowledge'">
+          <select v-model="filterKbBotId" @change="onFilterChange">
+            <option value="">全部机器人</option>
+            <option value="__common__">通用（空）</option>
+            <option v-for="b in kbBotIds" :key="b" :value="b">{{b}}</option>
+          </select>
+        </div>
+        <div class="select-wrap" v-if="mode === 'flow'">
+          <select v-model="filterFtBotId" @change="onFilterChange">
+            <option value="">全部机器人</option>
+            <option value="__common__">通用（空）</option>
+            <option v-for="b in kbBotIds" :key="b" :value="b">{{b}}</option>
+          </select>
+        </div>
+      </div>
+      <template v-if="mode !== 'users'">
+        <input v-model="keyword" :placeholder="mode === 'knowledge' ? '搜索知识库内容记录...' : (mode === 'flow' ? '搜索流程树记录...' : '搜索名称或描述...')" @keyup.enter="onFilterChange" style="max-width:240px">
+        <button class="btn btn-primary" @click="onFilterChange">搜索</button>
+      </template>
+      <div class="spacer"></div>
+      <!-- 模式切换按钮 -->
+      <button v-if="canPromptView" class="btn btn-toggle" :class="{active: mode === 'prompt'}" @click="switchMode('prompt')">提示词管理</button>
+      <button v-if="canKnowledgeView" class="btn btn-toggle" :class="{active: mode === 'knowledge'}" @click="switchMode('knowledge')">知识库管理</button>
+      <button v-if="canFlowView" class="btn btn-toggle" :class="{active: mode === 'flow'}" @click="switchMode('flow')">流程树管理</button>
+      <button v-if="isAdmin" class="btn btn-toggle" :class="{active: mode === 'users'}" @click="switchMode('users')">账户权限</button>
+    </div>
+
+    <!-- Main -->
+    <div class="main-grid">
+      <!-- Left: List -->
+      <div class="card">
+        <div class="card-header">
+          <div class="title">{{leftTitle}} <span>共 {{leftTotal}} 条</span></div>
+          <button v-if="mode !== 'users' && ((mode === 'prompt' && canPromptEdit) || (mode === 'knowledge' && canKnowledgeEdit) || (mode === 'flow' && canFlowEdit))" class="btn btn-success btn-sm" @click="openCreate">+ {{mode === 'prompt' ? '新建提示词' : (mode === 'knowledge' ? '新建知识库' : '新建流程树库')}}</button>
+          <button v-if="mode === 'users'" class="btn btn-success btn-sm" @click="openUserCreate">+ 新建账号</button>
+        </div>
+        <div class="card-body">
+          <!-- Prompt List -->
+          <div class="prompt-list" v-if="mode === 'prompt' && prompts.length">
+            <div v-for="p in prompts" :key="p.id" class="prompt-item"
+                 :class="{active: selected && selected.id === p.id}" @click="selectPrompt(p)">
+              <div class="name">{{p.name}}</div>
+              <div class="meta">
+                <span class="tag tag-dept">{{deptLabel(p.department)}}</span>
+                <span class="tag tag-plat">{{platLabel(p.platform)}}</span>
+                <span class="tag tag-scene">{{sceneLabel(p.scene)}}</span>
+                <span class="tag tag-ver">v{{p.version}}</span>
+                <span v-if="p.is_active" class="badge badge-green">启用</span>
+                <span v-else class="badge badge-gray">停用</span>
+              </div>
+              <div class="desc">{{p.description || '无描述'}}</div>
+            </div>
+          </div>
+          <!-- Knowledge Base List -->
+          <div class="prompt-list" v-if="mode === 'knowledge' && kbList.length">
+            <div v-for="k in kbList" :key="k.id" class="kb-item"
+                 :class="{active: kbSelected && kbSelected.id === k.id}" @click="selectKb(k)">
+              <div class="kb-title">{{deptLabel(k.department)}} - {{platLabel(k.platform)}}</div>
+              <div class="kb-meta">
+                <span class="tag tag-dept">{{deptLabel(k.department)}}</span>
+                <span class="tag tag-plat">{{platLabel(k.platform)}}</span>
+              </div>
+              <div class="kb-desc">共 {{kbContentLines(k.content).length}} 条</div>
+            </div>
+          </div>
+          <!-- Flow Tree List -->
+          <div class="prompt-list" v-if="mode === 'flow' && ftList.length">
+            <div v-for="ft in ftList" :key="ft.id" class="kb-item"
+                 :class="{active: ftSelected && ftSelected.id === ft.id}" @click="selectFlowTree(ft)">
+              <div class="kb-title">{{deptLabel(ft.department)}} - {{platLabel(ft.platform)}}</div>
+              <div class="kb-meta">
+                <span class="tag tag-dept">{{deptLabel(ft.department)}}</span>
+                <span class="tag tag-plat">{{platLabel(ft.platform)}}</span>
+                <span class="tag tag-ver">{{ft.record_count}} 条记录</span>
+              </div>
+              <div class="kb-desc">{{ft.description || '无描述'}}</div>
+            </div>
+          </div>
+          <!-- User List -->
+          <div class="prompt-list" v-if="mode === 'users' && userList.length">
+            <div v-for="u in userList" :key="u.id" class="prompt-item"
+                 :class="{active: userSelected && userSelected.id === u.id}" @click="selectUser(u)">
+              <div class="name">{{u.username}}</div>
+              <div class="meta">
+                <span :class="['tag', u.role === 'admin' ? 'tag-kbtype-flow' : 'tag-ver']">{{u.role === 'admin' ? '高级权限' : '普通权限'}}</span>
+                <span :class="['badge', u.is_active ? 'badge-green' : 'badge-gray']">{{u.is_active ? '启用' : '禁用'}}</span>
+              </div>
+              <div class="desc">更新：{{u.updated_at}}</div>
+            </div>
+          </div>
+          <div v-if="(mode === 'prompt' && !prompts.length) || (mode === 'knowledge' && !kbList.length) || (mode === 'flow' && !ftList.length) || (mode === 'users' && !userList.length)" class="empty-state">
+            暂无数据
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Detail/Edit -->
+      <div class="card">
+        <!-- Prompt Mode -->
+        <template v-if="mode === 'prompt'">
+          <div class="card-header">
+            <div class="title">{{editing ? (isCreate ? '新建提示词' : '编辑提示词') : '提示词详情'}}</div>
+            <div v-if="!editing && selected && (canPromptEdit || canPromptDelete)" style="display:flex;gap:6px">
+              <button v-if="canPromptEdit" class="btn btn-primary btn-sm" @click="startEdit">编辑</button>
+              <button v-if="canPromptEdit" class="btn btn-warning btn-sm" @click="toggleVersions">版本历史</button>
+              <button v-if="canPromptDelete" class="btn btn-danger btn-sm" @click="deletePrompt">停用</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- View Mode -->
+            <div v-if="!editing && selected">
+              <div class="meta-row">
+                <div><strong>科室：</strong>{{deptLabel(selected.department)}}</div>
+                <div><strong>平台：</strong>{{platLabel(selected.platform)}}</div>
+                <div><strong>场景：</strong>{{sceneLabel(selected.scene)}}</div>
+                <div><strong>版本：</strong>v{{selected.version}}</div>
+                <div><strong>更新：</strong>{{selected.updated_at}}</div>
+              </div>
+              <div style="margin-bottom:8px;font-size:13px;color:#888">
+                <span v-if="selected.description"><strong>描述：</strong>{{selected.description}}</span>
+                <span v-if="selected.tags" style="margin-left:16px"><strong>标签：</strong>{{selected.tags}}</span>
+              </div>
+
+              <div class="detail-section">
+                <div class="section-title">提示词内容</div>
+                <div class="content-box prompt-content-box">{{selected.content}}</div>
+              </div>
+
+              <div class="detail-section" v-if="selected.variable_bindings && selected.variable_bindings !== '{}'">
+                <div class="section-title">变量标记映射</div>
+                <div class="content-box" style="font-family:inherit;white-space:normal;padding:10px 14px">
+                  <div v-for="(marker, name) in parseBindings(selected.variable_bindings)" :key="name" style="margin-bottom:5px;display:flex;align-items:center;gap:8px">
+                    <code style="background:#e8f0fe;color:#4a90d9;padding:3px 8px;border-radius:4px;font-size:12px;font-family:'JetBrains Mono',monospace">{{name}}</code>
+                    <span style="color:#bbb;font-size:12px">→</span>
+                    <code style="background:#fffbe6;color:#8c6900;padding:3px 8px;border-radius:4px;font-size:12px;font-family:'JetBrains Mono',monospace">{{marker}}</code>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Version History Panel -->
+              <div v-if="showVersions" class="version-panel">
+                <div class="vp-header">
+                  <span>版本历史</span>
+                  <span style="font-weight:400;font-size:12px;color:#999">共 {{versions.length}} 个版本</span>
+                </div>
+                <div class="version-list">
+                  <div v-for="v in versions" :key="v.id" class="version-item" :class="{current: v.version === selected.version}">
+                    <div class="v-top">
+                      <span class="v-num" :class="{'current-tag': v.version === selected.version}">
+                        v{{v.version}} <span v-if="v.version === selected.version" style="font-size:11px;color:#999;font-weight:400">(当前)</span>
+                      </span>
+                      <span class="v-time">{{v.created_at}}</span>
+                    </div>
+                    <div class="v-log">{{v.change_log || '无备注'}}</div>
+                    <div class="v-actions">
+                      <button class="btn btn-ghost btn-sm" @click="toggleVersionContent(v)">
+                        {{viewingVersion === v.version ? '收起内容' : '查看内容'}}
+                      </button>
+                      <button class="btn btn-outline btn-sm"
+                              @click="rollback(v.version)"
+                              :disabled="v.version === selected.version"
+                              :style="v.version === selected.version ? 'opacity:.4;cursor:not-allowed' : ''">
+                        回滚
+                      </button>
+                      <button class="btn btn-danger btn-sm"
+                              @click="deleteVersion(v)"
+                              :disabled="v.version === selected.version"
+                              :style="v.version === selected.version ? 'opacity:.4;cursor:not-allowed' : ''">
+                        删除
+                      </button>
+                    </div>
+                    <div v-if="viewingVersion === v.version" class="version-content-viewer">
+                      <div class="vcv-header">
+                        <span>v{{v.version}} 内容</span>
+                        <button class="btn btn-sm" style="padding:2px 8px;font-size:11px;background:transparent;border:1px solid #ddd;color:#999" @click="viewingVersion=null">关闭</button>
+                      </div>
+                      <div class="vcv-body">{{v.content}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit/Create Mode -->
+            <div v-if="editing">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>科室</label>
+                  <select v-model="form.department">
+                    <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>平台</label>
+                  <select v-model="form.platform">
+                    <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>场景</label>
+                  <select v-model="form.scene">
+                    <option v-for="s in scenes" :key="s.key" :value="s.key">{{s.label}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>名称</label>
+                <input v-model="form.name" :disabled="!isCreate" placeholder="如: hair_xhs_system">
+              </div>
+              <div class="form-row" style="grid-template-columns:1fr 1fr">
+                <div class="form-group">
+                  <label>描述</label>
+                  <input v-model="form.description" placeholder="简短描述">
+                </div>
+                <div class="form-group">
+                  <label>标签</label>
+                  <input v-model="form.tags" placeholder="逗号分隔，如: 植发,小红书">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>提示词内容</label>
+                <textarea v-model="form.content" placeholder="支持变量占位符：{公司}, {域中文}, {时间}, {轮次}, {套联描述}, {动作描述}, {知识描述}, {暖场描述}"></textarea>
+                <div class="var-bindings-panel">
+                  <div class="vb-title">
+                    <span>变量标记映射</span>
+                    <button class="btn btn-primary btn-sm" @click="addBinding">+ 添加映射</button>
+                  </div>
+                  <div v-for="(b, i) in varBindings" :key="i" class="var-binding-row">
+                    <input v-model="b.name" placeholder="变量名，如: warmup_desc">
+                    <span class="vb-sep">→</span>
+                    <input v-model="b.marker" placeholder="占位符，如: {暖场描述}">
+                    <span class="vb-del" @click="removeBinding(i)">&times;</span>
+                  </div>
+                  <div v-if="!varBindings.length" style="font-size:12px;color:#999">暂无自定义变量映射，点击"添加映射"创建</div>
+                </div>
+                <div class="variable-hint">
+                  内置变量：{公司} {域中文} {域英文} {时间} {轮次} {套联描述} {动作描述} {知识描述} {暖场描述}
+                </div>
+              </div>
+              <div class="form-group" v-if="!isCreate">
+                <label>变更说明</label>
+                <input v-model="form.change_log" placeholder="描述本次修改内容">
+              </div>
+              <div class="actions-bar">
+                <button class="btn btn-ghost" @click="cancelEdit">取消</button>
+                <button class="btn btn-primary" @click="savePrompt">保存</button>
+              </div>
+            </div>
+
+            <!-- Empty -->
+            <div v-if="!editing && !selected" class="empty-state">
+              请从左侧列表选择一个提示词查看，或点击"新建提示词"创建
+            </div>
+          </div>
+        </template>
+
+        <!-- Knowledge Base Mode -->
+        <template v-if="mode === 'knowledge'">
+          <div class="card-header">
+            <div class="title">{{kbIsCreate ? '新建知识库' : '知识库详情'}}</div>
+            <div v-if="!kbIsCreate && kbSelected && (canKnowledgeEdit || canKnowledgeDelete)" style="display:flex;gap:6px;align-items:center">
+              <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="kbShowAddInput=true">+ 新增条目</button>
+              <button v-if="canKnowledgeDelete" class="btn btn-danger btn-sm" @click="deleteKb">删除知识库</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- View/Edit per line -->
+            <div v-if="!kbIsCreate && kbSelected">
+              <div class="meta-row">
+                <div><strong>科室：</strong>{{deptLabel(kbSelected.department)}}</div>
+                <div><strong>平台：</strong>{{platLabel(kbSelected.platform)}}</div>
+                <div><strong>更新：</strong>{{kbSelected.updated_at}}</div>
+              </div>
+              <div class="detail-section">
+                <div class="section-title">知识库内容 <span style="font-weight:400;color:#999">（共 {{kbLines.length}} 条<span v-if="filterKbType || filterKbBotId">，筛选 {{kbFilteredLines.length}} 条</span>）</span></div>
+                <div class="kb-entry-list">
+                  <!-- Add new line at top -->
+                  <div v-if="kbShowAddInput" class="kb-add-row">
+                    <div style="flex:1">
+                      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+                        <label style="font-size:12px;color:#666">知识类型：</label>
+                        <select v-model="kbNewType" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px">
+                          <option v-for="t in kbTypes" :key="t" :value="t">{{t}}</option>
+                        </select>
+                        <label style="font-size:12px;color:#666;margin-left:8px">机器人ID：</label>
+                          <select v-model="kbNewBotId" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px">
+                          <option value="">通用（空）</option>
+                          <option v-for="b in kbBotIds" :key="b" :value="b">{{b}}</option>
+                          <option value="__custom__">自定义...</option>
+                        </select>
+                        <input v-if="kbNewBotId === '__custom__'" v-model="kbNewBotIdCustom" placeholder="输入自定义机器人ID" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px;width:120px">
+                      </div>
+                      <textarea v-model="kbNewLine" placeholder="输入新知识描述..." @keyup.ctrl.enter="addKbLine"></textarea>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-shrink:0;align-items:flex-start">
+                      <button class="btn btn-primary btn-sm" @click="addKbLine">添加</button>
+                      <button class="btn btn-ghost btn-sm" @click="kbShowAddInput=false;kbNewLine=''">取消</button>
+                    </div>
+                  </div>
+                  <div v-for="line in kbPagedLines" :key="line._idx" class="kb-entry">
+                    <template v-if="kbEditingIdx === line._idx">
+                      <div style="flex:1">
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+                          <label style="font-size:12px;color:#666">知识类型：</label>
+                          <select v-model="kbEditingType" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px">
+                            <option v-for="t in kbTypes" :key="t" :value="t">{{t}}</option>
+                          </select>
+                          <label style="font-size:12px;color:#666;margin-left:8px">机器人ID：</label>
+                          <select v-model="kbEditingBotId" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px">
+                            <option value="">通用（空）</option>
+                            <option v-for="b in kbBotIds" :key="b" :value="b">{{b}}</option>
+                            <option value="__custom__">自定义...</option>
+                          </select>
+                          <input v-if="kbEditingBotId === '__custom__'" v-model="kbEditingBotIdCustom" placeholder="输入自定义机器人ID" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px;width:120px">
+                        </div>
+                        <textarea class="kb-entry-input" v-model="kbEditingText" @keyup.ctrl.enter="saveKbLine(line._idx)"></textarea>
+                      </div>
+                      <div style="display:flex;gap:6px;flex-shrink:0;align-items:flex-start">
+                        <button class="btn btn-primary btn-sm" @click="saveKbLine(line._idx)">保存</button>
+                        <button class="btn btn-ghost btn-sm" @click="cancelKbLineEdit">取消</button>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div class="kb-entry-text"><span :class="['tag', kbTypeClass(line.type)]">{{line.type}}</span> <span class="tag tag-botid">{{line.bot_id ? line.bot_id : '通用'}}</span> {{line.text}}</div>
+                      <div v-if="canKnowledgeEdit || canKnowledgeDelete" class="kb-entry-actions">
+                        <button v-if="canKnowledgeEdit" class="btn btn-outline btn-sm" @click="startKbLineEdit(line._idx)">编辑</button>
+                        <button v-if="canKnowledgeDelete" class="btn btn-danger btn-sm" @click="deleteKbLine(line._idx)">删除</button>
+                      </div>
+                    </template>
+                  </div>
+                  <!-- Pagination -->
+                  <div v-if="kbTotalPages > 1" style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px">
+                    <button class="btn btn-ghost btn-sm" :disabled="kbPage === 1" @click="kbPage--">上一页</button>
+                    <span style="font-size:13px;color:#666">第 {{kbPage}} / {{kbTotalPages}} 页</span>
+                    <button class="btn btn-ghost btn-sm" :disabled="kbPage === kbTotalPages" @click="kbPage++">下一页</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Create Mode -->
+            <div v-if="kbIsCreate">
+              <div class="form-row" style="grid-template-columns:1fr 1fr">
+                <div class="form-group">
+                  <label>科室</label>
+                  <select v-model="kbForm.department">
+                    <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>平台</label>
+                  <select v-model="kbForm.platform">
+                    <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="actions-bar">
+                <button class="btn btn-ghost" @click="cancelKbCreate">取消</button>
+                <button class="btn btn-primary" @click="saveKbCreate">创建</button>
+              </div>
+            </div>
+
+            <!-- Empty -->
+            <div v-if="!kbIsCreate && !kbSelected" class="empty-state">
+              请从左侧列表选择一个知识库查看，或点击"新建知识库"创建
+            </div>
+          </div>
+        </template>
+
+        <!-- User Management Mode -->
+        <template v-if="mode === 'users'">
+          <div class="card-header">
+            <div class="title">{{userEditing ? (userIsCreate ? '新建账号' : '编辑账号') : '账户和权限管理'}}</div>
+            <div v-if="!userEditing && userSelected" style="display:flex;gap:6px">
+              <button class="btn btn-primary btn-sm" @click="startUserEdit">编辑</button>
+              <button class="btn btn-danger btn-sm" @click="deleteSelectedUser" :disabled="userSelected.id === currentUser.id || userSelected.username === 'admin'">删除</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div v-if="!userEditing && userSelected">
+              <div class="meta-row">
+                <div><strong>用户名：</strong>{{userSelected.username}}</div>
+                <div><strong>权限：</strong>{{userSelected.role === 'admin' ? '高级权限' : '普通权限'}}</div>
+                <div><strong>状态：</strong>{{userSelected.is_active ? '启用' : '禁用'}}</div>
+                <div><strong>创建：</strong>{{userSelected.created_at}}</div>
+              </div>
+              <div class="detail-section">
+                <div class="section-title">页面权限</div>
+                <div class="permission-matrix">
+                  <div class="pm-row pm-head">
+                    <div class="pm-cell pm-name">页面</div><div class="pm-cell">查看</div><div class="pm-cell">编辑</div><div class="pm-cell">删除</div>
+                  </div>
+                  <div class="pm-row">
+                    <div class="pm-cell pm-name">提示词管理</div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_prompt_view" disabled></div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_prompt_edit" disabled></div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_prompt_delete" disabled></div>
+                  </div>
+                  <div class="pm-row">
+                    <div class="pm-cell pm-name">知识库管理</div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_knowledge_view" disabled></div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_knowledge_edit" disabled></div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_knowledge_delete" disabled></div>
+                  </div>
+                  <div class="pm-row">
+                    <div class="pm-cell pm-name">流程树管理</div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_flow_view" disabled></div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_flow_edit" disabled></div>
+                    <div class="pm-cell"><input type="checkbox" :checked="userSelected.can_flow_delete" disabled></div>
+                  </div>
+                </div>
+              </div>
+              <div class="detail-section">
+                <div class="section-title">权限说明</div>
+                <div class="content-box" style="font-family:inherit;white-space:normal">
+                  高级权限账号可查看右上角小人图标，并进入本页面增删账号、修改密码、修改权限等级；普通账号不可见该入口。各管理页面查看权限默认开启；有编辑权限才显示对应页面的新增、编辑、上传、重新解析等按钮；有删除权限才显示对应页面删除按钮；只有查看权限时对应操作按钮均不显示。
+                </div>
+              </div>
+            </div>
+            <div v-if="userEditing">
+              <div class="form-group">
+                <label>用户名</label>
+                <input v-model="userForm.username" :disabled="!userIsCreate" placeholder="请输入用户名">
+              </div>
+              <div class="form-group">
+                <label>{{userIsCreate ? '密码' : '新密码（留空不修改）'}}</label>
+                <input v-model="userForm.password" type="password" placeholder="至少 6 位">
+              </div>
+              <div class="form-row" style="grid-template-columns:1fr 1fr">
+                <div class="form-group">
+                  <label>权限等级</label>
+                  <select v-model="userForm.role">
+                    <option value="admin">高级权限</option>
+                    <option value="normal">普通权限</option>
+                  </select>
+                </div>
+                <div class="form-group" v-if="!userIsCreate">
+                  <label>账号状态</label>
+                  <select v-model="userForm.is_active">
+                    <option :value="true">启用</option>
+                    <option :value="false">禁用</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>页面权限</label>
+                <div class="permission-matrix">
+                  <div class="pm-row pm-head">
+                    <div class="pm-cell pm-name">页面</div><div class="pm-cell">查看</div><div class="pm-cell">编辑</div><div class="pm-cell">删除</div>
+                  </div>
+                  <div class="pm-row">
+                    <div class="pm-cell pm-name">提示词管理</div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_prompt_view"></div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_prompt_edit"></div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_prompt_delete"></div>
+                  </div>
+                  <div class="pm-row">
+                    <div class="pm-cell pm-name">知识库管理</div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_knowledge_view"></div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_knowledge_edit"></div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_knowledge_delete"></div>
+                  </div>
+                  <div class="pm-row">
+                    <div class="pm-cell pm-name">流程树管理</div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_flow_view"></div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_flow_edit"></div>
+                    <div class="pm-cell"><input type="checkbox" v-model="userForm.can_flow_delete"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="actions-bar">
+                <button class="btn btn-ghost" @click="cancelUserEdit">取消</button>
+                <button class="btn btn-primary" @click="saveUser">保存</button>
+              </div>
+            </div>
+            <div v-if="!userEditing && !userSelected" class="empty-state">
+              请从左侧选择账号查看，或点击"新建账号"创建
+            </div>
+          </div>
+        </template>
+
+        <!-- Flow Tree Mode -->
+        <template v-if="mode === 'flow'">
+          <div class="card-header">
+            <div class="title">{{ftIsCreate ? '新建流程树库' : (ftEditingRecord ? '编辑流程记录' : '流程树库详情')}}</div>
+            <div v-if="!ftIsCreate && !ftEditingRecord && ftSelected && (canFlowEdit || canFlowDelete)" style="display:flex;gap:6px;align-items:center">
+              <button v-if="canFlowEdit" class="btn btn-success btn-sm" @click="ftUploadShow = true">上传解析</button>
+              <button v-if="canFlowDelete" class="btn btn-danger btn-sm" @click="deleteFlowTree">删除流程树库</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- View: Flow tree detail + records list -->
+            <div v-if="!ftIsCreate && ftSelected && !ftEditingRecord">
+              <div class="meta-row">
+                <div><strong>科室：</strong>{{deptLabel(ftSelected.department)}}</div>
+                <div><strong>平台：</strong>{{platLabel(ftSelected.platform)}}</div>
+                <div><strong>更新：</strong>{{ftSelected.updated_at}}</div>
+                <div><strong>解析记录：</strong>{{ftRecords.length}} 条</div>
+              </div>
+
+
+
+              <!-- Records list -->
+              <div class="detail-section">
+                <div class="section-title">解析记录 <span style="font-weight:400;color:#999">（共 {{ftRecords.length}} 条）</span></div>
+                <div v-if="!ftRecords.length" style="font-size:13px;color:#999;padding:12px 0">暂无解析记录<span v-if="canFlowEdit">，点击"上传解析"上传流程树图片</span></div>
+                <div class="kb-entry-list" style="overflow-y:auto">  <!-- max-height:400px; -->
+                  <div v-for="r in ftPagedRecords" :key="r.id" class="kb-entry">
+                    <template v-if="ftEditingRecordId === r.id">
+                      <div style="flex:1">
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+                          <label style="font-size:12px;color:#666">机器人ID：</label>
+                          <select v-model="ftEditBotId" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px">
+                            <option value="">通用（空）</option>
+                            <option v-for="b in kbBotIds" :key="b" :value="b">{{b}}</option>
+                            <option value="__custom__">自定义...</option>
+                          </select>
+                          <input v-if="ftEditBotId === '__custom__'" v-model="ftEditBotIdCustom" placeholder="输入自定义机器人ID" style="padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px;width:120px">
+                        </div>
+                        <div style="margin-bottom:6px;font-size:12px;color:#666">自然语言描述：</div>
+                        <textarea class="kb-entry-input" v-model="ftEditDesc" style="min-height:100px"></textarea>
+                      </div>
+                      <div style="display:flex;gap:6px;flex-shrink:0;align-items:flex-start">
+                        <button class="btn btn-primary btn-sm" @click="ftSaveRecord(r)">保存</button>
+                        <button class="btn btn-ghost btn-sm" @click="ftCancelEditRecord">取消</button>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div style="flex:1">
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+                          <span style="font-weight:600;font-size:13px;color:#2c3e50">{{r.file_name}}</span>
+                          <span class="tag tag-file">{{r.file_type}}</span>
+                          <span class="tag tag-botid">{{r.bot_id ? r.bot_id : '通用'}}</span>
+                          <span :class="['badge', r.status === 'success' ? 'badge-green' : (r.status === 'failed' ? 'badge-gray' : (r.status === 'parsing' ? 'badge-gray' : 'badge-gray'))]"
+                                :style="r.status === 'failed' ? 'background:#fff2f0;color:#ff4d4f' : (r.status === 'parsing' ? 'background:#e8f0fe;color:#4a90d9' : (r.status === 'pending' ? 'background:#fffbe6;color:#faad14' : ''))">
+                            {{r.status === 'success' ? '解析成功' : (r.status === 'failed' ? '解析失败' : (r.status === 'parsing' ? '解析中...' : '待解析'))}}
+                          </span>
+                          <span style="font-size:11px;color:#bbb">{{r.created_at}}</span>
+                        </div>
+                        <div v-if="r.description" style="font-size:12px;color:#666;line-height:1.6;white-space:pre-wrap;margin-top:4px;background:#f8f9fb;padding:10px;border-radius:6px;max-height:200px;overflow-y:auto">{{r.description}}</div>
+                        <div v-if="r.error" style="font-size:12px;color:#ff4d4f;margin-top:4px">错误：{{r.error}}</div>
+                      </div>
+                      <div v-if="canFlowEdit || canFlowDelete" class="kb-entry-actions">
+                        <button v-if="canFlowEdit" class="btn btn-outline btn-sm" @click="ftStartEditRecord(r)">编辑描述</button>
+                        <button class="btn btn-primary btn-sm" v-if="canFlowEdit && r.status !== 'success' && r.status !== 'parsing'" @click="ftReparse(r)">重新解析</button>
+                        <button v-if="canFlowDelete" class="btn btn-danger btn-sm" @click="ftDeleteRecord(r)">删除</button>
+                      </div>
+                    </template>
+                  </div>
+                  <!-- Pagination -->
+                  <div v-if="ftTotalPages > 1" style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px">
+                    <button class="btn btn-ghost btn-sm" :disabled="ftPage === 1" @click="ftPage--">上一页</button>
+                    <span style="font-size:13px;color:#666">第 {{ftPage}} / {{ftTotalPages}} 页</span>
+                    <button class="btn btn-ghost btn-sm" :disabled="ftPage === ftTotalPages" @click="ftPage++">下一页</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Create Mode -->
+            <div v-if="ftIsCreate">
+              <div class="form-row" style="grid-template-columns:1fr 1fr">
+                <div class="form-group">
+                  <label>科室</label>
+                  <select v-model="ftForm.department">
+                    <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>平台</label>
+                  <select v-model="ftForm.platform">
+                    <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>描述（可选）</label>
+                <input v-model="ftForm.description" placeholder="流程树库描述">
+              </div>
+              <div class="actions-bar">
+                <button class="btn btn-ghost" @click="ftCancelCreate">取消</button>
+                <button class="btn btn-primary" @click="ftSaveCreate">创建</button>
+              </div>
+            </div>
+
+            <!-- Empty -->
+            <div v-if="!ftIsCreate && !ftSelected" class="empty-state">
+              请从左侧列表选择一个流程树库查看<span v-if="canFlowEdit">，或点击"新建流程树库"创建</span>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Toast -->
+  <div v-if="toast.show" :class="['toast', 'toast-'+toast.type, ftParsingToast ? 'toast-parsing' : '']">{{toast.msg}}</div>
+  </template>
+</div>
+
+<script>
+const {createApp, ref, reactive, onMounted} = Vue;
+
+createApp({
+  setup() {
+    const API = '';
+    const authToken = ref(localStorage.getItem('pm_token') || '');
+    const currentUser = ref(JSON.parse(localStorage.getItem('pm_user') || 'null'));
+    const isAuthed = Vue.computed(() => !!authToken.value && !!currentUser.value);
+    const isAdmin = Vue.computed(() => currentUser.value && currentUser.value.role === 'admin');
+    const loginLoading = ref(false);
+    const loginError = ref('');
+    const loginForm = reactive({username: '', password: ''});
+
+    function authHeaders(extra={}) {
+      return authToken.value ? {...extra, Authorization: 'Bearer ' + authToken.value} : extra;
+    }
+
+    // Mode
+    const mode = ref('prompt'); // 'prompt' | 'knowledge' | 'flow' | 'users'
+
+    // Prompt data
+    const prompts = ref([]);
+    const total = ref(0);
+    const selected = ref(null);
+    const versions = ref([]);
+    const showVersions = ref(false);
+    const viewingVersion = ref(null);
+    const editing = ref(false);
+    const isCreate = ref(false);
+    const departments = ref([]);
+    const platforms = ref([]);
+    const scenes = ref([]);
+    const filterDept = ref('');
+    const filterPlat = ref('');
+    const filterScene = ref('');
+    const keyword = ref('');
+    const toast = reactive({show: false, msg: '', type: 'info'});
+
+    // Settings (LLM API config) —— 多版本管理
+    const settingsOpen = ref(false);
+    const llmVersions = ref([]);
+    const llmEditShow = ref(false);
+    const llmEditIsNew = ref(false);
+    const llmEditId = ref(null);
+    const llmEditForm = reactive({name: '', base_url: '', api_key: '', model_name: ''});
+    const llmEditAndActivate = ref(true);
+
+    const form = reactive({
+      name: '', department: 'general', platform: 'general', scene: 'system_prompt',
+      content: '', description: '', tags: '', change_log: '', variable_bindings: '{}'
+    });
+    const varBindings = ref([]);
+
+    // Knowledge base data
+    const kbList = ref([]);
+    const kbTotal = ref(0);
+    const kbSelected = ref(null);
+    const kbIsCreate = ref(false);
+    const kbForm = reactive({
+      department: 'general', platform: 'general'
+    });
+    const kbLines = ref([]);
+    const kbEditingIdx = ref(-1);
+    const kbEditingText = ref('');
+    const kbShowAddInput = ref(false);
+    const kbNewLine = ref('');
+    const kbPage = ref(1);
+    const kbPageSize = 10;
+    const kbTypes = ref(["答疑", "问诊", "套联", "流程", "默认认知", "额外", "问诊约束", "答疑约束", "套联约束", "核心约束", "违禁词"]);
+    const filterKbType = ref('');
+    const kbNewType = ref('答疑');
+    const kbEditingType = ref('答疑');
+    const kbBotIds = ref(["7422", "8714", "8686", "8542", "8771", "9125", "9378", "10122", "10569", "9352", "9358", "9682", "12689"]);
+    const filterKbBotId = ref('');
+    const kbNewBotId = ref('');
+    const kbEditingBotId = ref('');
+    const kbNewBotIdCustom = ref('');
+    const kbEditingBotIdCustom = ref('');
+
+    function kbTypeClass(type) {
+      const map = {
+        '答疑': 'tag-kbtype-qa',
+        '问诊': 'tag-kbtype-consult',
+        '套联': 'tag-kbtype-connect',
+        '流程': 'tag-kbtype-flow',
+        '默认认知': 'tag-kbtype-default',
+        '额外': 'tag-kbtype-extra',
+        '问诊约束': 'tag-kbtype-constraint-consult',
+        '答疑约束': 'tag-kbtype-constraint-qa',
+        '套联约束': 'tag-kbtype-constraint-connect',
+        '核心约束': 'tag-kbtype-core',
+        '违禁词': 'tag-kbtype-forbidden',
+      };
+      return map[type] || 'tag-kbtype-qa';
+    }
+
+    // Flow tree data
+    const ftList = ref([]);
+    const ftTotal = ref(0);
+    const ftSelected = ref(null);
+    const ftIsCreate = ref(false);
+    const ftForm = reactive({department: 'general', platform: 'general', description: ''});
+    const ftRecords = ref([]);
+    const ftUploadShow = ref(false);
+    const ftUploadFile = ref(null);
+    const ftEditingRecord = ref(false);
+    const ftEditingRecordId = ref(-1);
+    const ftEditDesc = ref('');
+    const ftEditBotId = ref('');
+    const ftEditBotIdCustom = ref('');
+    const ftPage = ref(1);
+    const ftPageSize = 5;
+    const filterFtBotId = ref('');
+    const ftUploadBotId = ref('');
+    const ftUploadBotIdCustom = ref('');
+    const ftParsingToast = ref(false); // 是否正在显示解析状态弹窗
+
+    // User management data
+    const userList = ref([]);
+    const userSelected = ref(null);
+    const userEditing = ref(false);
+    const userIsCreate = ref(false);
+    const userForm = reactive({
+      username: '', password: '', role: 'normal', is_active: true,
+      can_prompt_view: true, can_prompt_edit: false, can_prompt_delete: false,
+      can_knowledge_view: true, can_knowledge_edit: false, can_knowledge_delete: false,
+      can_flow_view: true, can_flow_edit: false, can_flow_delete: false
+    });
+    const canPromptView = Vue.computed(() => !!currentUser.value?.can_prompt_view);
+    const canPromptEdit = Vue.computed(() => !!currentUser.value?.can_prompt_edit);
+    const canPromptDelete = Vue.computed(() => !!currentUser.value?.can_prompt_delete);
+    const canKnowledgeView = Vue.computed(() => !!currentUser.value?.can_knowledge_view);
+    const canKnowledgeEdit = Vue.computed(() => !!currentUser.value?.can_knowledge_edit);
+    const canKnowledgeDelete = Vue.computed(() => !!currentUser.value?.can_knowledge_delete);
+    const canFlowView = Vue.computed(() => !!currentUser.value?.can_flow_view);
+    const canFlowEdit = Vue.computed(() => !!currentUser.value?.can_flow_edit);
+    const canFlowDelete = Vue.computed(() => !!currentUser.value?.can_flow_delete);
+
+    function addBinding() { varBindings.value.push({name: '', marker: ''}); }
+    function removeBinding(i) { varBindings.value.splice(i, 1); }
+    function bindingsToJson() {
+      const obj = {};
+      for (const b of varBindings.value) {
+        if (b.name && b.marker) obj[b.name] = b.marker;
+      }
+      return JSON.stringify(obj);
+    }
+    function jsonToBindings(json) {
+      try {
+        const obj = JSON.parse(json || '{}');
+        varBindings.value = Object.entries(obj).map(([name, marker]) => ({name, marker}));
+      } catch { varBindings.value = []; }
+    }
+    function parseBindings(json) {
+      try { return JSON.parse(json || '{}'); } catch { return {}; }
+    }
+
+    function showToast(msg, type='info') {
+      toast.msg = msg; toast.type = type; toast.show = true;
+      if (!ftParsingToast.value) {
+        setTimeout(() => toast.show = false, 2500);
+      }
+    }
+
+    async function login() {
+      if (!loginForm.username || !loginForm.password) {
+        loginError.value = '请输入用户名和密码'; return;
+      }
+      loginLoading.value = true;
+      loginError.value = '';
+      try {
+        const r = await fetch(API + '/api/auth/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(loginForm)
+        });
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || '登录失败');
+        const data = await r.json();
+        authToken.value = data.token;
+        currentUser.value = data.user;
+        localStorage.setItem('pm_token', data.token);
+        localStorage.setItem('pm_user', JSON.stringify(data.user));
+        document.cookie = `pm_token=${data.token}; path=/; SameSite=Lax`;
+        await initAfterLogin();
+      } catch(e) {
+        loginError.value = e.message;
+      } finally {
+        loginLoading.value = false;
+      }
+    }
+
+    async function logout() {
+      if (authToken.value) {
+        await fetch(API + '/api/auth/logout', {method: 'POST', headers: authHeaders()}).catch(() => {});
+      }
+      authToken.value = '';
+      currentUser.value = null;
+      localStorage.removeItem('pm_token');
+      localStorage.removeItem('pm_user');
+      document.cookie = 'pm_token=; path=/; max-age=0; SameSite=Lax';
+      mode.value = 'prompt';
+    }
+
+    async function checkAuth() {
+      if (!authToken.value) return false;
+      const r = await fetch(API + '/api/auth/me', {headers: authHeaders()}).catch(() => null);
+      if (!r || !r.ok) {
+        await logout();
+        return false;
+      }
+      currentUser.value = await r.json();
+      localStorage.setItem('pm_user', JSON.stringify(currentUser.value));
+      document.cookie = `pm_token=${authToken.value}; path=/; SameSite=Lax`;
+      return true;
+    }
+
+    async function api(path, opts={}) {
+      try {
+        const r = await fetch(API + path, {
+          ...opts,
+          headers: authHeaders({'Content-Type': 'application/json', ...(opts.headers || {})})
+        });
+        if (r.status === 401) { await logout(); throw new Error('登录已过期，请重新登录'); }
+        if (!r.ok) throw new Error(await r.text());
+        return await r.json();
+      } catch(e) {
+        showToast('请求失败: ' + e.message, 'error');
+        return null;
+      }
+    }
+
+    async function loadMeta() {
+      const [d, p, s, kt, bi] = await Promise.all([
+        api('/api/meta/departments'), api('/api/meta/platforms'), api('/api/meta/scenes'),
+        api('/api/meta/kb_types'), api('/api/meta/bot_ids')
+      ]);
+      if (d) departments.value = d.departments;
+      if (p) platforms.value = p.platforms;
+      if (s) scenes.value = s.scenes;
+      if (kt && kt.kb_types) kbTypes.value = kt.kb_types;
+      if (bi && bi.bot_ids) kbBotIds.value = bi.bot_ids.filter(b => b !== '');
+    }
+
+    async function reloadBotIds() {
+      const bi = await api('/api/meta/bot_ids');
+      if (bi && bi.bot_ids) kbBotIds.value = bi.bot_ids.filter(b => b !== '');
+    }
+
+    async function loadList() {
+      const params = new URLSearchParams();
+      if (filterDept.value) params.set('department', filterDept.value);
+      if (filterPlat.value) params.set('platform', filterPlat.value);
+      if (filterScene.value) params.set('scene', filterScene.value);
+      if (keyword.value) params.set('keyword', keyword.value);
+      const r = await api('/api/prompts?' + params.toString());
+      if (r) { prompts.value = r.items; total.value = r.total; }
+    }
+
+    async function loadKbList() {
+      const params = new URLSearchParams();
+      if (keyword.value) {
+        params.set('keyword', keyword.value);
+      } else {
+        if (filterDept.value) params.set('department', filterDept.value);
+        if (filterPlat.value) params.set('platform', filterPlat.value);
+      }
+      const r = await api('/api/knowledge?' + params.toString());
+      if (r) {
+        kbList.value = r.items;
+        kbTotal.value = r.total;
+        if (keyword.value && r.items.length) {
+          selectKb(r.items[0], {keepKeyword: true});
+        } else if (kbSelected.value) {
+          const current = r.items.find(k => k.id === kbSelected.value.id);
+          if (current) selectKb(current, {keepKeyword: true});
+          else kbSelected.value = null;
+        }
+      }
+    }
+
+    async function loadFtList() {
+      const params = new URLSearchParams();
+      if (keyword.value) {
+        params.set('keyword', keyword.value);
+      } else {
+        if (filterDept.value) params.set('department', filterDept.value);
+        if (filterPlat.value) params.set('platform', filterPlat.value);
+      }
+      if (filterFtBotId.value) params.set('bot_id', filterFtBotId.value);
+      const r = await api('/api/flow_trees?' + params.toString());
+      if (r) {
+        ftList.value = r.items;
+        ftTotal.value = r.total;
+        if (keyword.value && r.items.length) {
+          await selectFlowTree(r.items[0], {keepKeyword: true});
+        } else if (ftSelected.value) {
+          const current = r.items.find(ft => ft.id === ftSelected.value.id);
+          if (current) await selectFlowTree(current, {keepKeyword: true});
+          else { ftSelected.value = null; ftRecords.value = []; }
+        }
+      }
+    }
+
+    async function loadUsers() {
+      const r = await api('/api/users');
+      if (r) userList.value = r;
+    }
+
+    function onFilterChange() {
+      if (mode.value === 'prompt' && canPromptView.value) loadList();
+      else if (mode.value === 'knowledge' && canKnowledgeView.value) loadKbList();
+      else if (mode.value === 'flow' && canFlowView.value) loadFtList();
+      else if (mode.value === 'users') loadUsers();
+    }
+
+    function switchMode(newMode) {
+      if (newMode === 'users' && !isAdmin.value) return;
+      if (newMode === 'prompt' && !canPromptView.value) return;
+      if (newMode === 'knowledge' && !canKnowledgeView.value) return;
+      if (newMode === 'flow' && !canFlowView.value) return;
+      mode.value = newMode;
+      selected.value = null;
+      kbSelected.value = null;
+      ftSelected.value = null;
+      userSelected.value = null;
+      editing.value = false;
+      kbIsCreate.value = false;
+      ftIsCreate.value = false;
+      userEditing.value = false;
+      ftEditingRecord.value = false;
+      ftEditingRecordId.value = -1;
+      showVersions.value = false;
+      viewingVersion.value = null;
+      if (newMode === 'prompt' && canPromptView.value) loadList();
+      else if (newMode === 'knowledge' && canKnowledgeView.value) loadKbList();
+      else if (newMode === 'flow' && canFlowView.value) loadFtList();
+      else if (newMode === 'users') loadUsers();
+    }
+
+    const leftTitle = Vue.computed(() => mode.value === 'prompt' ? '提示词列表' : (mode.value === 'knowledge' ? '知识库列表' : (mode.value === 'flow' ? '流程树库列表' : '账户列表')));
+    const leftTotal = Vue.computed(() => mode.value === 'prompt' ? total.value : (mode.value === 'knowledge' ? kbTotal.value : (mode.value === 'flow' ? ftTotal.value : userList.value.length)));
+
+    function deptLabel(k) { return departments.value.find(d=>d.key===k)?.label || k; }
+    function platLabel(k) { return platforms.value.find(p=>p.key===k)?.label || k; }
+    function sceneLabel(k) { return scenes.value.find(s=>s.key===k)?.label || k; }
+
+    async function selectPrompt(p) {
+      selected.value = p;
+      editing.value = false;
+      showVersions.value = false;
+      viewingVersion.value = null;
+      const r = await api(`/api/prompts/${p.id}/versions`);
+      if (r) versions.value = r;
+    }
+
+    function toggleVersions() {
+      showVersions.value = !showVersions.value;
+      if (!showVersions.value) viewingVersion.value = null;
+    }
+
+    function toggleVersionContent(v) {
+      viewingVersion.value = viewingVersion.value === v.version ? null : v.version;
+    }
+
+    function openCreate() {
+      if (mode.value === 'prompt') {
+        isCreate.value = true; editing.value = true;
+        Object.assign(form, {
+          name:'', department:'general', platform:'general', scene:'system_prompt',
+          content:'', description:'', tags:'', change_log:'', variable_bindings:'{}'
+        });
+        varBindings.value = [];
+      } else if (mode.value === 'knowledge') {
+        kbIsCreate.value = true;
+        Object.assign(kbForm, {department:'general', platform:'general'});
+      } else {
+        ftIsCreate.value = true;
+        ftSelected.value = null;
+        Object.assign(ftForm, {department:'general', platform:'general', description:''});
+      }
+    }
+
+    function startEdit() {
+      if (!selected.value) return;
+      isCreate.value = false; editing.value = true;
+      Object.assign(form, {
+        name: selected.value.name, department: selected.value.department,
+        platform: selected.value.platform, scene: selected.value.scene,
+        content: selected.value.content, description: selected.value.description,
+        tags: selected.value.tags, change_log: '', variable_bindings: selected.value.variable_bindings || '{}'
+      });
+      jsonToBindings(selected.value.variable_bindings || '{}');
+    }
+
+    function cancelEdit() { editing.value = false; }
+
+    async function savePrompt() {
+      if (!form.name || !form.content) {
+        showToast('名称和内容不能为空', 'error'); return;
+      }
+      const bindingsJson = bindingsToJson();
+      if (isCreate.value) {
+        const r = await api('/api/prompts', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: form.name, department: form.department, platform: form.platform,
+            scene: form.scene, content: form.content, description: form.description,
+            tags: form.tags, variable_bindings: bindingsJson
+          })
+        });
+        if (r) {
+          showToast('创建成功！', 'success');
+          editing.value = false;
+          await loadList();
+          selectPrompt(r);
+        }
+      } else {
+        const r = await api(`/api/prompts/${selected.value.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            content: form.content, description: form.description,
+            tags: form.tags, change_log: form.change_log,
+            variable_bindings: bindingsJson
+          })
+        });
+        if (r) {
+          showToast('更新成功！', 'success');
+          editing.value = false;
+          selected.value = r;
+          await loadList();
+        }
+      }
+    }
+
+    async function deletePrompt() {
+      if (!selected.value) return;
+      if (!confirm(`确定删除 "${selected.value.name}"？`)) return;
+      const r = await api(`/api/prompts/${selected.value.id}`, {method: 'DELETE'});
+      if (r) {
+        showToast('已删除', 'success');
+        selected.value = null;
+        await loadList();
+      }
+    }
+
+    async function rollback(targetVersion) {
+      if (!confirm(`确定回滚到 v${targetVersion}？`)) return;
+      const r = await api(`/api/prompts/${selected.value.id}/rollback`, {
+        method: 'POST',
+        body: JSON.stringify({target_version: targetVersion})
+      });
+      if (r) {
+        showToast(`已回滚到 v${targetVersion}`, 'success');
+        selected.value = r;
+        viewingVersion.value = null;
+        await loadList();
+        await selectPrompt(r);
+      }
+    }
+
+    async function deleteVersion(v) {
+      if (!selected.value || !v || !v.id) return;
+      if (v.version === selected.value.version) {
+        showToast('不能删除当前版本', 'error'); return;
+      }
+      if (!confirm(`确定删除版本 v${v.version} 的历史记录？此操作不可恢复。`)) return;
+      const r = await api(`/api/prompts/${selected.value.id}/versions/${v.id}`, {method: 'DELETE'});
+      if (r) {
+        showToast(`版本 v${v.version} 已删除`, 'success');
+        if (viewingVersion.value === v.version) viewingVersion.value = null;
+        const vr = await api(`/api/prompts/${selected.value.id}/versions`);
+        if (vr) {
+          versions.value = vr;
+          if (versions.value.length <= 1) showVersions.value = false;
+        }
+      }
+    }
+
+    // Knowledge base functions
+    function kbContentLines(contentJson) {
+      try {
+        const arr = JSON.parse(contentJson || '[]');
+        if (!Array.isArray(arr)) return [];
+        return arr.map(item => {
+          if (typeof item === 'string') return {text: item, type: '答疑', bot_id: '9378'};
+          return {text: item.text || '', type: item.type || '答疑', bot_id: item.bot_id == null ? '' : String(item.bot_id).trim()};
+        });
+      } catch { return []; }
+    }
+
+    function selectKb(k, options={}) {
+      kbSelected.value = k;
+      kbIsCreate.value = false;
+      kbEditingIdx.value = -1;
+      kbShowAddInput.value = false;
+      kbNewLine.value = '';
+      kbNewType.value = '答疑';
+      kbNewBotId.value = '';
+      kbNewBotIdCustom.value = '';
+      kbPage.value = 1;
+      if (!options.keepKeyword) {
+        filterKbType.value = '';
+        filterKbBotId.value = '';
+      }
+      kbLines.value = kbContentLines(k.content);
+    }
+
+    function cancelKbCreate() { kbIsCreate.value = false; }
+
+    async function saveKbCreate() {
+      const r = await api('/api/knowledge', {
+        method: 'POST',
+        body: JSON.stringify({
+          department: kbForm.department,
+          platform: kbForm.platform,
+          content: '[]'
+        })
+      });
+      if (r) {
+        showToast('创建成功！', 'success');
+        kbIsCreate.value = false;
+        await loadKbList();
+        selectKb(r);
+      }
+    }
+
+    function startKbLineEdit(idx) {
+      kbEditingIdx.value = idx;
+      const entry = kbLines.value[idx];
+      kbEditingText.value = entry.text || entry;
+      kbEditingType.value = entry.type || '答疑';
+      const bid = entry.bot_id == null ? '' : String(entry.bot_id).trim();
+      if (bid === '' || kbBotIds.value.includes(bid)) {
+        kbEditingBotId.value = bid;
+        kbEditingBotIdCustom.value = '';
+      } else {
+        kbEditingBotId.value = '__custom__';
+        kbEditingBotIdCustom.value = bid;
+      }
+    }
+
+    function cancelKbLineEdit() {
+      kbEditingIdx.value = -1;
+      kbEditingText.value = '';
+      kbEditingType.value = '答疑';
+      kbEditingBotId.value = '';
+      kbEditingBotIdCustom.value = '';
+    }
+
+    async function saveKbLine(idx) {
+      if (!kbEditingText.value.trim()) {
+        showToast('内容不能为空', 'error');
+        return;
+      }
+      const finalBotId = kbEditingBotId.value === '__custom__' ? kbEditingBotIdCustom.value.trim() : kbEditingBotId.value;
+      kbLines.value[idx] = {text: kbEditingText.value.trim(), type: kbEditingType.value, bot_id: finalBotId};
+      kbEditingIdx.value = -1;
+      kbEditingText.value = '';
+      kbEditingType.value = '答疑';
+      kbEditingBotId.value = '';
+      kbEditingBotIdCustom.value = '';
+      await _saveKbLines();
+    }
+
+    async function deleteKbLine(idx) {
+      if (!confirm('确定删除这条知识记录？')) return;
+      kbLines.value.splice(idx, 1);
+      await _saveKbLines();
+    }
+
+    async function addKbLine() {
+      if (!kbNewLine.value.trim()) {
+        showToast('内容不能为空', 'error');
+        return;
+      }
+      const finalBotId = kbNewBotId.value === '__custom__' ? kbNewBotIdCustom.value.trim() : kbNewBotId.value;
+      kbLines.value.unshift({text: kbNewLine.value.trim(), type: kbNewType.value, bot_id: finalBotId});
+      kbNewLine.value = '';
+      kbNewType.value = '答疑';
+      kbNewBotId.value = '';
+      kbNewBotIdCustom.value = '';
+      kbShowAddInput.value = false;
+      kbPage.value = 1;
+      await _saveKbLines();
+    }
+
+    async function _saveKbLines() {
+      const contentJson = JSON.stringify(kbLines.value);
+      const r = await api(`/api/knowledge/${kbSelected.value.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({content: contentJson})
+      });
+      if (r) {
+        showToast('保存成功', 'success');
+        kbSelected.value = r;
+        await loadKbList();
+        await reloadBotIds();
+      }
+    }
+
+    async function deleteKb() {
+      if (!kbSelected.value) return;
+      if (!confirm(`确定删除 ${deptLabel(kbSelected.value.department)} - ${platLabel(kbSelected.value.platform)} 的知识库？`)) return;
+      const r = await api(`/api/knowledge/${kbSelected.value.id}`, {method: 'DELETE'});
+      if (r) {
+        showToast('已删除', 'success');
+        kbSelected.value = null;
+        await loadKbList();
+      }
+    }
+
+    // ==================== Flow Tree functions ====================
+    async function selectFlowTree(ft, options={}) {
+      ftSelected.value = ft;
+      ftIsCreate.value = false;
+      ftEditingRecord.value = false;
+      ftEditingRecordId.value = -1;
+      ftUploadShow.value = false;
+      ftUploadFile.value = null;
+      ftUploadBotId.value = '';
+      ftUploadBotIdCustom.value = '';
+      ftPage.value = 1;
+      await loadFtRecords(ft.id);
+    }
+
+    async function loadFtRecords(flowId) {
+      const params = new URLSearchParams();
+      if (filterFtBotId.value) params.set('bot_id', filterFtBotId.value);
+      const query = params.toString();
+      const r = await api(`/api/flow_trees/${flowId}/records${query ? '?' + query : ''}`);
+      if (r) ftRecords.value = r.items;
+    }
+
+    function ftCancelCreate() { ftIsCreate.value = false; }
+
+    async function ftSaveCreate() {
+      const r = await api('/api/flow_trees', {
+        method: 'POST',
+        body: JSON.stringify({
+          department: ftForm.department,
+          platform: ftForm.platform,
+          description: ftForm.description
+        })
+      });
+      if (r) {
+        showToast('创建成功！', 'success');
+        ftIsCreate.value = false;
+        await loadFtList();
+        selectFlowTree(r);
+      }
+    }
+
+    async function deleteFlowTree() {
+      if (!ftSelected.value) return;
+      if (!confirm(`确定删除 ${deptLabel(ftSelected.value.department)} - ${platLabel(ftSelected.value.platform)} 的流程树库？所有解析记录会被一起删除。`)) return;
+      const r = await api(`/api/flow_trees/${ftSelected.value.id}`, {method: 'DELETE'});
+      if (r) {
+        showToast('已删除', 'success');
+        ftSelected.value = null;
+        ftRecords.value = [];
+        await loadFtList();
+      }
+    }
+
+    function ftOnFileChange(e) {
+      ftUploadFile.value = e.target.files[0] || null;
+    }
+
+    function ftCancelUpload() {
+      ftUploadShow.value = false;
+      ftUploadFile.value = null;
+      ftUploadBotId.value = '';
+      ftUploadBotIdCustom.value = '';
+      // Reset file input
+      const input = document.querySelector('input[type="file"][accept="image/*,.pdf"]');
+      if (input) input.value = '';
+    }
+
+    async function ftUploadFileSubmit() {
+      if (!ftUploadFile.value || !ftSelected.value) return;
+      const fd = new FormData();
+      const finalBotId = ftUploadBotId.value === '__custom__' ? ftUploadBotIdCustom.value.trim() : ftUploadBotId.value;
+      fd.append('file', ftUploadFile.value);
+      fd.append('auto_parse', 'true');
+      fd.append('bot_id', finalBotId);
+      ftUploadShow.value = false;
+      ftUploadFile.value = null;
+      ftUploadBotId.value = '';
+      ftUploadBotIdCustom.value = '';
+
+      try {
+        const r = await fetch(API + `/api/flow_trees/${ftSelected.value.id}/records/upload`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: fd
+        });
+        if (!r.ok) throw new Error(await r.text());
+        const data = await r.json();
+
+        // Show parsing status toast (green, persistent)
+        ftParsingToast.value = true;
+        toast.msg = '正在解析流程树...';
+        toast.type = 'success';
+        toast.show = true;
+
+        // Start polling for status
+        await loadFtRecords(ftSelected.value.id);
+        await loadFtList();
+        await reloadBotIds();
+        ftPollParseStatus(data.id);
+      } catch(e) {
+        showToast('上传失败: ' + e.message, 'error');
+      }
+    }
+
+    async function ftPollParseStatus(recordId) {
+      // Poll every 2 seconds until parsing is done
+      const poll = async () => {
+        try {
+          const r = await fetch(API + `/api/flow_records/${recordId}`, {headers: authHeaders()});
+          if (!r.ok) {
+            ftParsingToast.value = false;
+            toast.show = false;
+            return;
+          }
+          const rec = await r.json();
+          if (rec.status === 'parsing') {
+            // Still parsing, keep toast visible with green color
+            ftParsingToast.value = true;
+            toast.msg = '正在解析流程树...';
+            toast.type = 'success';
+            toast.show = true;
+            setTimeout(poll, 2000);
+          } else {
+            // Parsing complete
+            ftParsingToast.value = false;
+            if (rec.status === 'success') {
+              toast.msg = '解析完成';
+              toast.type = 'success';
+            } else {
+              toast.msg = '解析失败：' + (rec.error || '未知错误');
+              toast.type = 'error';
+            }
+            toast.show = true;
+            // Auto-hide after 2.5s
+            setTimeout(() => { toast.show = false; }, 2500);
+            // Refresh records list
+            await loadFtRecords(ftSelected.value.id);
+            await loadFtList();
+          }
+        } catch(e) {
+          ftParsingToast.value = false;
+          toast.show = false;
+        }
+      };
+      setTimeout(poll, 2000);
+    }
+
+    function ftStartEditRecord(r) {
+      ftEditingRecordId.value = r.id;
+      ftEditDesc.value = r.description || '';
+      const bid = r.bot_id == null ? '' : String(r.bot_id).trim();
+      if (bid === '' || kbBotIds.value.includes(bid)) {
+        ftEditBotId.value = bid;
+        ftEditBotIdCustom.value = '';
+      } else {
+        ftEditBotId.value = '__custom__';
+        ftEditBotIdCustom.value = bid;
+      }
+    }
+
+    function ftCancelEditRecord() {
+      ftEditingRecordId.value = -1;
+      ftEditDesc.value = '';
+      ftEditBotId.value = '';
+      ftEditBotIdCustom.value = '';
+    }
+
+    async function ftSaveRecord(r) {
+      const finalBotId = ftEditBotId.value === '__custom__' ? ftEditBotIdCustom.value.trim() : ftEditBotId.value;
+      const updated = await api(`/api/flow_records/${r.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({description: ftEditDesc.value, bot_id: finalBotId})
+      });
+      if (updated) {
+        showToast('已保存', 'success');
+        ftEditingRecordId.value = -1;
+        ftEditDesc.value = '';
+        ftEditBotId.value = '';
+        ftEditBotIdCustom.value = '';
+        await loadFtRecords(ftSelected.value.id);
+        await reloadBotIds();
+      }
+    }
+
+    async function ftReparse(r) {
+      if (!confirm('重新解析该文件？')) return;
+      // Show parsing status toast (green, persistent)
+      ftParsingToast.value = true;
+      toast.msg = '正在重新解析流程树...';
+      toast.type = 'success';
+      toast.show = true;
+      try {
+        const resp = await fetch(API + `/api/flow_records/${r.id}/reparse`, {method: 'POST', headers: authHeaders()});
+        if (!resp.ok) throw new Error(await resp.text());
+        await loadFtRecords(ftSelected.value.id);
+        ftPollParseStatus(r.id);
+      } catch(e) {
+        ftParsingToast.value = false;
+        showToast('重新解析失败: ' + e.message, 'error');
+      }
+    }
+
+    async function ftDeleteRecord(r) {
+      if (!confirm(`确定删除记录 ${r.file_name}？`)) return;
+      const result = await api(`/api/flow_records/${r.id}`, {method: 'DELETE'});
+      if (result) {
+        showToast('已删除', 'success');
+        await loadFtRecords(ftSelected.value.id);
+        await loadFtList();
+      }
+    }
+
+    // User management functions
+    function selectUser(u) {
+      userSelected.value = u;
+      userEditing.value = false;
+    }
+
+    function openUserCreate() {
+      userIsCreate.value = true;
+      userEditing.value = true;
+      userSelected.value = null;
+      Object.assign(userForm, {
+        username: '', password: '', role: 'normal', is_active: true,
+        can_prompt_view: true, can_prompt_edit: false, can_prompt_delete: false,
+        can_knowledge_view: true, can_knowledge_edit: false, can_knowledge_delete: false,
+        can_flow_view: true, can_flow_edit: false, can_flow_delete: false
+      });
+    }
+
+    function startUserEdit() {
+      if (!userSelected.value) return;
+      userIsCreate.value = false;
+      userEditing.value = true;
+      Object.assign(userForm, {
+        username: userSelected.value.username,
+        password: '',
+        role: userSelected.value.role,
+        can_prompt_view: !!userSelected.value.can_prompt_view,
+        can_prompt_edit: !!userSelected.value.can_prompt_edit,
+        can_prompt_delete: !!userSelected.value.can_prompt_delete,
+        can_knowledge_view: !!userSelected.value.can_knowledge_view,
+        can_knowledge_edit: !!userSelected.value.can_knowledge_edit,
+        can_knowledge_delete: !!userSelected.value.can_knowledge_delete,
+        can_flow_view: !!userSelected.value.can_flow_view,
+        can_flow_edit: !!userSelected.value.can_flow_edit,
+        can_flow_delete: !!userSelected.value.can_flow_delete,
+        is_active: !!userSelected.value.is_active
+      });
+    }
+
+    function cancelUserEdit() { userEditing.value = false; }
+
+    async function saveUser() {
+      if (userIsCreate.value && (!userForm.username || !userForm.password)) {
+        showToast('用户名和密码不能为空', 'error'); return;
+      }
+      const pagePerms = {
+        can_prompt_view: userForm.can_prompt_view,
+        can_prompt_edit: userForm.can_prompt_edit,
+        can_prompt_delete: userForm.can_prompt_delete,
+        can_knowledge_view: userForm.can_knowledge_view,
+        can_knowledge_edit: userForm.can_knowledge_edit,
+        can_knowledge_delete: userForm.can_knowledge_delete,
+        can_flow_view: userForm.can_flow_view,
+        can_flow_edit: userForm.can_flow_edit,
+        can_flow_delete: userForm.can_flow_delete
+      };
+      const payload = userIsCreate.value
+        ? {username: userForm.username, password: userForm.password, role: userForm.role, ...pagePerms}
+        : {role: userForm.role, is_active: userForm.is_active, ...pagePerms};
+      if (!userIsCreate.value && userForm.password) payload.password = userForm.password;
+      const r = await api(userIsCreate.value ? '/api/users' : `/api/users/${userSelected.value.id}`, {
+        method: userIsCreate.value ? 'POST' : 'PUT',
+        body: JSON.stringify(payload)
+      });
+      if (r) {
+        showToast('账号已保存', 'success');
+        userEditing.value = false;
+        await loadUsers();
+        selectUser(r);
+      }
+    }
+
+    async function deleteSelectedUser() {
+      if (!userSelected.value) return;
+      if (!confirm(`确定删除账号 ${userSelected.value.username}？`)) return;
+      const r = await api(`/api/users/${userSelected.value.id}`, {method: 'DELETE'});
+      if (r) {
+        showToast('账号已删除', 'success');
+        userSelected.value = null;
+        await loadUsers();
+      }
+    }
+
+    // Settings
+    async function loadSettings() {
+      const r = await fetch(API + '/api/settings/llm/versions', {headers: authHeaders()});
+      if (r.status === 401) { await logout(); return; }
+      if (r.ok) {
+        llmVersions.value = await r.json();
+      }
+    }
+    async function openSettings() {
+      settingsOpen.value = true;
+      llmEditShow.value = false;
+      await loadSettings();
+    }
+
+    function addLLMVersion() {
+      llmEditIsNew.value = true;
+      llmEditId.value = null;
+      llmEditForm.name = '';
+      llmEditForm.base_url = '';
+      llmEditForm.api_key = '';
+      llmEditForm.model_name = '';
+      llmEditAndActivate.value = true;
+      llmEditShow.value = true;
+    }
+
+    function editLLMVersion(v) {
+      llmEditIsNew.value = false;
+      llmEditId.value = v.id;
+      llmEditForm.name = v.name || '';
+      llmEditForm.base_url = v.base_url || '';
+      llmEditForm.api_key = v.api_key || '';
+      llmEditForm.model_name = v.model_name || '';
+      llmEditAndActivate.value = false;
+      llmEditShow.value = true;
+    }
+
+    async function saveLLMVersion() {
+      try {
+        let r;
+        if (llmEditIsNew.value) {
+          r = await fetch(API + '/api/settings/llm/versions', {
+            method: 'POST',
+            headers: authHeaders({'Content-Type': 'application/json'}),
+            body: JSON.stringify(llmEditForm)
+          });
+        } else {
+          r = await fetch(API + '/api/settings/llm/versions/' + llmEditId.value, {
+            method: 'PUT',
+            headers: authHeaders({'Content-Type': 'application/json'}),
+            body: JSON.stringify(llmEditForm)
+          });
+        }
+        if (r.ok) {
+          const saved = await r.json();
+          if (llmEditAndActivate.value) {
+            await activateVersion(saved.id);
+          } else {
+            await loadSettings();
+          }
+          llmEditShow.value = false;
+          showToast(llmEditIsNew.value ? '版本已创建' : '版本已更新', 'success');
+        } else {
+          const errText = await r.text();
+          showToast('保存失败: ' + errText, 'error');
+        }
+      } catch(e) {
+        showToast('保存失败: ' + e.message, 'error');
+      }
+    }
+
+    async function activateVersion(versionId) {
+      try {
+        const r = await fetch(API + '/api/settings/llm/versions/' + versionId + '/activate', {method: 'POST', headers: authHeaders()});
+        if (r.ok) {
+          showToast('版本已激活，系统将使用此版本 API', 'success');
+          await loadSettings();
+        } else {
+          showToast('激活失败', 'error');
+        }
+      } catch(e) {
+        showToast('激活失败: ' + e.message, 'error');
+      }
+    }
+
+    async function removeLLMVersion(versionId) {
+      if (!confirm('确定删除此版本？')) return;
+      try {
+        const r = await fetch(API + '/api/settings/llm/versions/' + versionId, {method: 'DELETE', headers: authHeaders()});
+        if (r.ok) {
+          showToast('版本已删除', 'success');
+          await loadSettings();
+        } else {
+          const data = await r.json().catch(() => ({}));
+          showToast('删除失败: ' + (data.detail || ''), 'error');
+        }
+      } catch(e) {
+        showToast('删除失败: ' + e.message, 'error');
+      }
+    }
+
+    // WebSocket
+    function connectWS() {
+      const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${wsProto}//${location.host}/ws/updates`);
+      ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        const evtMap = {updated:'更新', created:'创建', rollback:'回滚'};
+        showToast(`提示词 ${msg.name} 已${evtMap[msg.event]||msg.event} (v${msg.version})`, 'info');
+        loadList();
+        if (selected.value && selected.value.name === msg.name) {
+          api(`/api/prompts/${selected.value.id}`).then(r => { if(r) selected.value = r; });
+        }
+      };
+      ws.onclose = () => setTimeout(connectWS, 3000);
+    }
+
+    const kbFilteredLines = Vue.computed(() => {
+      let lines = kbLines.value.map((l, i) => ({...l, _idx: i}));
+      if (filterKbType.value) {
+        lines = lines.filter(l => (l.type || '答疑') === filterKbType.value);
+      }
+      if (filterKbBotId.value) {
+        lines = lines.filter(l => {
+          const lineBotId = l.bot_id == null ? '' : String(l.bot_id).trim();
+          if (filterKbBotId.value === '__common__') return lineBotId === '';
+          return lineBotId === '' || lineBotId === filterKbBotId.value;
+        });
+      }
+      const kw = mode.value === 'knowledge' ? keyword.value.trim() : '';
+      if (kw) {
+        lines = lines.filter(l =>
+          String(l.text || '').includes(kw)
+          || String(l.type || '').includes(kw)
+          || String(l.bot_id || '').includes(kw)
+        );
+      }
+      return lines;
+    });
+    const kbTotalPages = Vue.computed(() => Math.ceil(kbFilteredLines.value.length / kbPageSize) || 1);
+    const kbPagedLines = Vue.computed(() => {
+      const start = (kbPage.value - 1) * kbPageSize;
+      return kbFilteredLines.value.slice(start, start + kbPageSize);
+    });
+
+    const ftFilteredRecords = Vue.computed(() => {
+      let records = ftRecords.value.slice();
+      if (filterFtBotId.value) {
+        records = records.filter(r => {
+          const recordBotId = r.bot_id == null ? '' : String(r.bot_id).trim();
+          if (filterFtBotId.value === '__common__') return recordBotId === '';
+          return recordBotId === '' || recordBotId === filterFtBotId.value;
+        });
+      }
+      const kw = mode.value === 'flow' ? keyword.value.trim() : '';
+      if (kw) {
+        records = records.filter(r =>
+          String(r.file_name || '').includes(kw)
+          || String(r.description || '').includes(kw)
+          || String(r.structure || '').includes(kw)
+          || String(r.bot_id || '').includes(kw)
+        );
+      }
+      return records;
+    });
+    const ftTotalPages = Vue.computed(() => Math.ceil(ftFilteredRecords.value.length / ftPageSize) || 1);
+    const ftPagedRecords = Vue.computed(() => {
+      const start = (ftPage.value - 1) * ftPageSize;
+      return ftFilteredRecords.value.slice(start, start + ftPageSize);
+    });
+
+    async function initAfterLogin() {
+      await loadMeta();
+      if (canPromptView.value) {
+        mode.value = 'prompt';
+        await loadList();
+      } else if (canKnowledgeView.value) {
+        mode.value = 'knowledge';
+        await loadKbList();
+      } else if (canFlowView.value) {
+        mode.value = 'flow';
+        await loadFtList();
+      } else if (isAdmin.value) {
+        mode.value = 'users';
+      }
+      connectWS();
+      await loadSettings();
+      if (isAdmin.value) await loadUsers();
+    }
+
+    onMounted(async () => {
+      if (await checkAuth()) await initAfterLogin();
+    });
+
+    return {
+      isAuthed, currentUser, isAdmin,
+      canPromptView, canPromptEdit, canPromptDelete,
+      canKnowledgeView, canKnowledgeEdit, canKnowledgeDelete,
+      canFlowView, canFlowEdit, canFlowDelete,
+      loginForm, loginLoading, loginError, login, logout,
+      mode, leftTitle, leftTotal,
+      prompts, total, selected, versions, showVersions, viewingVersion,
+      editing, isCreate, departments, platforms, scenes,
+      filterDept, filterPlat, filterScene, keyword, toast, form, varBindings,
+      settingsOpen, openSettings,
+      llmVersions, llmEditShow, llmEditIsNew, llmEditForm, llmEditAndActivate,
+      addLLMVersion, editLLMVersion, saveLLMVersion, activateVersion, removeLLMVersion,
+      kbList, kbTotal, kbSelected, kbIsCreate, kbForm,
+      kbLines, kbEditingIdx, kbEditingText, kbShowAddInput, kbNewLine, kbNewType, kbEditingType, kbPage, kbPageSize, kbTypes, filterKbType, kbFilteredLines, kbTotalPages, kbPagedLines,
+      kbBotIds, filterKbBotId, kbNewBotId, kbEditingBotId, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom, kbNewBotIdCustom, kbEditingBotIdCustom,
+      kbTypeClass,
+      ftList, ftTotal, ftSelected, ftIsCreate, ftForm, ftRecords,
+      ftUploadShow, ftUploadFile, ftUploadBotId, ftUploadBotIdCustom, ftEditingRecord, ftEditingRecordId, ftEditDesc,
+      ftEditBotId, ftEditBotIdCustom, filterFtBotId,
+      ftPage, ftPageSize, ftFilteredRecords, ftTotalPages, ftPagedRecords, ftParsingToast,
+      userList, userSelected, userEditing, userIsCreate, userForm,
+      deptLabel, platLabel, sceneLabel,
+      selectPrompt, toggleVersions, toggleVersionContent,
+      openCreate, startEdit, cancelEdit, savePrompt,
+      deletePrompt, deleteVersion, rollback, loadList,
+      addBinding, removeBinding, parseBindings,
+      onFilterChange, switchMode,
+      kbContentLines, selectKb,
+      cancelKbCreate, saveKbCreate,
+      startKbLineEdit, cancelKbLineEdit, saveKbLine, deleteKbLine, addKbLine,
+      deleteKb,
+      selectUser, openUserCreate, startUserEdit, cancelUserEdit, saveUser, deleteSelectedUser,
+      selectFlowTree, ftCancelCreate, ftSaveCreate, deleteFlowTree,
+      ftOnFileChange, ftCancelUpload, ftUploadFileSubmit,
+      ftStartEditRecord, ftCancelEditRecord, ftSaveRecord, ftReparse, ftDeleteRecord
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

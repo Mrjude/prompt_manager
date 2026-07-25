@@ -1,0 +1,8 @@
+
+[dev]
+build
+twine
+websocket-client
+
+[ws]
+websocket-client

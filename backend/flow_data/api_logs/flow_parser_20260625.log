@@ -1,0 +1,6 @@
+2026-06-25 10:25:32 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1782354332670_小红书-有痘痘能植发吗a.png (116154 bytes)
+2026-06-25 10:25:32 [INFO] flow_parser - ==================================================
+2026-06-25 10:25:32 [INFO] flow_parser - 📋 开始解析: file=小红书-有痘痘能植发吗a.png, type=image
+2026-06-25 10:25:32 [INFO] flow_parser - LLM 解析: page=1/1, image=1782354332670_小红书-有痘痘能植发吗a.png, ocr_len=0
+2026-06-25 10:25:37 [INFO] flow_parser - 📋 解析完成: status=success, success=1/1
+2026-06-25 10:25:37 [INFO] flow_parser - ==================================================

@@ -1,0 +1,290 @@
+2026-06-11 15:28:20 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 15:28:20 [INFO] flow_parser - LLM 配置读取成功: base_url=http://36.248.221.141:18608/v1, model=18608/Qwen3.6-27B, has_key=True
+2026-06-11 15:28:20 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 15:37:01 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 15:38:13 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781163493175_小红书-鹅蛋脸.png (81267 bytes)
+2026-06-11 15:38:13 [INFO] flow_parser - ============================================================
+2026-06-11 15:38:13 [INFO] flow_parser - 📋 开始解析: file=小红书-鹅蛋脸.png, type=image
+2026-06-11 15:38:13 [INFO] flow_parser - ============================================================
+2026-06-11 15:38:13 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 15:38:13 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 15:38:13 [INFO] flow_parser - skill 预处理完成: 1781163493175_小红书-鹅蛋脸.png
+2026-06-11 15:38:13 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 15:38:13 [INFO] flow_parser - LLM 配置读取成功: base_url=http://36.248.221.141:18608/v1, model=18608/Qwen3.6-27B, has_key=True
+2026-06-11 15:38:13 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 15:38:13 [INFO] flow_parser - LLM 解析 page 1/1: 1781163493175_小红书-鹅蛋脸.png
+2026-06-11 15:38:13 [INFO] flow_parser - LLM 配置读取成功: base_url=http://36.248.221.141:18608/v1, model=18608/Qwen3.6-27B, has_key=True
+2026-06-11 15:38:13 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 15:38:13 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781163493175_小红书-鹅蛋脸.png, has_skill_ctx=True
+2026-06-11 15:38:13 [INFO] flow_parser - 多模态请求: image=1781163493175_小红书-鹅蛋脸.png, size=81267bytes, base64=105KB, mime=image/png, prompt_len=170
+2026-06-11 15:38:13 [INFO] flow_parser - LLM 配置读取成功: base_url=http://36.248.221.141:18608/v1, model=18608/Qwen3.6-27B, has_key=True
+2026-06-11 15:38:13 [INFO] flow_parser - 🚀 LLM API 请求开始: model=18608/Qwen3.6-27B, body=107.4KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 15:43:13 [WARNING] flow_parser - LLM API 异常 (第1次, 300.1s): timed out
+2026-06-11 15:44:51 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/session____-___.png_20260611_154451.jsonl
+2026-06-11 15:44:51 [INFO] flow_parser - ✅ LLM API 成功: 96.4s, 响应3461字符, tokens: input=682, output=1707
+2026-06-11 15:44:51 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=鹅蛋脸咨询流程, nodes=6
+2026-06-11 15:44:51 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 15:44:51 [INFO] flow_parser - ============================================================
+2026-06-11 15:44:51 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 15:44:51 [INFO] flow_parser - ============================================================
+2026-06-11 15:58:46 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 15:59:30 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 16:00:37 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 16:01:43 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 16:03:09 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 16:03:19 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 16:04:10 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 16:19:57 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781162469382_小红书-发旋加密.png
+2026-06-11 16:20:01 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781161091291_小红书-白发能植吗.png
+2026-06-11 16:20:03 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1780987307493_小红书-疤痕体质能植发吗.png
+2026-06-11 16:20:08 [INFO] flow_parser - ============================================================
+2026-06-11 16:20:08 [INFO] flow_parser - 📋 开始解析: file=小红书-疤痕体质能植发吗.png, type=image
+2026-06-11 16:20:08 [INFO] flow_parser - ============================================================
+2026-06-11 16:20:08 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 16:20:08 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 16:20:08 [INFO] flow_parser - skill 预处理完成: 1781161320003_小红书-疤痕体质能植发吗.png
+2026-06-11 16:20:08 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 16:20:08 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:20:08 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 16:20:08 [INFO] flow_parser - LLM 解析 page 1/1: 1781161320003_小红书-疤痕体质能植发吗.png
+2026-06-11 16:20:08 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:20:08 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 16:20:08 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781161320003_小红书-疤痕体质能植发吗.png, has_skill_ctx=True
+2026-06-11 16:20:08 [INFO] flow_parser - 多模态请求: image=1781161320003_小红书-疤痕体质能植发吗.png, size=59107bytes, base64=76KB, mime=image/png, prompt_len=170
+2026-06-11 16:20:08 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:20:08 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=78.5KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 16:20:25 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/session____-________.png_20260611_162025.jsonl
+2026-06-11 16:20:25 [INFO] flow_parser - ✅ LLM API 成功: 17.4s, 响应2933字符, tokens: input=330, output=1328
+2026-06-11 16:20:25 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=咨询服务流程, nodes=12
+2026-06-11 16:20:25 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 16:20:25 [INFO] flow_parser - ============================================================
+2026-06-11 16:20:25 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 16:20:25 [INFO] flow_parser - ============================================================
+2026-06-11 16:20:54 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/agent/flow_data/2/1781161320003_小红书-疤痕体质能植发吗.png
+2026-06-11 16:26:33 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781166393629_小红书-方型脸.png (80645 bytes)
+2026-06-11 16:26:33 [INFO] flow_parser - ============================================================
+2026-06-11 16:26:33 [INFO] flow_parser - 📋 开始解析: file=小红书-方型脸.png, type=image
+2026-06-11 16:26:33 [INFO] flow_parser - ============================================================
+2026-06-11 16:26:33 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 16:26:33 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 16:26:33 [INFO] flow_parser - skill 预处理完成: 1781166393629_小红书-方型脸.png
+2026-06-11 16:26:33 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 16:26:33 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:26:33 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 16:26:33 [INFO] flow_parser - LLM 解析 page 1/1: 1781166393629_小红书-方型脸.png
+2026-06-11 16:26:33 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:26:33 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 16:26:33 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781166393629_小红书-方型脸.png, has_skill_ctx=True
+2026-06-11 16:26:33 [INFO] flow_parser - 多模态请求: image=1781166393629_小红书-方型脸.png, size=80645bytes, base64=105KB, mime=image/png, prompt_len=170
+2026-06-11 16:26:33 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:26:33 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=106.6KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 16:26:53 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/session____-___.png_20260611_162653.jsonl
+2026-06-11 16:26:53 [INFO] flow_parser - ✅ LLM API 成功: 19.2s, 响应2200字符, tokens: input=330, output=1433
+2026-06-11 16:26:53 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=客户服务意图识别与分流, nodes=11
+2026-06-11 16:26:53 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 16:26:53 [INFO] flow_parser - ============================================================
+2026-06-11 16:26:53 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 16:26:53 [INFO] flow_parser - ============================================================
+2026-06-11 16:52:49 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781167969516_小红书-疤痕体质能植发吗.png (59107 bytes)
+2026-06-11 16:52:49 [INFO] flow_parser - ============================================================
+2026-06-11 16:52:49 [INFO] flow_parser - 📋 开始解析: file=小红书-疤痕体质能植发吗.png, type=image
+2026-06-11 16:52:49 [INFO] flow_parser - ============================================================
+2026-06-11 16:52:49 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 16:52:49 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 16:52:49 [INFO] flow_parser - skill 预处理完成: 1781167969516_小红书-疤痕体质能植发吗.png
+2026-06-11 16:52:49 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 16:52:49 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:52:49 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 16:52:49 [INFO] flow_parser - LLM 解析 page 1/1: 1781167969516_小红书-疤痕体质能植发吗.png
+2026-06-11 16:52:49 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:52:49 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 16:52:49 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781167969516_小红书-疤痕体质能植发吗.png, has_skill_ctx=True
+2026-06-11 16:52:49 [INFO] flow_parser - 多模态请求: image=1781167969516_小红书-疤痕体质能植发吗.png, size=59107bytes, base64=76KB, mime=image/png, prompt_len=170
+2026-06-11 16:52:49 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 16:52:49 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=78.5KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 16:53:01 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/session____-________.png_20260611_165301.jsonl
+2026-06-11 16:53:01 [INFO] flow_parser - ✅ LLM API 成功: 12.2s, 响应2543字符, tokens: input=330, output=1143
+2026-06-11 16:53:01 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=客服咨询流程, nodes=10
+2026-06-11 16:53:01 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 16:53:01 [INFO] flow_parser - ============================================================
+2026-06-11 16:53:01 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 16:53:01 [INFO] flow_parser - ============================================================
+2026-06-11 17:05:14 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 17:05:32 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781168732722_小红书-后面会不会直接秃了.png (70394 bytes)
+2026-06-11 17:05:32 [INFO] flow_parser - ============================================================
+2026-06-11 17:05:32 [INFO] flow_parser - 📋 开始解析: file=小红书-后面会不会直接秃了.png, type=image
+2026-06-11 17:05:32 [INFO] flow_parser - ============================================================
+2026-06-11 17:05:32 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 17:05:32 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 17:05:32 [INFO] flow_parser - skill 预处理完成: 1781168732722_小红书-后面会不会直接秃了.png
+2026-06-11 17:05:32 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 17:05:32 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:05:32 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:05:32 [INFO] flow_parser - LLM 解析 page 1/1: 1781168732722_小红书-后面会不会直接秃了.png
+2026-06-11 17:05:32 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:05:32 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:05:32 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781168732722_小红书-后面会不会直接秃了.png, has_skill_ctx=True
+2026-06-11 17:05:32 [INFO] flow_parser - 多模态请求: image=1781168732722_小红书-后面会不会直接秃了.png, size=70394bytes, base64=91KB, mime=image/png, prompt_len=170
+2026-06-11 17:05:32 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:05:32 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=93.2KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 17:05:46 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_api_log_20260611.jsonl
+2026-06-11 17:05:46 [INFO] flow_parser - ✅ LLM API 成功: 13.6s, 响应1607字符, tokens: input=330, output=939
+2026-06-11 17:05:46 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=客户咨询流程, nodes=8
+2026-06-11 17:05:46 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 17:05:46 [INFO] flow_parser - ============================================================
+2026-06-11 17:05:46 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 17:05:46 [INFO] flow_parser - ============================================================
+2026-06-11 17:17:08 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781169428129_小红书-菱形脸.png (82812 bytes)
+2026-06-11 17:17:08 [INFO] flow_parser - ============================================================
+2026-06-11 17:17:08 [INFO] flow_parser - 📋 开始解析: file=小红书-菱形脸.png, type=image
+2026-06-11 17:17:08 [INFO] flow_parser - ============================================================
+2026-06-11 17:17:08 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 17:17:08 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 17:17:08 [INFO] flow_parser - skill 预处理完成: 1781169428129_小红书-菱形脸.png
+2026-06-11 17:17:08 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 17:17:08 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:17:08 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:17:08 [INFO] flow_parser - LLM 解析 page 1/1: 1781169428129_小红书-菱形脸.png
+2026-06-11 17:17:08 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:17:08 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:17:08 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781169428129_小红书-菱形脸.png, has_skill_ctx=True
+2026-06-11 17:17:08 [INFO] flow_parser - 多模态请求: image=1781169428129_小红书-菱形脸.png, size=82812bytes, base64=107KB, mime=image/png, prompt_len=170
+2026-06-11 17:17:08 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:17:08 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=109.4KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 17:17:20 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_api_log_20260611.jsonl
+2026-06-11 17:17:20 [INFO] flow_parser - ✅ LLM API 成功: 11.8s, 响应1869字符, tokens: input=330, output=850
+2026-06-11 17:17:20 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=客服咨询流程, nodes=10
+2026-06-11 17:17:20 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 17:17:20 [INFO] flow_parser - ============================================================
+2026-06-11 17:17:20 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 17:17:20 [INFO] flow_parser - ============================================================
+2026-06-11 17:31:31 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 17:37:59 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 17:38:56 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781170736030_小红书-仿真画线.png (65259 bytes)
+2026-06-11 17:38:56 [INFO] flow_parser - ============================================================
+2026-06-11 17:38:56 [INFO] flow_parser - 📋 开始解析: file=小红书-仿真画线.png, type=image
+2026-06-11 17:38:56 [INFO] flow_parser - ============================================================
+2026-06-11 17:38:56 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 17:38:56 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 17:38:56 [INFO] flow_parser - skill 预处理完成: 1781170736030_小红书-仿真画线.png
+2026-06-11 17:38:56 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 17:38:56 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:38:56 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:38:56 [INFO] flow_parser - LLM 解析 page 1/1: 1781170736030_小红书-仿真画线.png
+2026-06-11 17:38:56 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:38:56 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:38:56 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781170736030_小红书-仿真画线.png, has_skill_ctx=True
+2026-06-11 17:38:56 [INFO] flow_parser - 多模态请求: image=1781170736030_小红书-仿真画线.png, size=65259bytes, base64=84KB, mime=image/png, prompt_len=196
+2026-06-11 17:38:56 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:38:56 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=86.5KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 17:39:10 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_api_log_20260611.jsonl
+2026-06-11 17:39:10 [INFO] flow_parser - ✅ LLM API 成功: 13.9s, 响应334字符, tokens: input=300, output=1055
+2026-06-11 17:39:10 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=用户服务流程树, nodes=0
+2026-06-11 17:39:10 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 17:39:10 [INFO] flow_parser - ============================================================
+2026-06-11 17:39:10 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 17:39:10 [INFO] flow_parser - ============================================================
+2026-06-11 17:40:36 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 17:47:10 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781171230797_小红书-菱形脸.png (82812 bytes)
+2026-06-11 17:47:10 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:10 [INFO] flow_parser - 📋 开始解析: file=小红书-菱形脸.png, type=image
+2026-06-11 17:47:10 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:10 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 17:47:10 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 17:47:10 [INFO] flow_parser - skill 预处理完成: 1781171230797_小红书-菱形脸.png
+2026-06-11 17:47:10 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 17:47:10 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:47:10 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:47:10 [INFO] flow_parser - LLM 解析 page 1/1: 1781171230797_小红书-菱形脸.png
+2026-06-11 17:47:10 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:47:10 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:47:10 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781171230797_小红书-菱形脸.png, has_skill_ctx=True
+2026-06-11 17:47:10 [INFO] flow_parser - 多模态请求: image=1781171230797_小红书-菱形脸.png, size=82812bytes, base64=107KB, mime=image/png, prompt_len=196
+2026-06-11 17:47:10 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:47:10 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=109.4KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 17:47:17 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_api_log_20260611.jsonl
+2026-06-11 17:47:17 [INFO] flow_parser - ✅ LLM API 成功: 6.6s, 响应146字符, tokens: input=300, output=365
+2026-06-11 17:47:17 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=未知流程图, nodes=0
+2026-06-11 17:47:17 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 17:47:17 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:17 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 17:47:17 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:37 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781171230797_小红书-菱形脸.png
+2026-06-11 17:47:46 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/2/1781171266862_小红书-可以看到照片吗.png (79664 bytes)
+2026-06-11 17:47:46 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:46 [INFO] flow_parser - 📋 开始解析: file=小红书-可以看到照片吗.png, type=image
+2026-06-11 17:47:46 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:46 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 17:47:46 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 17:47:47 [INFO] flow_parser - skill 预处理完成: 1781171266862_小红书-可以看到照片吗.png
+2026-06-11 17:47:47 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 17:47:47 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:47:47 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:47:47 [INFO] flow_parser - LLM 解析 page 1/1: 1781171266862_小红书-可以看到照片吗.png
+2026-06-11 17:47:47 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:47:47 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:47:47 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=1781171266862_小红书-可以看到照片吗.png, has_skill_ctx=True
+2026-06-11 17:47:47 [INFO] flow_parser - 多模态请求: image=1781171266862_小红书-可以看到照片吗.png, size=79664bytes, base64=103KB, mime=image/png, prompt_len=196
+2026-06-11 17:47:47 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:47:47 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=105.3KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 17:47:53 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_api_log_20260611.jsonl
+2026-06-11 17:47:53 [INFO] flow_parser - ✅ LLM API 成功: 6.7s, 响应537字符, tokens: input=300, output=520
+2026-06-11 17:47:53 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=客户投诉处理流程（示例）, nodes=0
+2026-06-11 17:47:53 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 17:47:53 [INFO] flow_parser - ============================================================
+2026-06-11 17:47:53 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 17:47:53 [INFO] flow_parser - ============================================================
+2026-06-11 17:54:15 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/3/1781171655612_存活率多少.pdf (87694 bytes)
+2026-06-11 17:54:15 [INFO] flow_parser - ============================================================
+2026-06-11 17:54:15 [INFO] flow_parser - 📋 开始解析: file=存活率多少.pdf, type=pdf
+2026-06-11 17:54:15 [INFO] flow_parser - ============================================================
+2026-06-11 17:54:15 [ERROR] flow_parser - ❌ parse_file 异常: PDF 解析失败：请安装 PyMuPDF (`pip install pymupdf`) 或 pdf2image
+Traceback (most recent call last):
+  File "/data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_parser_service.py", line 697, in parse_file
+    image_paths = pdf_to_images(file_path)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_parser_service.py", line 460, in pdf_to_images
+    raise RuntimeError("PDF 解析失败：请安装 PyMuPDF (`pip install pymupdf`) 或 pdf2image")
+RuntimeError: PDF 解析失败：请安装 PyMuPDF (`pip install pymupdf`) 或 pdf2image
+2026-06-11 17:55:42 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 17:55:53 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/3/1781171753656_查费用.pdf (54363 bytes)
+2026-06-11 17:55:53 [INFO] flow_parser - ============================================================
+2026-06-11 17:55:53 [INFO] flow_parser - 📋 开始解析: file=查费用.pdf, type=pdf
+2026-06-11 17:55:53 [INFO] flow_parser - ============================================================
+2026-06-11 17:55:53 [ERROR] flow_parser - ❌ parse_file 异常: PDF 解析失败：请安装 PyMuPDF (`pip install pymupdf`) 或 pdf2image
+Traceback (most recent call last):
+  File "/data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_parser_service.py", line 697, in parse_file
+    image_paths = pdf_to_images(file_path)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_parser_service.py", line 460, in pdf_to_images
+    raise RuntimeError("PDF 解析失败：请安装 PyMuPDF (`pip install pymupdf`) 或 pdf2image")
+RuntimeError: PDF 解析失败：请安装 PyMuPDF (`pip install pymupdf`) 或 pdf2image
+2026-06-11 17:56:24 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 17:56:38 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/3/1781171798488_打麻药吗.pdf (62486 bytes)
+2026-06-11 17:56:38 [INFO] flow_parser - ============================================================
+2026-06-11 17:56:38 [INFO] flow_parser - 📋 开始解析: file=打麻药吗.pdf, type=pdf
+2026-06-11 17:56:38 [INFO] flow_parser - ============================================================
+2026-06-11 17:56:38 [INFO] flow_parser - PDF 转图片成功: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/3/1781171798488_打麻药吗.pdf -> 1 页
+2026-06-11 17:56:38 [INFO] flow_parser - 图片路径: 1 张
+2026-06-11 17:56:38 [INFO] flow_parser - --- Step 1/2: Skill 预处理 ---
+2026-06-11 17:56:39 [INFO] flow_parser - skill 预处理完成: tmpphyrvv1z_p0.png
+2026-06-11 17:56:39 [INFO] flow_parser - --- Step 2/2: LLM 多模态解析 ---
+2026-06-11 17:56:39 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:56:39 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:56:39 [INFO] flow_parser - LLM 解析 page 1/1: tmpphyrvv1z_p0.png
+2026-06-11 17:56:39 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:56:39 [INFO] flow_parser - LLM 配置状态: 已配置 (base_url=True, model=True)
+2026-06-11 17:56:39 [INFO] flow_parser - 📷 开始 LLM 解析: page=1, image=tmpphyrvv1z_p0.png, has_skill_ctx=True
+2026-06-11 17:56:39 [INFO] flow_parser - 多模态请求: image=tmpphyrvv1z_p0.png, size=343109bytes, base64=446KB, mime=image/png, prompt_len=197
+2026-06-11 17:56:39 [INFO] flow_parser - LLM 配置读取成功: base_url=https://dashscope.aliyuncs.com/compatible-mode/v1, model=deepseek-v4-flash, has_key=True
+2026-06-11 17:56:39 [INFO] flow_parser - 🚀 LLM API 请求开始: model=deepseek-v4-flash, body=448.3KB, content_types=text, text+image_url, timeout=300s
+2026-06-11 17:56:46 [DEBUG] flow_parser - API 日志写入: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_api_log_20260611.jsonl
+2026-06-11 17:56:46 [INFO] flow_parser - ✅ LLM API 成功: 7.3s, 响应402字符, tokens: input=300, output=393
+2026-06-11 17:56:46 [INFO] flow_parser - ✅ LLM 解析成功: page=1, flow_name=客户咨询流程, nodes=0
+2026-06-11 17:56:46 [INFO] flow_parser - --- 生成自然语言描述 ---
+2026-06-11 17:56:46 [INFO] flow_parser - ============================================================
+2026-06-11 17:56:46 [INFO] flow_parser - 📋 解析完成: status=success, skill_results=1, llm_success=Yes, llm_error=No, unparsed=No
+2026-06-11 17:56:46 [INFO] flow_parser - ============================================================
+2026-06-11 17:57:05 [INFO] flow_parser - 文件已删除: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/3/1781171753656_查费用.pdf
+2026-06-11 18:51:34 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
+2026-06-11 18:51:51 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260611.log
