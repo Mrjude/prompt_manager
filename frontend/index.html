@@ -199,6 +199,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 .var-binding-row .vb-del{color:#ff4d4f;cursor:pointer;font-size:18px;padding:0 4px;line-height:1;user-select:none}
 .var-binding-row .vb-del:hover{color:#d9363e}
 
+/* Robot Config Table (提示词页内联) */
+.robot-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #e8ecf0;border-radius:6px;overflow:hidden}
+.robot-table th{background:#f7faff;color:#2c3e50;font-weight:600;font-size:12px;padding:8px 10px;text-align:left;border-bottom:1px solid #eef1f5;white-space:nowrap}
+.robot-table td{padding:8px 10px;font-size:12px;color:#44566c;border-bottom:1px solid #f2f4f7;vertical-align:middle}
+.robot-table tr:last-child td{border-bottom:none}
+.robot-table tbody tr:hover{background:#f8faff}
+.robot-table .rt-ops{display:flex;gap:6px}
+.robot-edit-box{margin-top:10px;padding:12px 14px;border:1px solid #e8ecf0;border-radius:8px;background:#fff}
+
 /* Badge */
 .badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:500}
 .badge-green{background:#f0fff0;color:#52c41a}
@@ -247,7 +256,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
   <div class="header">
     <h1>提示词管理系统</h1>
     <div class="header-actions">
-      <span class="user-info">{{currentUser.username}} · {{currentUser.role === 'admin' ? '高级权限' : '普通权限'}}</span>
+      <span class="user-info">
+        {{currentUser.username}} · {{currentUser.role === 'admin' ? '高级权限' : '普通权限'}}
+        <span v-if="currentUser.role !== 'admin'" :title="`管理科室：${(currentUser.managed_departments || []).map(d => deptLabel(d) || d).join('、') || '无'}`" style="margin-left:6px;font-size:11px;color:#faad14">
+          {{ (currentUser.managed_departments && currentUser.managed_departments.length) ? ('管理 ' + currentUser.managed_departments.length + ' 科') : '⚠ 未配置管理科室' }}
+        </span>
+      </span>
       <button v-if="isAdmin" class="icon-btn user-btn" title="账户和权限管理" @click="switchMode('users')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -386,8 +400,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
       <div class="filter-group">
         <div class="select-wrap">
           <select v-model="filterDept" @change="onFilterChange">
-            <option value="">全部科室</option>
-            <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+            <option v-if="isAdmin" value="">全部科室</option>
+            <option v-for="d in visibleDepartments" :key="d.key" :value="d.key">{{d.label}}</option>
           </select>
         </div>
         <div class="select-wrap">
@@ -441,7 +455,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
       <div class="card">
         <div class="card-header">
           <div class="title">{{leftTitle}} <span>共 {{leftTotal}} 条</span></div>
-          <button v-if="mode !== 'users' && ((mode === 'prompt' && canPromptEdit) || (mode === 'knowledge' && canKnowledgeEdit) || (mode === 'flow' && canFlowEdit))" class="btn btn-success btn-sm" @click="openCreate">+ {{mode === 'prompt' ? '新建提示词' : (mode === 'knowledge' ? '新建知识库' : '新建流程树库')}}</button>
+          <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+            <button v-if="mode !== 'users' && ((mode === 'prompt' && canPromptEdit) || (mode === 'knowledge' && canKnowledgeEdit) || (mode === 'flow' && canFlowEdit))" class="btn btn-success btn-sm" @click="openCreate">+ 新建{{mode === 'prompt' ? '提示词' : (mode === 'knowledge' ? '知识库' : '流程树库')}}</button>
+          </div>
+          <input type="file" ref="kbImportInput" accept=".xlsx,.xlsm" style="display:none" @change="onKbImportFile">
           <button v-if="mode === 'users'" class="btn btn-success btn-sm" @click="openUserCreate">+ 新建账号</button>
         </div>
         <div class="card-body">
@@ -531,6 +548,89 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                 <span v-if="selected.tags" style="margin-left:16px"><strong>标签：</strong>{{selected.tags}}</span>
               </div>
 
+              <!-- 详情态：机器人配置看板（提示词内容上方） -->
+              <div v-if="robotMatchedList.length" class="var-bindings-panel" style="margin-top:10px">
+                <div class="vb-title">
+                  <span>机器人配置（{{deptLabel(selected.department)}} / {{platLabel(selected.platform)}}）</span>
+                  <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="openRobotCreate">+ 新增条目</button>
+                </div>
+                <table class="robot-table">
+                  <thead>
+                    <tr>
+                      <th style="width:100px">机器人ID</th>
+                      <th style="width:90px">科室</th>
+                      <th style="width:90px">平台</th>
+                      <th>公司名</th>
+                      <th style="width:90px">提示词版本</th>
+                      <th style="width:70px">状态</th>
+                      <th style="width:150px">更新</th>
+                      <th style="width:130px" v-if="canKnowledgeEdit">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="r in robotMatchedList" :key="r.bot_id">
+                      <td><strong>{{r.bot_id}}</strong></td>
+                      <td>{{deptLabel(r.department) || r.department}}</td>
+                      <td>{{platLabel(r.platform) || r.platform}}</td>
+                      <td>{{r.company || '—'}}</td>
+                      <td>
+                        <span v-if="robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version" class="badge badge-green">v{{robotPromptVersions[r.bot_id].version}}</span>
+                        <span v-else class="badge badge-gray">无</span>
+                      </td>
+                      <td>
+                        <span v-if="r.enabled" class="badge badge-green">启用</span>
+                        <span v-else class="badge badge-gray">停用</span>
+                      </td>
+                      <td style="color:#999">{{r.updated_at || '—'}}</td>
+                      <td v-if="canKnowledgeEdit">
+                        <div class="rt-ops">
+                          <button class="btn btn-primary btn-sm" @click="startRobotEditInline(r)">编辑</button>
+                          <button class="btn btn-danger btn-sm" @click="deleteRobotInline(r)">删除</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-if="robotEditing" class="robot-edit-box">
+                  <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+                    <div class="form-group">
+                      <label>机器人ID</label>
+                      <input v-model="robotForm.bot_id" :disabled="!robotIsCreate" placeholder="如: 9378">
+                    </div>
+                    <div class="form-group">
+                      <label>科室</label>
+                      <select v-model="robotForm.department">
+                        <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>平台</label>
+                      <select v-model="robotForm.platform">
+                        <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>状态</label>
+                      <select v-model="robotForm.enabled">
+                        <option :value="true">启用</option>
+                        <option :value="false">停用</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>公司名（如 雍禾 / 牙博士 / 邦泰）</label>
+                    <input v-model="robotForm.company" placeholder="如: 雍禾" list="available-company-list">
+                    <datalist id="available-company-list">
+                      <option v-for="c in availableCompanies" :key="c" :value="c"></option>
+                    </datalist>
+                  </div>
+                  <div style="display:flex;gap:6px;justify-content:flex-end">
+                    <button class="btn btn-ghost btn-sm" @click="cancelRobotEdit">取消</button>
+                    <button class="btn btn-primary btn-sm" @click="saveRobot">保存</button>
+                  </div>
+                </div>
+              </div>
+
               <div class="detail-section">
                 <div class="section-title">提示词内容</div>
                 <div class="content-box prompt-content-box">{{selected.content}}</div>
@@ -556,8 +656,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                 <div class="version-list">
                   <div v-for="v in versions" :key="v.id" class="version-item" :class="{current: v.version === selected.version}">
                     <div class="v-top">
-                      <span class="v-num" :class="{'current-tag': v.version === selected.version}">
-                        v{{v.version}} <span v-if="v.version === selected.version" style="font-size:11px;color:#999;font-weight:400">(当前)</span>
+                      <span class="v-num" :class="{'current-tag': v.version === selected.version}">                        v{{v.version}} <span v-if="v.version === selected.version" style="font-size:11px;color:#999;font-weight:400">(当前)</span>
                       </span>
                       <span class="v-time">{{v.created_at}}</span>
                     </div>
@@ -613,18 +712,102 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                   </select>
                 </div>
               </div>
-              <div class="form-group">
-                <label>名称</label>
-                <input v-model="form.name" :disabled="!isCreate" placeholder="如: hair_xhs_system">
-              </div>
               <div class="form-row" style="grid-template-columns:1fr 1fr">
                 <div class="form-group">
                   <label>描述</label>
                   <input v-model="form.description" placeholder="简短描述">
                 </div>
                 <div class="form-group">
-                  <label>标签</label>
-                  <input v-model="form.tags" placeholder="逗号分隔，如: 植发,小红书">
+                  <label>名称</label>
+                  <input v-model="form.name" :disabled="!isCreate" placeholder="如: hair_xhs_system">
+                </div>
+              </div>
+              <div class="form-group" v-if="editing">
+                <div class="var-bindings-panel">
+                  <div class="vb-title">
+                    <span>机器人配置（{{deptLabel(form.department)}} / {{platLabel(form.platform)}}）</span>
+                    <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="openRobotCreate">+ 新增条目</button>
+                  </div>
+                  <table class="robot-table">
+                    <thead>
+                      <tr>
+                        <th style="width:100px">机器人ID</th>
+                        <th style="width:90px">科室</th>
+                        <th style="width:90px">平台</th>
+                        <th>公司名</th>
+                        <th style="width:90px">提示词版本</th>
+                        <th style="width:70px">状态</th>
+                        <th style="width:150px">更新</th>
+                        <th style="width:130px" v-if="canKnowledgeEdit">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="!robotMatchedList.length">
+                        <td :colspan="canKnowledgeEdit ? 8 : 7" style="text-align:center;color:#999;padding:18px;background:#fafbfc">
+                          当前科室+平台暂无机器人配置，点击右上「+ 新增条目」添加
+                        </td>
+                      </tr>
+                      <tr v-for="r in robotMatchedList" :key="r.bot_id">
+                        <td><strong>{{r.bot_id}}</strong></td>
+                        <td>{{deptLabel(r.department) || r.department}}</td>
+                        <td>{{platLabel(r.platform) || r.platform}}</td>
+                        <td>{{r.company || '—'}}</td>
+                        <td>
+                          <span v-if="robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version" class="badge badge-green">v{{robotPromptVersions[r.bot_id].version}}</span>
+                          <span v-else class="badge badge-gray">无</span>
+                        </td>
+                        <td>
+                          <span v-if="r.enabled" class="badge badge-green">启用</span>
+                          <span v-else class="badge badge-gray">停用</span>
+                        </td>
+                        <td style="color:#999">{{r.updated_at || '—'}}</td>
+                        <td v-if="canKnowledgeEdit">
+                          <div class="rt-ops">
+                            <button class="btn btn-primary btn-sm" @click="startRobotEditInline(r)">编辑</button>
+                            <button class="btn btn-danger btn-sm" @click="deleteRobotInline(r)">删除</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div v-if="robotEditing" class="robot-edit-box">
+                    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+                      <div class="form-group">
+                        <label>机器人ID</label>
+                        <input v-model="robotForm.bot_id" :disabled="!robotIsCreate" placeholder="如: 9378">
+                      </div>
+                      <div class="form-group">
+                        <label>科室</label>
+                        <select v-model="robotForm.department">
+                          <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>平台</label>
+                        <select v-model="robotForm.platform">
+                          <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>状态</label>
+                        <select v-model="robotForm.enabled">
+                          <option :value="true">启用</option>
+                          <option :value="false">停用</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>公司名（如 雍禾 / 牙博士 / 邦泰）</label>
+                      <input v-model="robotForm.company" placeholder="如: 雍禾" list="available-company-list">
+                      <datalist id="available-company-list">
+                        <option v-for="c in availableCompanies" :key="c" :value="c"></option>
+                      </datalist>
+                    </div>
+                    <div style="display:flex;gap:6px;justify-content:flex-end">
+                      <button class="btn btn-ghost btn-sm" @click="cancelRobotEdit">取消</button>
+                      <button class="btn btn-primary btn-sm" @click="saveRobot">保存</button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="form-group">
@@ -643,7 +826,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                   </div>
                   <div v-if="!varBindings.length" style="font-size:12px;color:#999">暂无自定义变量映射，点击"添加映射"创建</div>
                 </div>
-                <div class="variable-hint">
+
+<div class="variable-hint">
                   内置变量：{公司} {域中文} {域英文} {时间} {轮次} {套联描述} {动作描述} {知识描述} {暖场描述}
                 </div>
               </div>
@@ -668,9 +852,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
         <template v-if="mode === 'knowledge'">
           <div class="card-header">
             <div class="title">{{kbIsCreate ? '新建知识库' : '知识库详情'}}</div>
-            <div v-if="!kbIsCreate && kbSelected && (canKnowledgeEdit || canKnowledgeDelete)" style="display:flex;gap:6px;align-items:center">
-              <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="kbShowAddInput=true">+ 新增条目</button>
-              <button v-if="canKnowledgeDelete" class="btn btn-danger btn-sm" @click="deleteKb">删除知识库</button>
+            <div v-if="!kbIsCreate" style="display:flex;gap:6px;align-items:center;margin-left:auto">
+              <button v-if="canKnowledgeView" class="btn btn-primary btn-sm" @click="exportKb">📤 导出</button>
+              <button v-if="canKnowledgeView" class="btn btn-primary btn-sm" @click="triggerKbImport">📥 导入</button>
+              <button v-if="kbSelected && canKnowledgeEdit" class="btn btn-success btn-sm" @click="kbShowAddInput=true">+ 新增条目</button>
+              <button v-if="kbSelected && canKnowledgeDelete" class="btn btn-danger btn-sm" @click="deleteKb">删除知识库</button>
             </div>
           </div>
           <div class="card-body">
@@ -792,6 +978,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                 <div><strong>用户名：</strong>{{userSelected.username}}</div>
                 <div><strong>权限：</strong>{{userSelected.role === 'admin' ? '高级权限' : '普通权限'}}</div>
                 <div><strong>状态：</strong>{{userSelected.is_active ? '启用' : '禁用'}}</div>
+                <div><strong>管理科室：</strong>
+                  <span v-if="userSelected.role === 'admin'">全部</span>
+                  <span v-else-if="!userSelected.managed_departments || !userSelected.managed_departments.length">无（看不到任何数据）</span>
+                  <span v-else>
+                    <span v-for="d in userSelected.managed_departments" :key="d" class="badge badge-green" style="margin-right:4px">{{deptLabel(d) || d}}</span>
+                  </span>
+                </div>
                 <div><strong>创建：</strong>{{userSelected.created_at}}</div>
               </div>
               <div class="detail-section">
@@ -844,13 +1037,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                     <option value="normal">普通权限</option>
                   </select>
                 </div>
-                <div class="form-group" v-if="!userIsCreate">
-                  <label>账号状态</label>
-                  <select v-model="userForm.is_active">
-                    <option :value="true">启用</option>
-                    <option :value="false">禁用</option>
-                  </select>
-                </div>
+              <div class="form-group" v-if="!userIsCreate">
+                <label>账号状态</label>
+                <select v-model="userForm.is_active">
+                  <option :value="true">启用</option>
+                  <option :value="false">禁用</option>
+                </select>
+              </div>
+            </div>
+              <div class="form-group" v-if="userForm.role !== 'admin'">
+                <label>管理科室（普通用户只能看到/管理所选科室的提示词/知识库/流程树）</label>
+                <select v-model="userForm.managed_departments" multiple size="6" style="min-height:140px;width:100%">
+                  <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}（{{d.key}}）</option>
+                </select>
+                <div class="hint">按住 Ctrl / ⌘ 多选；不选则看不到任何列表（仅有管理后台入口）</div>
               </div>
               <div class="form-group">
                 <label>页面权限</label>
@@ -1017,6 +1217,18 @@ createApp({
     const currentUser = ref(JSON.parse(localStorage.getItem('pm_user') || 'null'));
     const isAuthed = Vue.computed(() => !!authToken.value && !!currentUser.value);
     const isAdmin = Vue.computed(() => currentUser.value && currentUser.value.role === 'admin');
+    // 普通用户的"管理科室"列表；admin 返回全部
+    const managedDepartments = Vue.computed(() => {
+      if (!currentUser.value) return [];
+      if (currentUser.value.role === 'admin') return null; // null = 不限制
+      return currentUser.value.managed_departments || [];
+    });
+    // 顶部下拉中展示的科室：普通用户只看自己被授权的
+    const visibleDepartments = Vue.computed(() => {
+      if (managedDepartments.value === null) return departments.value;
+      const set = new Set(managedDepartments.value);
+      return departments.value.filter(d => set.has(d.key));
+    });
     const loginLoading = ref(false);
     const loginError = ref('');
     const loginForm = reactive({username: '', password: ''});
@@ -1057,13 +1269,22 @@ createApp({
 
     const form = reactive({
       name: '', department: 'general', platform: 'general', scene: 'system_prompt',
-      content: '', description: '', tags: '', change_log: '', variable_bindings: '{}'
+      content: '', description: '', tags: '', tagsArr: [], change_log: '', variable_bindings: '{}'
     });
+    const availableCompanies = ref(['雍禾', '牙博士', '邦泰', '碧莲盛', '唐森', '华中雍禾', '西安海涛', '尔睦口腔']);
     const varBindings = ref([]);
 
     // Knowledge base data
     const kbList = ref([]);
     const kbTotal = ref(0);
+
+    // Robot config data
+    const robotList = ref([]);
+    const robotPromptVersions = ref({}); // {bot_id: {version, prompt_name}}
+    const robotSelected = ref(null);
+    const robotEditing = ref(false);
+    const robotIsCreate = ref(false);
+    const robotForm = reactive({bot_id:'', department:'hair', platform:'xhs', company:'', enabled:true});
     const kbSelected = ref(null);
     const kbIsCreate = ref(false);
     const kbForm = reactive({
@@ -1134,7 +1355,8 @@ createApp({
       username: '', password: '', role: 'normal', is_active: true,
       can_prompt_view: true, can_prompt_edit: false, can_prompt_delete: false,
       can_knowledge_view: true, can_knowledge_edit: false, can_knowledge_delete: false,
-      can_flow_view: true, can_flow_edit: false, can_flow_delete: false
+      can_flow_view: true, can_flow_edit: false, can_flow_delete: false,
+      managed_departments: []
     });
     const canPromptView = Vue.computed(() => !!currentUser.value?.can_prompt_view);
     const canPromptEdit = Vue.computed(() => !!currentUser.value?.can_prompt_edit);
@@ -1264,6 +1486,8 @@ createApp({
       if (keyword.value) params.set('keyword', keyword.value);
       const r = await api('/api/prompts?' + params.toString());
       if (r) { prompts.value = r.items; total.value = r.total; }
+      // 同步加载机器人配置（提示词页底部内联展示）
+      loadRobotList();
     }
 
     async function loadKbList() {
@@ -1285,6 +1509,139 @@ createApp({
           if (current) selectKb(current, {keepKeyword: true});
           else kbSelected.value = null;
         }
+      }
+    }
+
+    async function loadRobotList() {
+      // 全量拉取，前端按当前提示词的科室+平台匹配展示
+      const r = await api('/api/robot_configs');
+      if (r) robotList.value = r.items || [];
+    }
+
+    // 拉取当前选中提示词匹配到的所有机器人，及其对应的提示词版本号
+    async function loadRobotPromptVersions() {
+      const target = selected.value || (editing.value ? null : null);
+      const dept = (editing.value ? form.department : selected.value?.department) || '';
+      const plat = (editing.value ? form.platform : selected.value?.platform) || '';
+      if (!dept || !plat) {
+        robotPromptVersions.value = {};
+        return;
+      }
+      const matched = (robotList.value || []).filter(r => r.department === dept && r.platform === plat);
+      const result = {};
+      await Promise.all(matched.map(async (r) => {
+        const resp = await api(`/api/v1/robot_configs/${encodeURIComponent(r.bot_id)}/prompt_version?department=${dept}&platform=${plat}`);
+        if (resp) result[r.bot_id] = resp;
+      }));
+      robotPromptVersions.value = result;
+    }
+
+    // 仅展示与当前提示词「科室 + 平台」一致的机器人配置
+    // 编辑态以 form 为准，详情查看态以 selected 为准
+    const currentPromptDept = Vue.computed(() => {
+      if (editing.value) return form.department;
+      return selected.value?.department || '';
+    });
+    const currentPromptPlat = Vue.computed(() => {
+      if (editing.value) return form.platform;
+      return selected.value?.platform || '';
+    });
+    const robotMatchedList = Vue.computed(() => {
+      const dept = currentPromptDept.value;
+      const plat = currentPromptPlat.value;
+      if (!dept || !plat) return [];
+      return (robotList.value || []).filter(r => r.department === dept && r.platform === plat);
+    });
+
+    function selectRobot(r) {
+      robotSelected.value = r;
+      robotEditing.value = false;
+      robotIsCreate.value = false;
+    }
+
+    function openRobotCreate() {
+      robotIsCreate.value = true;
+      robotEditing.value = true;
+      robotSelected.value = null;
+      Object.assign(robotForm, {
+        bot_id: '',
+        department: form.department || 'hair',
+        platform: form.platform || 'xhs',
+        company: '',
+        enabled: true,
+      });
+    }
+
+    function startRobotEdit() {
+      if (!robotSelected.value) return;
+      robotIsCreate.value = false;
+      robotEditing.value = true;
+      Object.assign(robotForm, {
+        bot_id: robotSelected.value.bot_id,
+        department: robotSelected.value.department,
+        platform: robotSelected.value.platform,
+        company: robotSelected.value.company || '',
+        enabled: !!robotSelected.value.enabled,
+      });
+    }
+
+    function cancelRobotEdit() {
+      robotEditing.value = false;
+      robotIsCreate.value = false;
+    }
+
+    async function saveRobot() {
+      if (!robotForm.bot_id || !robotForm.department || !robotForm.platform) {
+        showToast('机器人ID / 科室 / 平台 都不能为空', 'error'); return;
+      }
+      const r = await api('/api/robot_configs', {
+        method: 'POST',
+        body: JSON.stringify({...robotForm})
+      });
+      if (r) {
+        showToast('已保存', 'success');
+        robotEditing.value = false;
+        robotIsCreate.value = false;
+        await loadRobotList();
+        await loadRobotPromptVersions();
+        robotSelected.value = r;
+      }
+    }
+
+    async function deleteRobot() {
+      if (!robotSelected.value) return;
+      if (!confirm(`确定删除机器人配置 ${robotSelected.value.bot_id}？`)) return;
+      const r = await api(`/api/robot_configs/${encodeURIComponent(robotSelected.value.bot_id)}`, {method: 'DELETE'});
+      if (r) {
+        showToast('已删除', 'success');
+        robotSelected.value = null;
+        await loadRobotList();
+      }
+    }
+
+    function startRobotEditInline(r) {
+      robotIsCreate.value = false;
+      robotEditing.value = true;
+      robotSelected.value = r;
+      Object.assign(robotForm, {
+        bot_id: r.bot_id,
+        department: r.department,
+        platform: r.platform,
+        company: r.company || '',
+        enabled: !!r.enabled,
+      });
+    }
+
+    async function deleteRobotInline(r) {
+      if (!confirm(`确定删除机器人配置 ${r.bot_id}？`)) return;
+      const resp = await api(`/api/robot_configs/${encodeURIComponent(r.bot_id)}`, {method: 'DELETE'});
+      if (resp) {
+        showToast('已删除', 'success');
+        if (robotSelected.value && robotSelected.value.bot_id === r.bot_id) {
+          robotSelected.value = null;
+          robotEditing.value = false;
+        }
+        await loadRobotList();
       }
     }
 
@@ -1328,14 +1685,17 @@ createApp({
       if (newMode === 'prompt' && !canPromptView.value) return;
       if (newMode === 'knowledge' && !canKnowledgeView.value) return;
       if (newMode === 'flow' && !canFlowView.value) return;
+      if (newMode === 'robots' && !canKnowledgeView.value) return;
       mode.value = newMode;
       selected.value = null;
       kbSelected.value = null;
       ftSelected.value = null;
       userSelected.value = null;
+      robotSelected.value = null;
       editing.value = false;
       kbIsCreate.value = false;
       ftIsCreate.value = false;
+      robotEditing.value = false;
       userEditing.value = false;
       ftEditingRecord.value = false;
       ftEditingRecordId.value = -1;
@@ -1344,6 +1704,7 @@ createApp({
       if (newMode === 'prompt' && canPromptView.value) loadList();
       else if (newMode === 'knowledge' && canKnowledgeView.value) loadKbList();
       else if (newMode === 'flow' && canFlowView.value) loadFtList();
+      else if (newMode === 'robots' && canKnowledgeView.value) loadRobotList();
       else if (newMode === 'users') loadUsers();
     }
 
@@ -1359,6 +1720,9 @@ createApp({
       editing.value = false;
       showVersions.value = false;
       viewingVersion.value = null;
+      // 拉机器人配置 + 各机器人关联的提示词版本号（详情态展示用）
+      await loadRobotList();
+      await loadRobotPromptVersions();
       const r = await api(`/api/prompts/${p.id}/versions`);
       if (r) versions.value = r;
     }
@@ -1377,9 +1741,11 @@ createApp({
         isCreate.value = true; editing.value = true;
         Object.assign(form, {
           name:'', department:'general', platform:'general', scene:'system_prompt',
-          content:'', description:'', tags:'', change_log:'', variable_bindings:'{}'
+          content:'', description:'', tags:'', tagsArr:[], change_log:'', variable_bindings:'{}'
         });
         varBindings.value = [];
+        robotEditing.value = false;
+        robotIsCreate.value = false;
       } else if (mode.value === 'knowledge') {
         kbIsCreate.value = true;
         Object.assign(kbForm, {department:'general', platform:'general'});
@@ -1393,29 +1759,43 @@ createApp({
     function startEdit() {
       if (!selected.value) return;
       isCreate.value = false; editing.value = true;
+      const tagsStr = selected.value.tags || '';
       Object.assign(form, {
         name: selected.value.name, department: selected.value.department,
         platform: selected.value.platform, scene: selected.value.scene,
         content: selected.value.content, description: selected.value.description,
-        tags: selected.value.tags, change_log: '', variable_bindings: selected.value.variable_bindings || '{}'
+        tags: tagsStr,
+        tagsArr: tagsStr ? tagsStr.split(/[,，、\s]+/).filter(Boolean) : [],
+        change_log: '', variable_bindings: selected.value.variable_bindings || '{}'
       });
       jsonToBindings(selected.value.variable_bindings || '{}');
+      robotEditing.value = false;
+      robotIsCreate.value = false;
+      loadRobotList();
+      loadRobotPromptVersions();
     }
 
-    function cancelEdit() { editing.value = false; }
+    function cancelEdit() {
+      editing.value = false;
+      robotEditing.value = false;
+      robotIsCreate.value = false;
+    }
 
     async function savePrompt() {
       if (!form.name || !form.content) {
         showToast('名称和内容不能为空', 'error'); return;
       }
       const bindingsJson = bindingsToJson();
+      // 多选标签同步成逗号分隔字符串
+      const tagsFromArr = (form.tagsArr || []).join(',');
+      const tagsFinal = tagsFromArr || form.tags || '';
       if (isCreate.value) {
         const r = await api('/api/prompts', {
           method: 'POST',
           body: JSON.stringify({
             name: form.name, department: form.department, platform: form.platform,
             scene: form.scene, content: form.content, description: form.description,
-            tags: form.tags, variable_bindings: bindingsJson
+            tags: tagsFinal, variable_bindings: bindingsJson
           })
         });
         if (r) {
@@ -1429,7 +1809,7 @@ createApp({
           method: 'PUT',
           body: JSON.stringify({
             content: form.content, description: form.description,
-            tags: form.tags, change_log: form.change_log,
+            tags: tagsFinal, change_log: form.change_log,
             variable_bindings: bindingsJson
           })
         });
@@ -1616,6 +1996,65 @@ createApp({
         showToast('已删除', 'success');
         kbSelected.value = null;
         await loadKbList();
+      }
+    }
+
+    // ==================== 知识库导入导出 ====================
+    async function exportKb() {
+      const params = new URLSearchParams();
+      if (filterDept.value) params.set('department', filterDept.value);
+      if (filterPlat.value) params.set('platform', filterPlat.value);
+      if (keyword.value) params.set('keyword', keyword.value);
+      const token = localStorage.getItem('pm_token') || '';
+      try {
+        const resp = await fetch(API + '/api/knowledge/export?' + params.toString(), {
+          headers: {Authorization: 'Bearer ' + token},
+        });
+        if (!resp.ok) { showToast('导出失败：' + resp.status, 'error'); return; }
+        const blob = await resp.blob();
+        const dispo = resp.headers.get('Content-Disposition') || '';
+        let filename = 'knowledge.xlsx';
+        const m = dispo.match(/filename="?([^"]+)"?/);
+        if (m) filename = m[1];
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+        showToast('导出完成', 'success');
+      } catch (e) {
+        showToast('导出失败：' + e, 'error');
+      }
+    }
+
+    function triggerKbImport() {
+      const input = document.querySelector('input[type="file"][accept=".xlsx,.xlsm"]');
+      if (input) input.click();
+    }
+
+    async function onKbImportFile(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+      if (!confirm('导入将按 (科室, 平台) 把 Excel 行追加到现有知识库；是否继续？')) return;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upsert', 'true');
+      const token = localStorage.getItem('pm_token') || '';
+      try {
+        const resp = await fetch(API + '/api/knowledge/import', {
+          method: 'POST',
+          headers: {Authorization: 'Bearer ' + token},
+          body: fd,
+        });
+        const r = await resp.json();
+        if (!resp.ok) { showToast('导入失败：' + (r.detail || r.message || resp.status), 'error'); return; }
+        showToast(`导入完成：新建 ${r.created}，更新 ${r.updated}，跳过 ${r.skipped}，共 ${r.items} 条`, 'success');
+        await loadKbList();
+      } catch (e) {
+        showToast('导入失败：' + e, 'error');
       }
     }
 
@@ -1845,7 +2284,8 @@ createApp({
         username: '', password: '', role: 'normal', is_active: true,
         can_prompt_view: true, can_prompt_edit: false, can_prompt_delete: false,
         can_knowledge_view: true, can_knowledge_edit: false, can_knowledge_delete: false,
-        can_flow_view: true, can_flow_edit: false, can_flow_delete: false
+        can_flow_view: true, can_flow_edit: false, can_flow_delete: false,
+        managed_departments: []
       });
     }
 
@@ -1866,7 +2306,8 @@ createApp({
         can_flow_view: !!userSelected.value.can_flow_view,
         can_flow_edit: !!userSelected.value.can_flow_edit,
         can_flow_delete: !!userSelected.value.can_flow_delete,
-        is_active: !!userSelected.value.is_active
+        is_active: !!userSelected.value.is_active,
+        managed_departments: Array.isArray(userSelected.value.managed_departments) ? userSelected.value.managed_departments.slice() : []
       });
     }
 
@@ -1888,8 +2329,15 @@ createApp({
         can_flow_delete: userForm.can_flow_delete
       };
       const payload = userIsCreate.value
-        ? {username: userForm.username, password: userForm.password, role: userForm.role, ...pagePerms}
-        : {role: userForm.role, is_active: userForm.is_active, ...pagePerms};
+        ? {
+            username: userForm.username, password: userForm.password, role: userForm.role,
+            ...pagePerms,
+            managed_departments: userForm.role === 'admin' ? [] : (userForm.managed_departments || []),
+          }
+        : {
+            role: userForm.role, is_active: userForm.is_active, ...pagePerms,
+            managed_departments: userForm.role === 'admin' ? [] : (userForm.managed_departments || []),
+          };
       if (!userIsCreate.value && userForm.password) payload.password = userForm.password;
       const r = await api(userIsCreate.value ? '/api/users' : `/api/users/${userSelected.value.id}`, {
         method: userIsCreate.value ? 'POST' : 'PUT',
@@ -2108,7 +2556,7 @@ createApp({
     });
 
     return {
-      isAuthed, currentUser, isAdmin,
+      isAuthed, currentUser, isAdmin, managedDepartments, visibleDepartments,
       canPromptView, canPromptEdit, canPromptDelete,
       canKnowledgeView, canKnowledgeEdit, canKnowledgeDelete,
       canFlowView, canFlowEdit, canFlowDelete,
@@ -2134,6 +2582,12 @@ createApp({
       openCreate, startEdit, cancelEdit, savePrompt,
       deletePrompt, deleteVersion, rollback, loadList,
       addBinding, removeBinding, parseBindings,
+      robotList, robotSelected, robotEditing, robotIsCreate, robotForm, robotMatchedList, robotPromptVersions,
+      loadRobotList, selectRobot, openRobotCreate, startRobotEdit,
+      startRobotEditInline, deleteRobotInline,
+      cancelRobotEdit, saveRobot, deleteRobot,
+      availableCompanies,
+      exportKb, triggerKbImport, onKbImportFile,
       onFilterChange, switchMode,
       kbContentLines, selectKb,
       cancelKbCreate, saveKbCreate,

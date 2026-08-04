@@ -26,6 +26,7 @@ class UserResponse(BaseModel):
     can_flow_edit: bool
     can_flow_delete: bool
     is_active: bool
+    managed_departments: List[str] = []
     created_at: str
     updated_at: str
 
@@ -49,6 +50,7 @@ class UserCreate(BaseModel):
     can_flow_view: bool = True
     can_flow_edit: bool = False
     can_flow_delete: bool = False
+    managed_departments: List[str] = Field(default_factory=list, description="该用户管理的科室列表；admin 忽略")
 
 
 class UserUpdate(BaseModel):
@@ -64,6 +66,7 @@ class UserUpdate(BaseModel):
     can_flow_edit: Optional[bool] = None
     can_flow_delete: Optional[bool] = None
     is_active: Optional[bool] = None
+    managed_departments: Optional[List[str]] = None
 
 
 class PromptCreate(BaseModel):
@@ -240,6 +243,36 @@ class FlowRecordUpdate(BaseModel):
     description: Optional[str] = None
     structure: Optional[str] = None
     bot_id: Optional[str] = None
+
+
+class RobotConfigCreate(BaseModel):
+    bot_id: str = Field(..., min_length=1, max_length=64, description="机器人 ID")
+    department: str = Field(..., description="科室")
+    platform: str = Field(..., description="平台")
+    company: str = Field("", description="公司/品牌名称，如 雍禾、牙博士、邦泰")
+    enabled: bool = Field(True, description="是否启用")
+
+
+class RobotConfigUpdate(BaseModel):
+    department: Optional[str] = None
+    platform: Optional[str] = None
+    company: Optional[str] = None
+    enabled: Optional[bool] = None
+
+
+class RobotConfigResponse(BaseModel):
+    bot_id: str
+    department: str
+    platform: str
+    company: str
+    enabled: bool
+    created_at: str
+    updated_at: str
+
+
+class RobotConfigListResponse(BaseModel):
+    total: int
+    items: List[RobotConfigResponse]
 
 
 class LLMConfig(BaseModel):

@@ -31,10 +31,16 @@ DB_PATH = os.environ.get(
 _version_cache: Dict[str, Tuple[int, str, str, str]] = {}
 
 # 科室定义
-DEPARTMENTS = ["hair", "dentistry", "dermatology", "ophthalmology", "pediatrics", "beauty", "general"]
+DEPARTMENTS = [
+    "hair", "dentistry", "dermatology", "ophthalmology", "pediatrics", "beauty",
+    "thyroid", "psychiatry", "andrology", "gynaecology",
+    "general",
+]
 DEPARTMENT_ZH = {
     "hair": "植发科", "dentistry": "口腔科", "dermatology": "皮肤科",
-    "ophthalmology": "眼科", "pediatrics": "儿科", "beauty": "医美", "general": "通用"
+    "ophthalmology": "眼科", "pediatrics": "儿科", "beauty": "医美",
+    "thyroid": "甲状腺科", "psychiatry": "精神科", "andrology": "男科", "gynaecology": "妇科",
+    "general": "通用",
 }
 # 平台定义
 PLATFORMS = ["xhs", "bd", "dy", "kuaishou", "wechat", "general"]
@@ -204,6 +210,22 @@ def init_db():
             )
         """)
         conn.execute("""
+            CREATE TABLE IF NOT EXISTS robot_configs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bot_id TEXT NOT NULL UNIQUE,
+                department TEXT NOT NULL,
+                platform TEXT NOT NULL,
+                company TEXT NOT NULL DEFAULT '',
+                enabled INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_robot_configs_filter
+            ON robot_configs(department, platform, enabled)
+        """)
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
@@ -223,6 +245,11 @@ def init_db():
                 updated_at TEXT NOT NULL
             )
         """)
+        # 旧库兼容：增加 managed_departments 列（JSON 数组）
+        try:
+            conn.execute("SELECT managed_departments FROM users LIMIT 1")
+        except sqlite3.OperationalError:
+            conn.execute("ALTER TABLE users ADD COLUMN managed_departments TEXT NOT NULL DEFAULT '[]'")
         conn.execute("""
             CREATE TABLE IF NOT EXISTS auth_sessions (
                 token TEXT PRIMARY KEY,
@@ -284,9 +311,20 @@ def _public_user(row: dict) -> dict:
         "can_flow_edit": bool(row["can_flow_edit"]),
         "can_flow_delete": bool(row["can_flow_delete"]),
         "is_active": bool(row["is_active"]),
+        "managed_departments": _parse_md(row.get("managed_departments")),
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
+
+
+def _parse_md(raw) -> List[str]:
+    if not raw:
+        return []
+    try:
+        v = json.loads(raw)
+        return [str(x) for x in v] if isinstance(v, list) else []
+    except Exception:
+        return []
 
 
 def _ensure_default_admin():
@@ -383,8 +421,10 @@ def create_user(
     can_flow_view: bool = True,
     can_flow_edit: bool = False,
     can_flow_delete: bool = False,
+    managed_departments: Optional[List[str]] = None,
 ) -> dict:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    md_json = json.dumps(list(managed_departments or []), ensure_ascii=False)
     with get_connection() as conn:
         cursor = conn.execute(
             """INSERT INTO users (
@@ -392,8 +432,8 @@ def create_user(
                    can_prompt_view, can_prompt_edit, can_prompt_delete,
                    can_knowledge_view, can_knowledge_edit, can_knowledge_delete,
                    can_flow_view, can_flow_edit, can_flow_delete,
-                   is_active, created_at, updated_at
-               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)""",
+                   is_active, created_at, updated_at, managed_departments
+               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)""",
             (
                 username, _hash_password(password), role,
                 1 if can_prompt_view else 0,
@@ -405,7 +445,7 @@ def create_user(
                 1 if can_flow_view else 0,
                 1 if can_flow_edit else 0,
                 1 if can_flow_delete else 0,
-                now, now
+                now, now, md_json
             )
         )
         user_id = cursor.lastrowid
@@ -426,6 +466,7 @@ def update_user(
     can_flow_edit: Optional[bool] = None,
     can_flow_delete: Optional[bool] = None,
     is_active: Optional[bool] = None,
+    managed_departments: Optional[List[str]] = None,
 ) -> Optional[dict]:
     if not get_user_by_id(user_id):
         return None
@@ -466,6 +507,9 @@ def update_user(
     if is_active is not None:
         fields.append("is_active = ?")
         params.append(1 if is_active else 0)
+    if managed_departments is not None:
+        fields.append("managed_departments = ?")
+        params.append(json.dumps(list(managed_departments), ensure_ascii=False))
     if not fields:
         return get_user_by_id(user_id)
     fields.append("updated_at = ?")
@@ -597,14 +641,22 @@ def get_prompt_by_key(department: str, platform: str, scene: str) -> Optional[di
 
 
 def list_prompts(
-        department: Optional[str] = None, 
+        department: Optional[str] = None,
         platform: Optional[str] = None,
-        scene: Optional[str] = None, 
+        scene: Optional[str] = None,
         keyword: Optional[str] = None,
-        page: int = 1, 
-        page_size: int = 20
+        page: int = 1,
+        page_size: int = 20,
+        departments: Optional[List[str]] = None,
     ) -> Tuple[int, List[dict]]:
     conditions, params = [], []
+    if departments is not None:
+        # 普通用户：只看到自己被授权的科室
+        if not departments:
+            return 0, []
+        placeholders = ",".join("?" * len(departments))
+        conditions.append(f"department IN ({placeholders})")
+        params.extend(departments)
     if department:
         conditions.append("department = ?")
         params.append(department)
@@ -923,6 +975,74 @@ def add_bot_id(bot_id: str) -> None:
         )
 
 
+# ==================== 机器人配置（公司/科室/平台） ====================
+def _now_str() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def upsert_robot_config(bot_id: str, department: str, platform: str, company: str = "", enabled: bool = True) -> dict:
+    bot_id = str(bot_id).strip()
+    if not bot_id:
+        raise ValueError("bot_id 不能为空")
+    now = _now_str()
+    with get_connection() as conn:
+        conn.execute(
+            """INSERT INTO robot_configs (bot_id, department, platform, company, enabled, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(bot_id) DO UPDATE SET
+                 department=excluded.department,
+                 platform=excluded.platform,
+                 company=excluded.company,
+                 enabled=excluded.enabled,
+                 updated_at=excluded.updated_at""",
+            (bot_id, department, platform, company, 1 if enabled else 0, now, now)
+        )
+    return get_robot_config(bot_id)  # type: ignore[return-value]
+
+
+def get_robot_config(bot_id: str) -> Optional[dict]:
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM robot_configs WHERE bot_id = ?", (bot_id,)).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        d["enabled"] = bool(d.get("enabled", 1))
+        return d
+
+
+def delete_robot_config(bot_id: str) -> bool:
+    with get_connection() as conn:
+        cur = conn.execute("DELETE FROM robot_configs WHERE bot_id = ?", (bot_id,))
+        return cur.rowcount > 0
+
+
+def list_robot_configs(
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+    enabled_only: bool = False,
+) -> List[dict]:
+    conditions, params = [], []
+    if department:
+        conditions.append("department = ?")
+        params.append(department)
+    if platform:
+        conditions.append("platform = ?")
+        params.append(platform)
+    if enabled_only:
+        conditions.append("enabled = 1")
+    where = " WHERE " + " AND ".join(conditions) if conditions else ""
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"SELECT * FROM robot_configs{where} ORDER BY bot_id", params
+        ).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["enabled"] = bool(d.get("enabled", 1))
+        result.append(d)
+    return result
+
+
 def _ensure_bot_ids_seeded():
     """用默认 BOT_IDS 常量初始化 bot_ids 表（仅在表为空时）"""
     with get_connection() as conn:
@@ -978,9 +1098,16 @@ def get_kb_by_key(department: str, platform: str) -> Optional[dict]:
 def list_knowledge_bases(
         department: Optional[str] = None,
         platform: Optional[str] = None,
-        keyword: Optional[str] = None
+        keyword: Optional[str] = None,
+        departments: Optional[List[str]] = None,
     ) -> Tuple[int, List[dict]]:
     conditions, params = [], []
+    if departments is not None:
+        if not departments:
+            return 0, []
+        placeholders = ",".join("?" * len(departments))
+        conditions.append(f"department IN ({placeholders})")
+        params.extend(departments)
     if department:
         conditions.append("department = ?")
         params.append(department)
@@ -1075,9 +1202,16 @@ def list_flow_trees(
         department: Optional[str] = None,
         platform: Optional[str] = None,
         keyword: Optional[str] = None,
-        bot_id: Optional[str] = None
+        bot_id: Optional[str] = None,
+        departments: Optional[List[str]] = None,
     ) -> Tuple[int, List[dict]]:
     conditions, params = [], []
+    if departments is not None:
+        if not departments:
+            return 0, []
+        placeholders = ",".join("?" * len(departments))
+        conditions.append(f"ft.department IN ({placeholders})")
+        params.extend(departments)
     if department and not keyword:
         conditions.append("ft.department = ?")
         params.append(department)

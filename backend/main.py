@@ -15,7 +15,9 @@
 import os
 import sys
 import json
-from typing import Optional
+from io import BytesIO
+from datetime import datetime
+from typing import Optional, Dict, Tuple, List
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response, JSONResponse
@@ -39,6 +41,7 @@ from models import (
     KnowledgeBaseCreate, KnowledgeBaseUpdate, KnowledgeBaseResponse, KnowledgeBaseListResponse,
     FlowTreeCreate, FlowTreeUpdate, FlowTreeResponse, FlowTreeListResponse,
     FlowRecordResponse, FlowRecordListResponse, FlowRecordUpdate,
+    RobotConfigCreate, RobotConfigUpdate, RobotConfigResponse, RobotConfigListResponse,
     LLMConfig, LLMVersionCreate, LLMVersionUpdate, LLMVersionResponse
 )
 from database import (
@@ -47,7 +50,7 @@ from database import (
     get_prompt_versions, rollback_prompt, delete_version,
     fetch_prompt, fetch_prompt_by_name,
     fetch_all_active, get_cache_stats, resolve_prompt_variables,
-    _refresh_cache, DB_PATH,
+    _refresh_cache, DB_PATH, get_connection,
     DEPARTMENTS, PLATFORMS, SCENES, DEPARTMENT_ZH, PLATFORM_ZH, SCENE_ZH,
     BUILTIN_VARIABLES, KB_TYPES, BOT_IDS,
     list_bot_ids, add_bot_id,
@@ -57,6 +60,7 @@ from database import (
     list_flow_trees, update_flow_tree, delete_flow_tree,
     create_flow_record, get_flow_record_by_id, list_flow_records,
     update_flow_record, delete_flow_record, search_flow_records,
+    upsert_robot_config, get_robot_config, delete_robot_config, list_robot_configs,
     authenticate_user, create_session, get_user_by_token, delete_session,
     list_users, create_user, update_user, delete_user, user_has_permission,
     get_llm_config, set_llm_config,
@@ -370,7 +374,15 @@ async def favicon():
 async def index():
     html_path = os.path.join(FRONTEND_DIR, "index.html")
     if os.path.exists(html_path):
-        return FileResponse(html_path)
+        # 禁用缓存，避免前端改动后浏览器仍使用旧 HTML
+        return FileResponse(
+            html_path,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
     return HTMLResponse("<h1>提示词管理系统</h1>")
 
 
@@ -415,7 +427,8 @@ async def api_user_create(data: UserCreate, _: dict = Depends(require_admin)):
             data.username, data.password, role,
             data.can_prompt_view, data.can_prompt_edit, data.can_prompt_delete,
             data.can_knowledge_view, data.can_knowledge_edit, data.can_knowledge_delete,
-            data.can_flow_view, data.can_flow_edit, data.can_flow_delete
+            data.can_flow_view, data.can_flow_edit, data.can_flow_delete,
+            managed_departments=data.managed_departments,
         )
     except Exception as e:
         if "UNIQUE" in str(e).upper():
@@ -442,7 +455,8 @@ async def api_user_update(user_id: int, data: UserUpdate, current_user: dict = D
         can_flow_view=data.can_flow_view,
         can_flow_edit=data.can_flow_edit,
         can_flow_delete=data.can_flow_delete,
-        is_active=data.is_active
+        is_active=data.is_active,
+        managed_departments=data.managed_departments,
     )
     if not user:
         raise HTTPException(404, "账号不存在")
@@ -503,7 +517,9 @@ async def api_add_bot_id(data: dict, _: dict = Depends(require_knowledge_edit)):
 # ==================== 管理接口 ====================
 
 @app.post("/api/prompts", response_model=PromptResponse)
-async def api_create(data: PromptCreate, _: dict = Depends(require_prompt_edit)):
+async def api_create(data: PromptCreate, user: dict = Depends(require_prompt_edit)):
+    if user.get("role") != "admin" and data.department not in (user.get("managed_departments") or []):
+        raise HTTPException(403, "该科室不在你的管理范围内")
     existing = get_prompt_by_name(data.name)
     if existing:
         raise HTTPException(400, f"名称 '{data.name}' 已存在")
@@ -527,12 +543,15 @@ async def api_list(
     department: Optional[str] = None, platform: Optional[str] = None,
     scene: Optional[str] = None, keyword: Optional[str] = None,
     page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100),
-    _: dict = Depends(require_prompt_view)
+    user: dict = Depends(require_prompt_view)
 ):
+    # 高级权限（admin）不受 managed_departments 限制
+    dept_filter = None if user.get("role") == "admin" else user.get("managed_departments")
     total, items = list_prompts(
-        department=department, 
+        department=department,
         platform=platform,
-        scene=scene, 
+        scene=scene,
+        departments=dept_filter,
         keyword=keyword, 
         page=page, 
         page_size=page_size
@@ -759,7 +778,9 @@ async def api_reload_cache():
 # ==================== 知识库管理接口 ====================
 
 @app.post("/api/knowledge", response_model=KnowledgeBaseResponse)
-async def api_kb_create(data: KnowledgeBaseCreate, _: dict = Depends(require_knowledge_edit)):
+async def api_kb_create(data: KnowledgeBaseCreate, user: dict = Depends(require_knowledge_edit)):
+    if user.get("role") != "admin" and data.department not in (user.get("managed_departments") or []):
+        raise HTTPException(403, "该科室不在你的管理范围内")
     existing = get_kb_by_key(data.department, data.platform)
     if existing:
         raise HTTPException(400, f"该科室+平台的知识库已存在")
@@ -772,10 +793,166 @@ async def api_kb_list(
     department: Optional[str] = None,
     platform: Optional[str] = None,
     keyword: Optional[str] = None,
-    _: dict = Depends(require_knowledge_view)
+    user: dict = Depends(require_knowledge_view)
 ):
-    total, items = list_knowledge_bases(department=department, platform=platform, keyword=keyword)
+    dept_filter = None if user.get("role") == "admin" else user.get("managed_departments")
+    total, items = list_knowledge_bases(
+        department=department, platform=platform, keyword=keyword, departments=dept_filter,
+    )
     return KnowledgeBaseListResponse(total=total, items=[KnowledgeBaseResponse(**i) for i in items])
+
+
+# 静态子路由（必须在 /api/knowledge/{kb_id} 之前注册，否则 export/import 会被当作 kb_id）
+@app.get("/api/knowledge/export")
+async def api_kb_export(
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+    keyword: Optional[str] = None,
+    bot_id: Optional[str] = None,
+    user: dict = Depends(require_knowledge_view),
+):
+    """按当前筛选条件导出知识库内容为 Excel。表头：科室, 平台, 类型, 机器人ID, 知识内容。"""
+    try:
+        from io import BytesIO as _BytesIO
+        from openpyxl import Workbook
+    except ImportError:
+        raise HTTPException(500, "缺少依赖 openpyxl，请执行 pip install openpyxl")
+
+    dept_filter = None if user.get("role") == "admin" else user.get("managed_departments")
+    _, items = list_knowledge_bases(
+        department=department, platform=platform, keyword=keyword, departments=dept_filter,
+    )
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "知识库"
+    ws.append(["科室", "平台", "类型", "机器人ID", "知识内容"])
+    total_rows = 0
+    for kb in items:
+        try:
+            arr = json.loads(kb.get("content") or "[]")
+        except Exception:
+            arr = []
+        if not isinstance(arr, list):
+            continue
+        for item in arr:
+            if isinstance(item, str):
+                text, kb_type, item_bot = item, "答疑", ""
+            elif isinstance(item, dict):
+                text = item.get("text", "")
+                kb_type = item.get("type", "答疑")
+                item_bot = str(item.get("bot_id") or "")
+            else:
+                continue
+            if bot_id is not None:
+                if bot_id == "":
+                    if item_bot != "":
+                        continue
+                else:
+                    if item_bot != "" and item_bot != str(bot_id):
+                        continue
+            ws.append([kb.get("department", ""), kb.get("platform", ""), kb_type, item_bot, text])
+            total_rows += 1
+    buf = _BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    filename = f"knowledge_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return Response(
+        content=buf.read(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.post("/api/knowledge/import")
+async def api_kb_import(
+    file: UploadFile = File(...),
+    upsert: bool = Form(True),
+    user: dict = Depends(require_knowledge_view),
+):
+    """按 Excel 表头（科室, 平台, 类型, 机器人ID, 知识内容）导入知识库条目到对应科室+平台。"""
+    try:
+        from io import BytesIO as _BytesIO
+        from openpyxl import load_workbook
+    except ImportError:
+        raise HTTPException(500, "缺少依赖 openpyxl，请执行 pip install openpyxl")
+
+    if not file.filename or not file.filename.lower().endswith((".xlsx", ".xlsm")):
+        raise HTTPException(400, "请上传 .xlsx 格式的 Excel 文件")
+
+    # 非管理员：导入内容必须落在自己的管理科室内
+    managed = user.get("managed_departments") if user.get("role") != "admin" else None
+
+    content = await file.read()
+    try:
+        wb = load_workbook(filename=_BytesIO(content), data_only=True, read_only=True)
+    except Exception as e:
+        raise HTTPException(400, f"无法解析 Excel：{e}")
+    ws = wb.active
+    rows = list(ws.iter_rows(values_only=True))
+    if not rows:
+        return {"created": 0, "updated": 0, "skipped": 0, "message": "空文件"}
+
+    header = [str(c or "").strip() for c in rows[0]]
+    expected = ["科室", "平台", "类型", "机器人ID", "知识内容"]
+    if header[:5] != expected:
+        raise HTTPException(
+            400,
+            f"表头必须为 {expected}，当前 {header[:5]}",
+        )
+
+    grouped: Dict[Tuple[str, str], List[dict]] = {}
+    skipped = 0
+    for row in rows[1:]:
+        if not row or all(c is None or str(c).strip() == "" for c in row):
+            continue
+        dept = str(row[0] or "").strip()
+        plat = str(row[1] or "").strip()
+        kb_type = str(row[2] or "答疑").strip() or "答疑"
+        bot = str(row[3] or "").strip()
+        text = str(row[4] or "").strip()
+        if not dept or not plat or not text:
+            skipped += 1
+            continue
+        if managed is not None and dept not in managed:
+            # 非管理员只能导入到自己的管理科室
+            skipped += 1
+            continue
+        grouped.setdefault((dept, plat), []).append({"text": text, "type": kb_type, "bot_id": bot})
+
+    created = updated = 0
+    for (dept, plat), new_items in grouped.items():
+        existing = get_kb_by_key(dept, plat)
+        if existing:
+            try:
+                arr = json.loads(existing.get("content") or "[]")
+            except Exception:
+                arr = []
+            if not isinstance(arr, list):
+                arr = []
+            arr = [it for it in arr if isinstance(it, dict) or isinstance(it, str)]
+            if upsert:
+                seen = {(it.get("text"), it.get("type"), it.get("bot_id")) for it in arr if isinstance(it, dict)}
+                for it in new_items:
+                    key = (it["text"], it["type"], it["bot_id"])
+                    if key in seen:
+                        continue
+                    arr.append(it)
+            else:
+                arr.extend(new_items)
+            update_knowledge_base(existing["id"], json.dumps(arr, ensure_ascii=False))
+            updated += 1
+        else:
+            content_str = json.dumps(new_items, ensure_ascii=False)
+            create_knowledge_base(dept, plat, content_str)
+            created += 1
+
+    return {
+        "created": created,
+        "updated": updated,
+        "skipped": skipped,
+        "groups": len(grouped),
+        "items": sum(len(v) for v in grouped.values()),
+    }
 
 
 @app.get("/api/knowledge/{kb_id}", response_model=KnowledgeBaseResponse)
@@ -801,10 +978,95 @@ async def api_kb_delete(kb_id: int, _: dict = Depends(require_knowledge_delete))
     return {"message": "删除成功"}
 
 
-# ==================== 流程树管理接口 ====================
+# ==================== 机器人配置接口 ====================
 
+# 公开只读端点，供 SDK 热更新拉取（无需鉴权）
+@app.get("/api/v1/robot_configs")
+async def api_v1_robot_configs(
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+    enabled_only: bool = False,
+):
+    items = list_robot_configs(department=department, platform=platform, enabled_only=enabled_only)
+    return {"total": len(items), "items": items}
+
+
+# 公开只读：单条机器人配置 + 默认按其自身 department/platform 返回
+@app.get("/api/v1/robot_configs/{bot_id}/prompt_version")
+async def api_v1_robot_config_prompt_version(
+    bot_id: str,
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+):
+    cfg = get_robot_config(bot_id)
+    dept = department or (cfg.get("department") if cfg else None)
+    plat = platform or (cfg.get("platform") if cfg else None)
+    if not dept or not plat:
+        return {"bot_id": bot_id, "version": 0, "prompt_name": None}
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT name, version FROM prompts WHERE department=? AND platform=? AND is_active=1 "
+            "ORDER BY id DESC LIMIT 1",
+            (dept, plat),
+        ).fetchone()
+    if not row:
+        return {"bot_id": bot_id, "version": 0, "prompt_name": None}
+    d = dict(row)
+    return {"bot_id": bot_id, "version": d.get("version", 0), "prompt_name": d.get("name")}
+
+
+@app.get("/api/robot_configs", response_model=RobotConfigListResponse)
+async def api_robot_config_list(
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+    enabled_only: bool = False,
+    _: dict = Depends(require_knowledge_view),
+):
+    items = list_robot_configs(department=department, platform=platform, enabled_only=enabled_only)
+    return RobotConfigListResponse(total=len(items), items=[RobotConfigResponse(**i) for i in items])
+
+
+@app.post("/api/robot_configs", response_model=RobotConfigResponse)
+async def api_robot_config_upsert(data: RobotConfigCreate, _: dict = Depends(require_knowledge_edit)):
+    try:
+        item = upsert_robot_config(
+            bot_id=data.bot_id, department=data.department,
+            platform=data.platform, company=data.company, enabled=data.enabled,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    if not item:
+        raise HTTPException(500, "保存失败")
+    return RobotConfigResponse(**item)
+
+
+@app.put("/api/robot_configs/{bot_id}", response_model=RobotConfigResponse)
+async def api_robot_config_update(bot_id: str, data: RobotConfigUpdate, _: dict = Depends(require_knowledge_edit)):
+    item = get_robot_config(bot_id)
+    if not item:
+        raise HTTPException(404, "机器人配置不存在")
+    item = upsert_robot_config(
+        bot_id=bot_id,
+        department=data.department or item["department"],
+        platform=data.platform or item["platform"],
+        company=data.company if data.company is not None else item["company"],
+        enabled=data.enabled if data.enabled is not None else item["enabled"],
+    )
+    return RobotConfigResponse(**item)
+
+
+@app.delete("/api/robot_configs/{bot_id}")
+async def api_robot_config_delete(bot_id: str, _: dict = Depends(require_knowledge_edit)):
+    if not delete_robot_config(bot_id):
+        raise HTTPException(404, "机器人配置不存在")
+    return {"message": "删除成功"}
+
+
+# ==================== 流程树管理接口 ====================
 @app.post("/api/flow_trees", response_model=FlowTreeResponse)
-async def api_flow_tree_create(data: FlowTreeCreate, _: dict = Depends(require_flow_edit)):
+async def api_flow_tree_create(data: FlowTreeCreate, user: dict = Depends(require_flow_edit)):
+    if user.get("role") != "admin" and data.department not in (user.get("managed_departments") or []):
+        raise HTTPException(403, "该科室不在你的管理范围内")
     existing = get_flow_tree_by_key(data.department, data.platform)
     if existing:
         raise HTTPException(400, "该科室+平台的流程树库已存在")
@@ -818,9 +1080,13 @@ async def api_flow_tree_list(
     platform: Optional[str] = None,
     keyword: Optional[str] = None,
     bot_id: Optional[str] = None,
-    _: dict = Depends(require_flow_view)
+    user: dict = Depends(require_flow_view)
 ):
-    total, items = list_flow_trees(department=department, platform=platform, keyword=keyword, bot_id=bot_id)
+    dept_filter = None if user.get("role") == "admin" else user.get("managed_departments")
+    total, items = list_flow_trees(
+        department=department, platform=platform, keyword=keyword, bot_id=bot_id,
+        departments=dept_filter,
+    )
     return FlowTreeListResponse(total=total, items=[FlowTreeResponse(**i) for i in items])
 
 

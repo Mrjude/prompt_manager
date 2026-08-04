@@ -60,6 +60,7 @@ class PromptClient:
     """
 
     def __init__(self, base_url: str = "http://localhost:8900"):
+        # SDK 仅使用 /api/v1/* 公开端点，无需鉴权
         self.base_url = base_url.rstrip("/")
         # 提示词缓存: {name: {content, version, department, platform, scene, variables, updated_at}}
         self._cache: Dict[str, dict] = {}
@@ -69,6 +70,8 @@ class PromptClient:
         self._kb_cache: Dict[tuple, dict] = {}
         # 流程树描述缓存: {(department, platform, keyword): [record, ...]}
         self._flow_cache: Dict[tuple, List[dict]] = {}
+        # 机器人配置缓存: [ {bot_id, department, platform, company, enabled, ...} ]
+        self._robot_cache: List[dict] = []
         self._lock = threading.Lock()
         self._running = False
         self._poll_thread: Optional[threading.Thread] = None
@@ -438,13 +441,55 @@ class PromptClient:
         with self._lock:
             self._flow_cache[key] = result.get("items", [])
 
+    # ==================== 机器人配置（公司/科室/平台） ====================
+    def refresh_robot_configs(self) -> List[dict]:
+        """拉取最新的机器人配置列表（bot_id/department/platform/company/enabled）。
+
+        Returns:
+            最新配置列表（深拷贝）。
+        """
+        result = self._http_get("/api/v1/robot_configs")
+        items = result.get("items", []) if result else []
+        with self._lock:
+            old = list(self._robot_cache)
+            self._robot_cache = list(items)
+        # 检测变化
+        new_key = sorted(((i.get("bot_id"), i.get("department"), i.get("platform"),
+                           i.get("company"), i.get("enabled")) for i in items))
+        old_key = sorted(((i.get("bot_id"), i.get("department"), i.get("platform"),
+                           i.get("company"), i.get("enabled")) for i in old))
+        if new_key != old_key:
+            logger.info(f"[同步] 机器人配置更新: {len(items)} 条")
+            if self._on_update_callback:
+                try:
+                    self._on_update_callback("robot_configs", {"items": items, "total": len(items)})
+                except Exception as e:
+                    logger.error(f"机器人配置更新回调失败: {e}")
+        return [dict(i) for i in items]
+
+    def get_robot_configs(self, department: str = None, platform: str = None, enabled_only: bool = False) -> List[dict]:
+        """返回当前缓存中的机器人配置。可按科室/平台过滤。"""
+        with self._lock:
+            items = [dict(i) for i in self._robot_cache]
+        out = []
+        for it in items:
+            if department and it.get("department") != department:
+                continue
+            if platform and it.get("platform") != platform:
+                continue
+            if enabled_only and not it.get("enabled", True):
+                continue
+            out.append(it)
+        return out
+
     # ==================== 通用接口 ====================
 
     def preload(self):
-        """全量预加载所有提示词、知识库和流程树描述"""
+        """全量预加载所有提示词、知识库、流程树描述和机器人配置"""
         self._sync_all()
         self._sync_all_knowledge()
         self.refresh_flow_records()
+        self.refresh_robot_configs()
 
     def on_update(self, callback: Callable[[str, dict], None]):
         """注册更新回调: callback(key, data)，key 对提示词为名称，对知识库为 kb:科室/平台"""
@@ -555,6 +600,7 @@ class PromptClient:
                     self._sync_all()
                 self._sync_all_knowledge()
                 self.refresh_flow_records()
+                self.refresh_robot_configs()
             except Exception as e:
                 logger.error(f"轮询异常: {e}")
             for _ in range(interval):
