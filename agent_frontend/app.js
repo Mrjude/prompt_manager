@@ -1,5 +1,5 @@
 // Agent 前端 - Vue3 应用
-const {createApp,ref,reactive,onMounted,nextTick,computed}=Vue;
+const {createApp,ref,reactive,onMounted,onUnmounted,nextTick,computed}=Vue;
 const API='';
 createApp({
   setup(){
@@ -22,6 +22,15 @@ createApp({
     // chat
     const cMsgs=ref([]),cIn=ref(''),cLoad=ref(false);
 
+    // 机器人配置（科室 -> 平台 -> 机器人id 三级级联）
+    const bots=ref([]),fBot=ref(''),botCfg=ref(null),cfgLoad=ref(false);
+    const cSession=ref(''),cUseTools=ref(true),cThink=ref(false);
+
+    // 对话列表（LLM 对话页左侧边栏）
+    const convList=ref([]),convTotal=ref(0),convPg=ref(1),convPS=ref(30);
+    const convBotKw=ref(''),convKw=ref(''),convLoad=ref(false);
+    const convTP=computed(()=>Math.ceil(convTotal.value/convPS.value)||1);
+
     function ST(m,t='info'){toast.msg=m;toast.type=t;toast.show=true;if(!ftPT.value)setTimeout(()=>toast.show=false,2500);}
     async function api(p,o={}){try{const r=await fetch(API+p,{headers:{'Content-Type':'application/json'},...o});if(!r.ok)throw new Error(await r.text());return await r.json();}catch(e){ST('请求失败: '+e.message,'error');return null;}}
     function dL(k){return depts.value.find(d=>d.key===k)?.label||k;}
@@ -31,7 +40,11 @@ createApp({
     async function chkLLM(){const r=await api('/api/llm/status');if(r){llmOk.value=r.configured;llmModel.value=r.model_name||'';}}
     async function testLLM(){ST('测试中...','info');try{const r=await fetch(API+'/api/llm/test',{method:'POST',headers:{'Content-Type':'application/json'}});if(r.ok){ST('成功: '+(await r.json()).response,'success');}else ST('失败: '+await r.text(),'error');}catch(e){ST('失败: '+e.message,'error');}}
 
-    function swM(m){mode.value=m;}
+    function swM(m){
+      mode.value=m;
+      // 切到对话页时加载对话列表；切走时清掉列表检索词，避免影响流程树搜索框
+      if(m==='chat'){convPg.value=1;loadSessions();}
+    }
 
     // ========== 图片列表搜索 ==========
     function doSearch(){
@@ -50,6 +63,85 @@ createApp({
       selRec.value=r;
       edId.value=-1;
       edDesc.value='';
+    }
+
+    // ========== 机器人 id 级联 ==========
+    // 机器人配置指纹，用于检测提示词管理侧的配置变更
+    const botSig=ref(''),botSyncAt=ref('');
+
+    // 科室/平台变化 -> 重新拉取可选机器人
+    // keepSelected=true 时不清空当前选中项（用于反向回填场景，此时 fBot 是可信的）
+    async function loadBots(keepSelected){
+      const p=new URLSearchParams();
+      if(fDept.value)p.set('department',fDept.value);
+      if(fPlat.value)p.set('platform',fPlat.value);
+      const r=await api('/api/agent/bots?'+p.toString());
+      if(!r)return;
+      bots.value=r.bots||[];
+      botSig.value=r.signature||'';
+      botSyncAt.value=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+      if(!keepSelected&&fBot.value&&!bots.value.some(b=>b.value===fBot.value)){
+        fBot.value='';botCfg.value=null;
+      }
+    }
+
+    // 选中机器人 -> 反向回填科室/平台（保证三者一致）
+    async function onBotChange(){
+      const bot=bots.value.find(b=>b.value===fBot.value);
+      if(bot&&bot.configured!==false){
+        const changed=(bot.department&&fDept.value!==bot.department)
+                    ||(bot.platform&&fPlat.value!==bot.platform);
+        if(changed){
+          if(bot.department)fDept.value=bot.department;
+          if(bot.platform)fPlat.value=bot.platform;
+          // keepSelected：回填后的候选集必然包含该机器人，不能被清空逻辑误清
+          await loadBots(true);
+          doSearch();
+          if(mode.value==='chat'){convPg.value=1;loadSessions();}
+        }
+      }
+      cSession.value='';   // 切换机器人后重置会话，避免沿用旧人格上下文
+      cMsgs.value=[];
+      await loadBotConfig();
+    }
+
+    // 手动刷新机器人配置（提示词管理侧改动后立即同步）
+    async function syncBots(){
+      await loadBots(true);
+      await loadBotConfig();
+      ST(`已同步 ${bots.value.length} 个机器人配置`,'success');
+    }
+
+    // 轮询检测配置变更：指纹变化才真正重拉列表，成本极低
+    let botSigTimer=null;
+    async function checkBotSignature(){
+      const r=await api('/api/agent/bots/signature');
+      if(r&&r.signature&&botSig.value&&r.signature!==botSig.value){
+        await loadBots(true);
+        ST('机器人配置已更新','success');
+      }
+    }
+
+    // 上级筛选变化的统一入口
+    async function onFilterChange(){
+      selRec.value=null;
+      doSearch();
+      await loadBots();
+      await loadBotConfig();
+      cSession.value='';
+      if(mode.value==='chat'){convPg.value=1;loadSessions();}
+    }
+
+    async function loadBotConfig(){
+      if(!fBot.value&&!fDept.value&&!fPlat.value){botCfg.value=null;return;}
+      cfgLoad.value=true;
+      const p=new URLSearchParams();
+      if(fBot.value)p.set('bot_id',fBot.value);
+      if(fDept.value)p.set('department',fDept.value);
+      if(fPlat.value)p.set('platform',fPlat.value);
+      const r=await api('/api/agent/config?'+p.toString());
+      botCfg.value=r?{...r.meta,tools:r.tools,preview:r.system_prompt_preview,runtime:r.runtime}:null;
+      cfgLoad.value=false;
     }
 
     // ========== 上传 ==========
@@ -147,15 +239,98 @@ createApp({
     const recTP=computed(()=>Math.ceil(recList.value.length/recPS)||1);
     const recPage=computed(()=>recList.value.slice((recPg.value-1)*recPS,(recPg.value-1)*recPS+recPS));
 
-    // chat
+    // ========== 对话列表 ==========
+    let convTimer=null;
+    function loadSessionsDebounced(){
+      clearTimeout(convTimer);
+      convTimer=setTimeout(()=>{convPg.value=1;loadSessions();},300);
+    }
+
+    async function loadSessions(){
+      convLoad.value=true;
+      const p=new URLSearchParams({page:convPg.value,page_size:convPS.value});
+      if(convBotKw.value.trim())p.set('bot_id',convBotKw.value.trim());
+      if(convKw.value.trim())p.set('keyword',convKw.value.trim());
+      if(fDept.value)p.set('department',fDept.value);
+      if(fPlat.value)p.set('platform',fPlat.value);
+      const r=await api('/api/agent/sessions?'+p.toString());
+      if(r){convList.value=r.items||[];convTotal.value=r.total||0;}
+      convLoad.value=false;
+    }
+
+    // 点击对话 -> 恢复历史消息与配置上下文
+    async function openConv(s){
+      const r=await api('/api/agent/sessions/'+s.session_id);
+      if(!r)return;
+      cSession.value=s.session_id;
+      cMsgs.value=(r.messages||[]).map(m=>({
+        role:m.role,content:m.content,segments:m.segments||[],
+        tools:m.tools||[],turn:m.turn,thinkOpen:false
+      }));
+      // 回填该会话的机器人配置，保证继续对话时人格一致
+      if(r.department)fDept.value=r.department;
+      if(r.platform)fPlat.value=r.platform;
+      if(r.bot_id&&r.bot_id!==fBot.value)fBot.value=r.bot_id;
+      await loadBots(true);
+      await loadBotConfig();
+      await nextTick();
+      const el=document.querySelector('.chat-messages');
+      if(el)el.scrollTop=el.scrollHeight;
+    }
+
+    async function delConv(s){
+      if(!confirm('确定删除该对话？'))return;
+      const r=await api('/api/agent/sessions/'+s.session_id,{method:'DELETE'});
+      if(r&&r.success){
+        if(cSession.value===s.session_id){cSession.value='';cMsgs.value=[];}
+        ST('对话已删除','success');
+        loadSessions();
+      }
+    }
+
+    function newConv(){cSession.value='';cMsgs.value=[];}
+
+    function fmtTime(iso){
+      if(!iso)return '';
+      const d=new Date(iso),now=new Date();
+      const sameDay=d.toDateString()===now.toDateString();
+      const p=n=>String(n).padStart(2,'0');
+      return sameDay?`${p(d.getHours())}:${p(d.getMinutes())}`
+                    :`${d.getMonth()+1}/${d.getDate()}`;
+    }
+
+    // chat：走智能客服 Agent 接口（带机器人配置 + 会话记忆 + 工具调用）
     async function cSend(){
       const t=cIn.value.trim();
       if(!t||cLoad.value)return;
       cMsgs.value.push({role:'user',content:t});cIn.value='';cLoad.value=true;
       try{
-        const r=await fetch(API+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:cMsgs.value.map(m=>({role:m.role,content:m.content}))})});
+        const r=await fetch(API+'/api/agent/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            message:t,
+            session_id:cSession.value||null,
+            bot_id:fBot.value||null,
+            department:fDept.value||null,
+            platform:fPlat.value||null,
+            use_tools:cUseTools.value,
+            enable_thinking:cThink.value
+          })});
         if(!r.ok)throw new Error(await r.text());
-        cMsgs.value.push({role:'assistant',content:(await r.json()).content});
+        const d=await r.json();
+        const isNew=!cSession.value;
+        cSession.value=d.session_id||cSession.value;
+        cMsgs.value.push({
+          role:'assistant',
+          content:d.reply,
+          segments:d.segments||[],
+          tools:d.tool_calls||[],
+          reasoning:d.reasoning||'',
+          thinkOpen:false,
+          turn:d.turn
+        });
+        if(d.meta)botCfg.value={...(botCfg.value||{}),...d.meta};
+        if(d.error)ST('Agent 异常: '+d.error,'error');
+        else loadSessions();   // 刷新左侧列表（新会话置顶 / 更新末条消息）
       }catch(e){cMsgs.value.push({role:'assistant',content:'错误: '+e.message});}
       cLoad.value=false;
       await nextTick();
@@ -163,18 +338,36 @@ createApp({
       if(el)el.scrollTop=el.scrollHeight;
     }
 
+    async function cClear(){
+      if(cSession.value)await api('/api/agent/reset',{method:'POST',body:JSON.stringify({session_id:cSession.value})});
+      cMsgs.value=[];cSession.value='';
+    }
+
     function isImage(r){return r.file_type==='image';}
     function isPdf(r){return r.file_type==='pdf';}
 
-    onMounted(()=>{loadMeta();chkLLM();});
+    onMounted(()=>{
+      loadMeta();chkLLM();loadBots();
+      // 每 20 秒比对配置指纹，变更时自动刷新机器人下拉
+      botSigTimer=setInterval(checkBotSignature,20000);
+      // 页面重新可见时立即同步一次（切回标签页的常见场景）
+      document.addEventListener('visibilitychange',()=>{
+        if(!document.hidden)checkBotSignature();
+      });
+    });
+    onUnmounted(()=>{clearInterval(botSigTimer);});
     return{
       mode,llmOk,llmModel,depts,plats,fDept,fPlat,searchKw,
       toast,ftPT,recList,recTotal,selRec,recPg,recPS,recTP,recPage,
       upShow,upFile,upFm,edId,edDesc,
       cMsgs,cIn,cLoad,
+      bots,fBot,botCfg,cfgLoad,cSession,cUseTools,cThink,botSig,botSyncAt,
+      convList,convTotal,convPg,convPS,convTP,convBotKw,convKw,convLoad,
       dL,pL,swM,testLLM,doSearch,selRecord,openUpload,upFC,doUpload,
       delRecord,reparse,startEdit,cancelEdit,saveEdit,
-      cSend,isImage,isPdf
+      loadBots,onBotChange,onFilterChange,loadBotConfig,syncBots,
+      loadSessions,loadSessionsDebounced,openConv,delConv,newConv,fmtTime,
+      cSend,cClear,isImage,isPdf
     };
   },
   template:`
@@ -183,17 +376,31 @@ createApp({
 
 <div class="container"><div class="toolbar">
   <div class="filter-group">
-    <div class="select-wrap"><select v-model="fDept" @change="selRec=null;doSearch()"><option value="">全部科室</option><option v-for="d in depts" :key="d.key" :value="d.key">{{d.label}}</option></select></div>
-    <div class="select-wrap"><select v-model="fPlat" @change="selRec=null;doSearch()"><option value="">全部平台</option><option v-for="p in plats" :key="p.key" :value="p.key">{{p.label}}</option></select></div>
+    <div class="select-wrap"><select v-model="fDept" @change="fPlat='';onFilterChange()"><option value="">全部科室</option><option v-for="d in depts" :key="d.key" :value="d.key">{{d.label}}</option></select></div>
+    <div class="select-wrap"><select v-model="fPlat" @change="onFilterChange()"><option value="">全部平台</option><option v-for="p in plats" :key="p.key" :value="p.key">{{p.label}}</option></select></div>
+    <div class="select-wrap bot-select" :title="botCfg?('生效提示词: '+(botCfg.prompt_name||'-')+' v'+(botCfg.prompt_version||0)):'选择机器人以加载其对话配置'">
+      <select v-model="fBot" @change="onBotChange()">
+        <option value="">{{bots.length?'全部机器人 ('+bots.length+')':'暂无机器人配置'}}</option>
+        <option v-for="b in bots" :key="b.value" :value="b.value" :disabled="b.enabled===false">{{b.label}}</option>
+      </select>
+    </div>
+    <button class="sync-btn" :title="'与提示词管理同步机器人配置'+(botSyncAt?'（上次同步 '+botSyncAt+'）':'')" @click="syncBots">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+    <span v-if="fBot&&botCfg" class="cfg-badge" :class="{warn:botCfg.prompt_source==='fallback'}">
+      v{{botCfg.prompt_version||0}}<span v-if="botCfg.prompt_version_locked" title="版本已锁定">锁</span>
+      <span v-if="botCfg.flow_record_count">· 流程{{botCfg.flow_record_count}}</span>
+      <span v-else title="该科室/平台未配置流程树">· 无流程</span>
+    </span>
   </div>
   <div class="search-box">
     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input v-model="searchKw" @input="selRec=null;doSearch()" placeholder="搜索流程树..." class="search-input">
+    <input v-if="mode==='chat'" v-model="convKw" @input="loadSessionsDebounced()" placeholder="检索对话内容..." class="search-input">
+    <input v-else v-model="searchKw" @input="selRec=null;doSearch()" placeholder="搜索流程树..." class="search-input">
   </div>
   <div class="spacer"></div>
-  <button class="btn btn-success" style="margin-right:8px" @click="openUpload">+ 上传流程树</button>
-  <button class="btn btn-toggle" :class="{active:mode==='flow'}" @click="swM('flow')">流程树解析</button>
-  <button class="btn btn-toggle" :class="{active:mode==='chat'}" @click="swM('chat')">LLM 对话</button>
+  <button class="btn btn-toggle" :class="{active:mode==='flow'}" @click="swM('flow')">流程树管理</button>
+  <button class="btn btn-toggle" :class="{active:mode==='chat'}" @click="swM('chat')">Agent对话测试</button>
 </div>
 
 <!-- 上传弹窗 -->
@@ -212,8 +419,48 @@ createApp({
 </div>
 
 <div class="main-grid">
+  <!-- 左侧：LLM 对话模式 = 对话列表；其他模式 = 流程树图库 -->
+  <div v-if="mode==='chat'" class="card">
+    <div class="card-header">
+      <div class="title">对话列表 <span v-if="convTotal">共 {{convTotal}} 条</span></div>
+      <button class="btn btn-primary btn-sm" @click="newConv">+ 新对话</button>
+    </div>
+    <div class="conv-filter">
+      <input v-model="convBotKw" @input="loadSessionsDebounced()" placeholder="按机器人 id 筛选" class="conv-bot-input">
+      <button v-if="convBotKw" class="btn btn-ghost btn-sm" @click="convBotKw='';loadSessions()">清除</button>
+    </div>
+    <div class="card-body" style="padding:8px">
+      <div v-if="convLoad" class="empty-state" style="padding:30px 20px">加载中...</div>
+      <div v-else-if="!convList.length" class="empty-state" style="padding:40px 20px">
+        {{convBotKw||convKw?'没有匹配的对话':'暂无对话记录，发送消息后自动保存'}}
+      </div>
+      <div v-else class="conv-list">
+        <div v-for="s in convList" :key="s.session_id" class="conv-item"
+             :class="{active:cSession===s.session_id}" @click="openConv(s)">
+          <div class="conv-item-top">
+            <span class="conv-title" :title="s.title">{{s.title||'新对话'}}</span>
+            <button class="conv-del" title="删除对话" @click.stop="delConv(s)">&#10005;</button>
+          </div>
+          <div class="conv-item-last" :title="s.last_message">{{s.last_message}}</div>
+          <div class="conv-item-meta">
+            <span v-if="s.bot_id" class="conv-tag bot">{{s.bot_id}}</span>
+            <span v-if="s.department_zh" class="conv-tag">{{s.department_zh}}</span>
+            <span v-if="s.platform_zh" class="conv-tag">{{s.platform_zh}}</span>
+            <span class="conv-tag turns">{{s.turns}}轮</span>
+            <span class="conv-time">{{fmtTime(s.updated_at)}}</span>
+          </div>
+        </div>
+      </div>
+      <div v-if="convTP>1" class="pager">
+        <button class="btn btn-ghost btn-sm" :disabled="convPg<=1" @click="convPg--;loadSessions()">上一页</button>
+        <span style="font-size:12px;color:#5a6b7d">{{convPg}} / {{convTP}}</span>
+        <button class="btn btn-ghost btn-sm" :disabled="convPg>=convTP" @click="convPg++;loadSessions()">下一页</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 左侧：流程树图片列表 -->
-  <div class="card"><div class="card-header"><div class="title">流程树图库 <span v-if="recTotal">共 {{recTotal}} 条</span></div></div>
+  <div v-else class="card"><div class="card-header"><div class="title">流程树图库 <span v-if="recTotal">共 {{recTotal}} 条</span></div><button class="btn btn-success btn-sm" @click="openUpload">+ 上传流程树</button></div>
     <div class="card-body" style="padding:8px">
       <div v-if="!recList.length && (fDept||fPlat||searchKw.trim())" class="empty-state" style="padding:40px 20px">暂无匹配的流程树图片</div>
       <div v-if="!recList.length && !fDept&&!fPlat&&!searchKw.trim()" class="empty-state" style="padding:40px 20px">选择科室/平台或搜索关键词查看</div>
@@ -295,8 +542,55 @@ createApp({
     </template>
 
     <template v-if="mode==='chat'">
-      <div class="card-header"><div class="title">LLM 对话</div><button class="btn btn-ghost btn-sm" @click="cMsgs=[]">清空</button></div>
-      <div class="card-body"><div class="chat-container"><div class="chat-messages"><div v-for="(m,i) in cMsgs" :key="i" class="chat-msg" :class="{user:m.role==='user',assistant:m.role==='assistant'}"><div class="bubble">{{m.content}}</div></div><div v-if="cLoad" style="text-align:center;padding:12px;color:#4a90d9">思考中...</div></div><div class="chat-input-area"><textarea v-model="cIn" placeholder="输入消息，Enter 发送" @keydown.enter.exact.prevent="cSend"></textarea><button class="btn btn-primary" @click="cSend" :disabled="cLoad">发送</button></div></div></div>
+      <div class="card-header">
+        <div class="title">智能客服 Agent 对话
+          <span v-if="fBot" style="font-weight:400;opacity:.75">· 机器人 {{fBot}}</span>
+          <span v-else style="font-weight:400;opacity:.6">· 未选机器人（按科室/平台默认配置）</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <label class="tool-toggle" title="关闭后 Agent 不调用流程/知识库工具"><input type="checkbox" v-model="cUseTools">工具</label>
+          <label class="switch-wrap" :title="cThink?'已开启模型思考（推理模式）':'已关闭模型思考'">
+            <span class="switch-label">思考</span>
+            <span class="switch" :class="{on:cThink}" @click="cThink=!cThink"><span class="switch-dot"></span></span>
+          </label>
+          <button class="btn btn-ghost btn-sm" @click="cClear">清空</button>
+        </div>
+      </div>
+      <div v-if="botCfg" class="cfg-bar cfg-bar-fixed">
+        <span>{{botCfg.department_zh||'-'}} / {{botCfg.platform_zh||'-'}}</span>
+        <span v-if="botCfg.company">· {{botCfg.company}}</span>
+        <span>· 提示词 {{botCfg.prompt_name||'内置兜底'}} v{{botCfg.prompt_version||0}}</span>
+        <span>· 流程片段 {{botCfg.flow_record_count||0}}</span>
+        <span v-if="botCfg.flow_knowledge_truncated" style="color:#faad14">· 知识已截断</span>
+        <span v-if="cSession" style="opacity:.6">· 会话 {{cSession.slice(0,8)}}</span>
+      </div>
+      <div class="card-body chat-body">
+        <div class="chat-messages">
+          <div v-for="(m,i) in cMsgs" :key="i" class="chat-msg" :class="{user:m.role==='user',assistant:m.role==='assistant'}">
+            <div v-if="m.reasoning" class="think-box">
+              <div class="think-head" @click="m.thinkOpen=!m.thinkOpen">
+                <span>模型思考 ({{m.reasoning.length}} 字)</span>
+                <span>{{m.thinkOpen?'收起':'展开'}}</span>
+              </div>
+              <div v-if="m.thinkOpen" class="think-body">{{m.reasoning}}</div>
+            </div>
+            <div v-if="m.tools&&m.tools.length" class="tool-trace">
+              <div v-for="(t,j) in m.tools" :key="j" class="tool-item" :title="t.result_preview">
+                <b>{{t.name}}</b> <span style="opacity:.7">{{t.arguments}}</span> <em>{{t.elapsed_ms}}ms</em>
+              </div>
+            </div>
+            <template v-if="m.segments&&m.segments.length>1">
+              <div v-for="(s,k) in m.segments" :key="k" class="bubble">{{s}}</div>
+            </template>
+            <div v-else class="bubble">{{m.content}}</div>
+          </div>
+          <div v-if="cLoad" style="text-align:center;padding:12px;color:#4a90d9">思考中...</div>
+        </div>
+      </div>
+      <div class="chat-input-area chat-input-fixed">
+        <textarea v-model="cIn" placeholder="输入消息，Enter 发送" @keydown.enter.exact.prevent="cSend"></textarea>
+        <button class="btn btn-primary" @click="cSend" :disabled="cLoad">发送</button>
+      </div>
     </template>
   </div>
 </div></div>

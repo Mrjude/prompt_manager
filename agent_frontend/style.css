@@ -29,6 +29,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 .select-wrap::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #8899aa;pointer-events:none;transition:border-color .2s}
 .select-wrap:hover::after{border-top-color:#4a90d9}
 
+/* 机器人 id 配置框（较宽，因为 label 含公司与科室平台信息） */
+.select-wrap.bot-select select{min-width:210px;max-width:280px;border-color:#c3d7ef;background:#f7fbff}
+.select-wrap.bot-select select:hover{background:#f0f7ff}
+.cfg-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;background:#eef6ff;color:#2c6cb0;font-size:11px;font-weight:600;white-space:nowrap}
+.cfg-badge.warn{background:#fff7e6;color:#d48806}
+
+/* 机器人配置同步按钮 */
+.sync-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid #d9e2ec;border-radius:5px;background:#fff;color:#5a6b7d;cursor:pointer;transition:all .15s}
+.sync-btn:hover{border-color:#4a90d9;color:#4a90d9;background:#f5faff}
+.sync-btn:active svg{transform:rotate(180deg);transition:transform .3s}
+.bot-select select option:disabled{color:#b8c4d0}
+
+/* Agent 对话：生效配置条 */
+.cfg-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 12px;margin-bottom:8px;background:#f7f9fc;border:1px solid #e8ecf0;border-radius:6px;font-size:12px;color:#5a6b7d}
+/* 配置信息条：移出 card-body 后固定在对话区上方，不参与滚动 */
+.cfg-bar-fixed{flex-shrink:0;margin:0;border-left:0;border-right:0;border-radius:0}
+.tool-toggle{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#5a6b7d;cursor:pointer;user-select:none}
+
+/* Agent 对话：工具调用轨迹 */
+.tool-trace{margin-bottom:6px;padding:6px 10px;background:#fffbe6;border-left:3px solid #faad14;border-radius:4px;font-size:11px;color:#8c6b1f;max-width:88%}
+.tool-trace .tool-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.7;cursor:help}
+.tool-trace .tool-item em{opacity:.6;font-style:normal;margin-left:4px}
+
+/* 模型思考开关 */
+.switch-wrap{display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.switch-label{font-size:12px;color:#5a6b7d}
+.switch{position:relative;width:34px;height:18px;border-radius:9px;background:#cfd8e3;transition:background .2s}
+.switch.on{background:#4a90d9}
+.switch-dot{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch.on .switch-dot{transform:translateX(16px)}
+
+/* 模型思考内容 */
+.think-box{max-width:88%;margin-bottom:6px;border:1px dashed #c9d6e5;border-radius:6px;background:#fafcff;overflow:hidden}
+.think-head{display:flex;justify-content:space-between;gap:10px;padding:5px 10px;font-size:11px;color:#5a7ea8;cursor:pointer;user-select:none}
+.think-head:hover{background:#f0f6fd}
+.think-body{padding:8px 10px;border-top:1px dashed #dbe5f0;font-size:11.5px;line-height:1.7;color:#5a6b7d;white-space:pre-wrap;max-height:220px;overflow-y:auto}
+
+/* 对话列表（左侧边栏） */
+.conv-filter{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid #e8ecf0;background:#fafbfc}
+.conv-bot-input{flex:1;min-width:0;padding:5px 9px;border:1px solid #d9e2ec;border-radius:5px;font-size:12px;outline:none;background:#fff}
+.conv-bot-input:focus{border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.12)}
+.conv-list{display:flex;flex-direction:column;gap:6px}
+.conv-item{padding:8px 10px;border:1px solid #e8ecf0;border-radius:6px;cursor:pointer;transition:all .15s;background:#fff}
+.conv-item:hover{border-color:#a8c7e8;background:#fafcff}
+.conv-item.active{border-color:#4a90d9;background:#f0f7ff;box-shadow:0 0 0 1px rgba(74,144,217,.2)}
+.conv-item-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.conv-title{flex:1;min-width:0;font-size:13px;font-weight:600;color:#2c3e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-del{flex-shrink:0;border:none;background:transparent;color:#b8c4d0;cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;line-height:1}
+.conv-del:hover{color:#e74c3c;background:#fdeaea}
+.conv-item-last{margin-top:3px;font-size:11.5px;color:#8494a6;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.conv-item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}
+.conv-tag{padding:1px 6px;border-radius:3px;background:#eef2f7;color:#5a6b7d;font-size:10px;line-height:1.6}
+.conv-tag.bot{background:#eef6ff;color:#2c6cb0;font-weight:600}
+.conv-tag.turns{background:#f0f9f0;color:#3d8b40}
+.conv-time{margin-left:auto;font-size:10px;color:#a8b4c0}
+.pager{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 0 4px}
+
 /* Search Box */
 .search-box{position:relative;display:flex;align-items:center;flex:1;min-width:200px;max-width:320px}
 .search-box .search-icon{position:absolute;left:12px;width:16px;height:16px;color:#999;pointer-events:none}
@@ -134,14 +191,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 @keyframes toastPulse{0%,100%{opacity:1}50%{opacity:.7}}
 
 /* Chat */
-.chat-container{display:flex;flex-direction:column;height:100%}
+/* 对话区：作为 card 的弹性子项独立滚动；min-height:0 是 flex 容器内子元素可正确滚动的关键 */
+.chat-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
 .chat-messages{flex:1;overflow-y:auto;padding:12px 0}
-.chat-msg{margin-bottom:12px;display:flex;gap:8px}
-.chat-msg.user{flex-direction:row-reverse}
-.chat-msg .bubble{max-width:70%;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.6;word-break:break-all}
+.chat-msg{margin-bottom:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.chat-msg.user{align-items:flex-end}
+.chat-msg .bubble{max-width:70%;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
 .chat-msg.assistant .bubble{background:#f0f6ff;color:#2c3e50;border:1px solid #e0e4e8}
 .chat-msg.user .bubble{background:#4a90d9;color:#fff}
 .chat-input-area{display:flex;gap:8px;padding-top:12px;border-top:1px solid #f0f0f0}
+/* 输入框区域：移出 card-body 后固定在 card 底部，不参与对话区滚动 */
+.chat-input-fixed{flex-shrink:0;padding:12px 16px;background:#fff;border-top:1px solid #f0f0f0}
 .chat-input-area textarea{flex:1;padding:10px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;resize:none;min-height:60px;max-height:150px;font-family:inherit}
 .chat-input-area textarea:focus{border-color:#4a90d9}
 

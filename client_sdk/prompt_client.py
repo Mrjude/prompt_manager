@@ -165,6 +165,53 @@ class PromptClient:
         with self._lock:
             return self._cache.get(name, {}).get("version", 0)
 
+    def get_resolved_by_bot(
+        self,
+        bot_id: str,
+        robot_id: str = "",
+        department: str = "",
+        current_round: int = 0,
+        action_desc: str = "",
+        knowledge_desc: str = "",
+        warmup_desc: str = "",
+        connect_desc: str = "",
+        extra_variables: dict = None,
+        score: bool = False,
+    ) -> str:
+        """按机器人配置选择提示词模板（支持 prompt_version 固定版本）后，再调用 /api/v1/resolve。
+
+        Args:
+            bot_id: 机器人 ID（必填），先查 /api/v1/robot_configs/{bot_id}/prompt_version
+                决定是取固定版本还是最新版本的提示词
+            其余参数同 get_resolved
+
+        Returns:
+            已填充变量的提示词内容
+        """
+        info = self._http_get(f"/api/v1/robot_configs/{bot_id}/prompt_version")
+        if not info or not info.get("prompt_name"):
+            return ""
+        name = info["prompt_name"]
+        if score:
+            # score 模式：name 是 system 提示词名，取同名 score 提示词
+            # 约定：system_prompt 为 "xhs_system" 时，score 提示词为 "xhs_score"
+            # 直接从 name 推断
+            base = name.rsplit("_", 1)[0] if name.endswith("_system") else name
+            score_name = f"{base}_score"
+            if score_name in self.get_all_names():
+                name = score_name
+        return self.get_resolved(
+            name=name,
+            robot_id=robot_id or bot_id,
+            department=department,
+            current_round=current_round,
+            action_desc=action_desc,
+            knowledge_desc=knowledge_desc,
+            warmup_desc=warmup_desc,
+            connect_desc=connect_desc,
+            extra_variables=extra_variables,
+        )
+
     def get_all_names(self) -> list:
         """获取所有缓存中的提示词名称"""
         with self._lock:

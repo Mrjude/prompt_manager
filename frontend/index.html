@@ -208,10 +208,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 .robot-table .rt-ops{display:flex;gap:6px}
 .robot-edit-box{margin-top:10px;padding:12px 14px;border:1px solid #e8ecf0;border-radius:8px;background:#fff}
 
+/* Robot Config Toolbar：检索框 + 分页器（位于"机器人配置（xx/xx）"右侧） */
+.robot-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.robot-search{width:170px;padding:4px 8px;border:1px solid #d9dde3;border-radius:4px;font-size:12px;font-weight:400;color:#44566c;outline:none;transition:border-color .15s}
+.robot-search:focus{border-color:#4a90d9}
+.robot-search::placeholder{color:#b8c0c8}
+.robot-pager{display:inline-flex;align-items:center;gap:4px;font-weight:400}
+.robot-pager .rp-btn{width:22px;height:22px;line-height:1;padding:0;border:1px solid #d9dde3;background:#fff;color:#44566c;border-radius:4px;cursor:pointer;font-size:13px;transition:all .15s}
+.robot-pager .rp-btn:hover:not(:disabled){border-color:#4a90d9;color:#4a90d9}
+.robot-pager .rp-btn:disabled{opacity:.4;cursor:not-allowed}
+.robot-pager .rp-info{font-size:12px;color:#44566c;min-width:38px;text-align:center}
+.robot-pager .rp-total{font-size:11px;color:#999;margin-left:2px}
+
 /* Badge */
 .badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:500}
 .badge-green{background:#f0fff0;color:#52c41a}
 .badge-gray{background:#f5f5f5;color:#999}
+.badge-orange{background:#fff7e6;color:#d46b08}
 
 /* Empty */
 .empty-state{text-align:center;padding:60px 20px;color:#ccc;font-size:14px}
@@ -400,7 +413,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
       <div class="filter-group">
         <div class="select-wrap">
           <select v-model="filterDept" @change="onFilterChange">
-            <option v-if="isAdmin" value="">全部科室</option>
+            <!-- "全部"代表当前用户权限下所有科室：admin 看全部，普通用户看 managed_departments 的并集 -->
+            <option value="">全部科室</option>  <!-- （{{deptScopeSummary}}） -->
             <option v-for="d in visibleDepartments" :key="d.key" :value="d.key">{{d.label}}</option>
           </select>
         </div>
@@ -530,7 +544,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
             <div v-if="!editing && selected && (canPromptEdit || canPromptDelete)" style="display:flex;gap:6px">
               <button v-if="canPromptEdit" class="btn btn-primary btn-sm" @click="startEdit">编辑</button>
               <button v-if="canPromptEdit" class="btn btn-warning btn-sm" @click="toggleVersions">版本历史</button>
-              <button v-if="canPromptDelete" class="btn btn-danger btn-sm" @click="deletePrompt">停用</button>
+              <!-- 停用状态显示"启用"，启用状态显示"停用"，点击完成状态转换 -->
+              <button v-if="canPromptEdit"
+                      :class="['btn', 'btn-sm', selected.is_active ? 'btn-danger' : 'btn-success']"
+                      @click="togglePromptActive">
+                {{selected.is_active ? '停用' : '启用'}}
+              </button>
             </div>
           </div>
           <div class="card-body">
@@ -541,6 +560,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                 <div><strong>平台：</strong>{{platLabel(selected.platform)}}</div>
                 <div><strong>场景：</strong>{{sceneLabel(selected.scene)}}</div>
                 <div><strong>版本：</strong>v{{selected.version}}</div>
+                <div><strong>状态：</strong>
+                  <span v-if="selected.is_active" class="badge badge-green">启用</span>
+                  <span v-else class="badge badge-gray">停用</span>
+                </div>
                 <div><strong>更新：</strong>{{selected.updated_at}}</div>
               </div>
               <div style="margin-bottom:8px;font-size:13px;color:#888">
@@ -552,7 +575,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
               <div v-if="robotMatchedList.length" class="var-bindings-panel" style="margin-top:10px">
                 <div class="vb-title">
                   <span>机器人配置（{{deptLabel(selected.department)}} / {{platLabel(selected.platform)}}）</span>
-                  <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="openRobotCreate">+ 新增条目</button>
+                  <div class="robot-toolbar">
+                    <input v-model="robotKeyword" class="robot-search" placeholder="搜索公司名 / 机器人ID">
+                    <span class="robot-pager">
+                      <button class="rp-btn" :disabled="robotPage <= 1" @click="robotPrevPage">‹</button>
+                      <span class="rp-info">{{robotPage}} / {{robotTotalPages}}</span>
+                      <button class="rp-btn" :disabled="robotPage >= robotTotalPages" @click="robotNextPage">›</button>
+                      <span class="rp-total">共 {{robotFilteredList.length}} 条</span>
+                    </span>
+                    <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="openRobotCreate">+ 新增条目</button>
+                  </div>
                 </div>
                 <table class="robot-table">
                   <thead>
@@ -568,14 +600,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="r in robotMatchedList" :key="r.bot_id">
+                    <tr v-if="!robotFilteredList.length">
+                      <td :colspan="canKnowledgeEdit ? 7 : 6" style="text-align:center;color:#999;padding:18px;background:#fafbfc">
+                        没有匹配「{{robotKeyword}}」的机器人配置
+                      </td>
+                    </tr>
+                    <tr v-for="r in robotPagedList" :key="r.bot_id">
                       <td><strong>{{r.bot_id}}</strong></td>
                       <td>{{deptLabel(r.department) || r.department}}</td>
                       <td>{{platLabel(r.platform) || r.platform}}</td>
                       <td>{{r.company || '—'}}</td>
                       <td>
-                        <span v-if="robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version" class="badge badge-green">v{{robotPromptVersions[r.bot_id].version}}</span>
-                        <span v-else class="badge badge-gray">无</span>
+                        <!-- 可直接下拉切换版本：-1=跟随最新，其余=锁定到该历史版本 -->
+                        <select v-if="canKnowledgeEdit"
+                                :value="r.prompt_version == null ? -1 : Number(r.prompt_version)"
+                                @change="quickSetRobotVersion(r, $event.target.value)"
+                                :title="robotVersionTitle(r)"
+                                style="padding:2px 4px;border:1px solid #d9dde3;border-radius:4px;font-size:12px;max-width:110px">
+                          <option :value="-1">跟随最新{{robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version ? ' (v' + robotPromptVersions[r.bot_id].version + ')' : ''}}</option>
+                          <option v-for="v in promptVersionOptions" :key="v" :value="v">锁定 v{{v}}</option>
+                        </select>
+                        <template v-else>
+                          <span v-if="robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version"
+                                :class="['badge', (r.prompt_version != null && Number(r.prompt_version) >= 0) ? 'badge-orange' : 'badge-green']">
+                            v{{robotPromptVersions[r.bot_id].version}}{{(r.prompt_version != null && Number(r.prompt_version) >= 0) ? ' 锁定' : ''}}
+                          </span>
+                          <span v-else class="badge badge-gray">无</span>
+                        </template>
                       </td>
                       <td>
                         <span v-if="r.enabled" class="badge badge-green">启用</span>
@@ -726,7 +777,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                 <div class="var-bindings-panel">
                   <div class="vb-title">
                     <span>机器人配置（{{deptLabel(form.department)}} / {{platLabel(form.platform)}}）</span>
-                    <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="openRobotCreate">+ 新增条目</button>
+                    <div class="robot-toolbar">
+                      <input v-model="robotKeyword" class="robot-search" placeholder="搜索公司名 / 机器人ID">
+                      <span class="robot-pager">
+                        <button class="rp-btn" :disabled="robotPage <= 1" @click="robotPrevPage">‹</button>
+                        <span class="rp-info">{{robotPage}} / {{robotTotalPages}}</span>
+                        <button class="rp-btn" :disabled="robotPage >= robotTotalPages" @click="robotNextPage">›</button>
+                        <span class="rp-total">共 {{robotFilteredList.length}} 条</span>
+                      </span>
+                      <button v-if="canKnowledgeEdit" class="btn btn-success btn-sm" @click="openRobotCreate">+ 新增条目</button>
+                    </div>
                   </div>
                   <table class="robot-table">
                     <thead>
@@ -742,19 +802,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-if="!robotMatchedList.length">
+                      <tr v-if="!robotFilteredList.length">
                         <td :colspan="canKnowledgeEdit ? 8 : 7" style="text-align:center;color:#999;padding:18px;background:#fafbfc">
-                          当前科室+平台暂无机器人配置，点击右上「+ 新增条目」添加
+                          {{robotKeyword.trim() ? '没有匹配「' + robotKeyword + '」的机器人配置' : '当前科室+平台暂无机器人配置，点击右上「+ 新增条目」添加'}}
                         </td>
                       </tr>
-                      <tr v-for="r in robotMatchedList" :key="r.bot_id">
+                      <tr v-for="r in robotPagedList" :key="r.bot_id">
                         <td><strong>{{r.bot_id}}</strong></td>
                         <td>{{deptLabel(r.department) || r.department}}</td>
                         <td>{{platLabel(r.platform) || r.platform}}</td>
                         <td>{{r.company || '—'}}</td>
                         <td>
-                          <span v-if="robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version" class="badge badge-green">v{{robotPromptVersions[r.bot_id].version}}</span>
-                          <span v-else class="badge badge-gray">无</span>
+                          <!-- 可直接下拉切换版本：-1=跟随最新，其余=锁定到该历史版本 -->
+                          <select v-if="canKnowledgeEdit"
+                                  :value="r.prompt_version == null ? -1 : Number(r.prompt_version)"
+                                  @change="quickSetRobotVersion(r, $event.target.value)"
+                                  :title="robotVersionTitle(r)"
+                                  style="padding:2px 4px;border:1px solid #d9dde3;border-radius:4px;font-size:12px;max-width:110px">
+                            <option :value="-1">跟随最新{{robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version ? ' (v' + robotPromptVersions[r.bot_id].version + ')' : ''}}</option>
+                            <option v-for="v in promptVersionOptions" :key="v" :value="v">锁定 v{{v}}</option>
+                          </select>
+                          <template v-else>
+                            <span v-if="robotPromptVersions[r.bot_id] && robotPromptVersions[r.bot_id].version"
+                                  :class="['badge', (r.prompt_version != null && Number(r.prompt_version) >= 0) ? 'badge-orange' : 'badge-green']">
+                              v{{robotPromptVersions[r.bot_id].version}}{{(r.prompt_version != null && Number(r.prompt_version) >= 0) ? ' 锁定' : ''}}
+                            </span>
+                            <span v-else class="badge badge-gray">无</span>
+                          </template>
                         </td>
                         <td>
                           <span v-if="r.enabled" class="badge badge-green">启用</span>
@@ -771,7 +845,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                     </tbody>
                   </table>
                   <div v-if="robotEditing" class="robot-edit-box">
-                    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+                    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr">
                       <div class="form-group">
                         <label>机器人ID</label>
                         <input v-model="robotForm.bot_id" :disabled="!robotIsCreate" placeholder="如: 9378">
@@ -794,6 +868,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
                           <option :value="true">启用</option>
                           <option :value="false">停用</option>
                         </select>
+                      </div>
+                      <div class="form-group">
+                        <label>提示词版本（-1=跟随最新）</label>
+                        <input type="number" v-model.number="robotForm.prompt_version" placeholder="-1" min="-1">
                       </div>
                     </div>
                     <div class="form-group">
@@ -1046,11 +1124,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
               </div>
             </div>
               <div class="form-group" v-if="userForm.role !== 'admin'">
-                <label>管理科室（普通用户只能看到/管理所选科室的提示词/知识库/流程树）</label>
+                <label>管理科室
+                  <span class="label-tip" style="margin-left:6px;font-weight:400;color:#888;font-size:12px">
+                    （普通用户只能看到/管理所选科室的提示词/知识库/流程树；按住 Ctrl / ⌘ 多选；不选则看不到任何列表（仅有管理后台入口））
+                  </span>
+                </label>
                 <select v-model="userForm.managed_departments" multiple size="6" style="min-height:140px;width:100%">
                   <option v-for="d in departments" :key="d.key" :value="d.key">{{d.label}}（{{d.key}}）</option>
                 </select>
-                <div class="hint">按住 Ctrl / ⌘ 多选；不选则看不到任何列表（仅有管理后台入口）</div>
               </div>
               <div class="form-group">
                 <label>页面权限</label>
@@ -1229,6 +1310,11 @@ createApp({
       const set = new Set(managedDepartments.value);
       return departments.value.filter(d => set.has(d.key));
     });
+    // "全部科室"下拉项的右侧副标题：admin 显示 "全部 N 科"；普通用户显示 "权限 N 科"
+    const deptScopeSummary = Vue.computed(() => {
+      const n = visibleDepartments.value.length;
+      return isAdmin.value ? `全部 ${n} 科` : `权限 ${n} 科`;
+    });
     const loginLoading = ref(false);
     const loginError = ref('');
     const loginForm = reactive({username: '', password: ''});
@@ -1284,7 +1370,7 @@ createApp({
     const robotSelected = ref(null);
     const robotEditing = ref(false);
     const robotIsCreate = ref(false);
-    const robotForm = reactive({bot_id:'', department:'hair', platform:'xhs', company:'', enabled:true});
+    const robotForm = reactive({bot_id:'', department:'hair', platform:'xhs', company:'', enabled:true, prompt_version: -1});
     const kbSelected = ref(null);
     const kbIsCreate = ref(false);
     const kbForm = reactive({
@@ -1553,10 +1639,88 @@ createApp({
       return (robotList.value || []).filter(r => r.department === dept && r.platform === plat);
     });
 
+    // ===== 机器人配置看板：检索 + 分页 =====
+    const robotKeyword = ref('');
+    const robotPage = ref(1);
+    const robotPageSize = 5;
+
+    // 按「公司名 / 机器人ID」过滤（大小写不敏感）
+    const robotFilteredList = Vue.computed(() => {
+      const kw = robotKeyword.value.trim().toLowerCase();
+      if (!kw) return robotMatchedList.value;
+      return robotMatchedList.value.filter(r =>
+        String(r.bot_id || '').toLowerCase().includes(kw)
+        || String(r.company || '').toLowerCase().includes(kw)
+      );
+    });
+
+    const robotTotalPages = Vue.computed(() =>
+      Math.ceil(robotFilteredList.value.length / robotPageSize) || 1
+    );
+
+    const robotPagedList = Vue.computed(() => {
+      const start = (robotPage.value - 1) * robotPageSize;
+      return robotFilteredList.value.slice(start, start + robotPageSize);
+    });
+
+    // 过滤条件变化时回到第一页；数据变少时避免停留在越界页
+    Vue.watch(robotKeyword, () => { robotPage.value = 1; });
+    Vue.watch(robotTotalPages, (n) => {
+      if (robotPage.value > n) robotPage.value = n;
+    });
+
+    function robotPrevPage() {
+      if (robotPage.value > 1) robotPage.value--;
+    }
+    function robotNextPage() {
+      if (robotPage.value < robotTotalPages.value) robotPage.value++;
+    }
+
     function selectRobot(r) {
       robotSelected.value = r;
       robotEditing.value = false;
       robotIsCreate.value = false;
+    }
+
+    // 当前提示词可选的版本号列表（用于机器人配置看板的版本下拉）
+    const promptVersionOptions = Vue.computed(() => {
+      const set = new Set();
+      // 当前激活版本
+      const cur = selected.value && selected.value.version;
+      if (cur) set.add(Number(cur));
+      // 历史版本
+      (versions.value || []).forEach(v => {
+        if (v && v.version) set.add(Number(v.version));
+      });
+      return Array.from(set).sort((a, b) => b - a);   // 从新到旧
+    });
+
+    // 版本单元格的悬浮说明
+    function robotVersionTitle(r) {
+      const pv = (r.prompt_version == null) ? -1 : Number(r.prompt_version);
+      const info = robotPromptVersions.value[r.bot_id];
+      const eff = info && info.version ? `v${info.version}` : '无';
+      if (pv < 0) return `跟随最新版本，当前生效：${eff}`;
+      return `已锁定 v${pv}，当前生效：${eff}（若该版本不存在会自动降级为最新）`;
+    }
+
+    // 在看板里直接切换某个机器人的提示词版本（无需进入编辑态）
+    async function quickSetRobotVersion(r, rawValue) {
+      const pv = Number(rawValue);
+      const old = (r.prompt_version == null) ? -1 : Number(r.prompt_version);
+      if (pv === old) return;
+      const resp = await api(`/api/robot_configs/${encodeURIComponent(r.bot_id)}`, {
+        method: 'PUT',
+        body: JSON.stringify({prompt_version: pv})
+      });
+      if (resp) {
+        showToast(pv < 0 ? `${r.bot_id} 已改为跟随最新版本` : `${r.bot_id} 已锁定 v${pv}`, 'success');
+        await loadRobotList();
+        await loadRobotPromptVersions();
+      } else {
+        // 保存失败时回滚下拉显示
+        await loadRobotList();
+      }
     }
 
     function openRobotCreate() {
@@ -1569,6 +1733,7 @@ createApp({
         platform: form.platform || 'xhs',
         company: '',
         enabled: true,
+        prompt_version: -1,
       });
     }
 
@@ -1582,6 +1747,7 @@ createApp({
         platform: robotSelected.value.platform,
         company: robotSelected.value.company || '',
         enabled: !!robotSelected.value.enabled,
+        prompt_version: (robotSelected.value.prompt_version == null ? -1 : Number(robotSelected.value.prompt_version)),
       });
     }
 
@@ -1629,6 +1795,8 @@ createApp({
         platform: r.platform,
         company: r.company || '',
         enabled: !!r.enabled,
+        // 修复：之前漏了该字段，导致点"编辑"时沿用上次残留值，保存后版本号被改错
+        prompt_version: (r.prompt_version == null ? -1 : Number(r.prompt_version)),
       });
     }
 
@@ -1720,6 +1888,9 @@ createApp({
       editing.value = false;
       showVersions.value = false;
       viewingVersion.value = null;
+      // 切换提示词时重置机器人配置看板的检索与分页状态
+      robotKeyword.value = '';
+      robotPage.value = 1;
       // 拉机器人配置 + 各机器人关联的提示词版本号（详情态展示用）
       await loadRobotList();
       await loadRobotPromptVersions();
@@ -1830,6 +2001,25 @@ createApp({
         showToast('已删除', 'success');
         selected.value = null;
         await loadList();
+      }
+    }
+
+    // 启用 / 停用切换：停用状态点击后恢复启用，启用状态点击后停用
+    async function togglePromptActive() {
+      if (!selected.value) return;
+      const cur = !!selected.value.is_active;
+      const target = !cur;
+      const actionText = target ? '启用' : '停用';
+      if (!confirm(`确定${actionText} "${selected.value.name}"？`)) return;
+
+      const r = await api(`/api/prompts/${selected.value.id}/toggle_active`, {
+        method: 'POST',
+        body: JSON.stringify({is_active: target})
+      });
+      if (r) {
+        showToast(`已${actionText}`, 'success');
+        selected.value = r;          // 用后端返回的最新数据刷新详情
+        await loadList();            // 同步左侧列表的状态标签
       }
     }
 
@@ -2517,12 +2707,18 @@ createApp({
       }
       const kw = mode.value === 'flow' ? keyword.value.trim() : '';
       if (kw) {
-        records = records.filter(r =>
-          String(r.file_name || '').includes(kw)
-          || String(r.description || '').includes(kw)
-          || String(r.structure || '').includes(kw)
-          || String(r.bot_id || '').includes(kw)
-        );
+        const kwLower = kw.toLowerCase();
+        // 若关键字命中的是"流程树库自身描述"，则保留该库下全部记录（避免筛成空列表）
+        const hitLib = ftSelected.value
+          && String(ftSelected.value.description || '').toLowerCase().includes(kwLower);
+        if (!hitLib) {
+          records = records.filter(r =>
+            String(r.file_name || '').toLowerCase().includes(kwLower)
+            || String(r.description || '').toLowerCase().includes(kwLower)
+            || String(r.structure || '').toLowerCase().includes(kwLower)
+            || String(r.bot_id || '').toLowerCase().includes(kwLower)
+          );
+        }
       }
       return records;
     });
@@ -2580,9 +2776,12 @@ createApp({
       deptLabel, platLabel, sceneLabel,
       selectPrompt, toggleVersions, toggleVersionContent,
       openCreate, startEdit, cancelEdit, savePrompt,
-      deletePrompt, deleteVersion, rollback, loadList,
+      deletePrompt, togglePromptActive, deleteVersion, rollback, loadList,
       addBinding, removeBinding, parseBindings,
       robotList, robotSelected, robotEditing, robotIsCreate, robotForm, robotMatchedList, robotPromptVersions,
+      robotKeyword, robotPage, robotPageSize, robotFilteredList, robotTotalPages, robotPagedList,
+      robotPrevPage, robotNextPage,
+      promptVersionOptions, robotVersionTitle, quickSetRobotVersion,
       loadRobotList, selectRobot, openRobotCreate, startRobotEdit,
       startRobotEditInline, deleteRobotInline,
       cancelRobotEdit, saveRobot, deleteRobot,

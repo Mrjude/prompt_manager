@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 client_sdk/__init__.py
+client_sdk/knowledge_retriever.py
 client_sdk/prompt_client.py
 prompt_manager_client.egg-info/PKG-INFO
 prompt_manager_client.egg-info/SOURCES.txt

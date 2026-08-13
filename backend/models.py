@@ -251,6 +251,7 @@ class RobotConfigCreate(BaseModel):
     platform: str = Field(..., description="平台")
     company: str = Field("", description="公司/品牌名称，如 雍禾、牙博士、邦泰")
     enabled: bool = Field(True, description="是否启用")
+    prompt_version: int = Field(-1, description="提示词版本号；-1 = 跟随最新，>=0 = 固定版本")
 
 
 class RobotConfigUpdate(BaseModel):
@@ -258,6 +259,7 @@ class RobotConfigUpdate(BaseModel):
     platform: Optional[str] = None
     company: Optional[str] = None
     enabled: Optional[bool] = None
+    prompt_version: Optional[int] = None
 
 
 class RobotConfigResponse(BaseModel):
@@ -266,6 +268,7 @@ class RobotConfigResponse(BaseModel):
     platform: str
     company: str
     enabled: bool
+    prompt_version: int = -1
     created_at: str
     updated_at: str
 

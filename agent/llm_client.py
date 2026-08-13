@@ -102,6 +102,71 @@ class LLMClient:
 
         return self._call_api(url, body)
 
+    def chat_completion(
+        self,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+        timeout: int = 300,
+        enable_thinking: Optional[bool] = None,
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """返回完整的 assistant message（含 tool_calls），供 ReAct 循环使用
+
+        enable_thinking 为 None 时不下发任何思考相关参数（用服务端默认行为）。
+        """
+        cfg = self._load_config()
+        if not cfg.get("base_url"):
+            raise RuntimeError("LLM API 未配置，请先在提示词管理系统中设置 Base URL")
+
+        url = cfg["base_url"].rstrip("/") + "/chat/completions"
+        body = {
+            "model": cfg.get("model_name", ""),
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            **kwargs,
+        }
+        if tools:
+            body["tools"] = tools
+            body["tool_choice"] = "auto"
+        if enable_thinking is not None:
+            body.update(self._thinking_params(cfg.get("model_name", ""), enable_thinking))
+
+        return self._call_api(url, body, timeout=timeout, return_message=True)
+
+    @staticmethod
+    def _thinking_params(model_name: str, enable: bool) -> Dict[str, Any]:
+        """按模型family生成思考开关参数
+
+        各厂商协议不统一，这里按模型名前缀分派；未知模型同时下发几种常见写法，
+        多余字段通常会被服务端忽略。
+        """
+        m = (model_name or "").lower()
+
+        # 阿里 Qwen3 / DashScope 兼容模式
+        if "qwen" in m:
+            return {"enable_thinking": enable}
+        # 智谱 GLM-4.5+
+        if "glm" in m:
+            return {"thinking": {"type": "enabled" if enable else "disabled"}}
+        # 字节豆包/火山方舟
+        if "doubao" in m or "ep-" in m:
+            return {"thinking": {"type": "enabled" if enable else "disabled"}}
+        # DeepSeek：推理由模型版本决定（deepseek-reasoner），不支持运行时开关，
+        # 但部分聚合网关接受 enable_thinking，因此仍下发
+        if "deepseek" in m:
+            return {"enable_thinking": enable}
+        # Anthropic 风格
+        if "claude" in m:
+            return {"thinking": {"type": "enabled"}} if enable else {}
+
+        return {
+            "enable_thinking": enable,
+            "thinking": {"type": "enabled" if enable else "disabled"},
+        }
+
     def chat_with_image(
         self,
         prompt: str,
@@ -199,7 +264,7 @@ class LLMClient:
 
         return self._call_api(url, body, timeout=timeout)
 
-    def _call_api(self, url: str, body: dict, timeout: int = 300) -> str:
+    def _call_api(self, url: str, body: dict, timeout: int = 300, return_message: bool = False):
         cfg = self._load_config()
         headers = {"Content-Type": "application/json"}
         if cfg.get("api_key"):
@@ -216,6 +281,7 @@ class LLMClient:
             "body_size_kb": round(body_size / 1024, 2),
             "timeout": timeout,
             "has_image": "image_url" in body_str,
+            "has_tools": bool(body.get("tools")),
         }
         logger.info(f"LLM API 请求: {json.dumps(log_req, ensure_ascii=False)}")
 
@@ -229,7 +295,8 @@ class LLMClient:
                     elapsed = round(time.time() - start_time, 1)
                     resp_body = resp.read().decode()
                     result = json.loads(resp_body)
-                    content = result["choices"][0]["message"]["content"]
+                    message = result["choices"][0]["message"]
+                    content = message.get("content") or ""
                     content_len = len(content)
 
                     _log_api_call(log_req, {
@@ -237,9 +304,10 @@ class LLMClient:
                         "attempt": attempt + 1,
                         "elapsed_s": elapsed,
                         "response_length": content_len,
+                        "tool_calls": len(message.get("tool_calls") or []),
                     })
                     logger.info(f"LLM API 成功 (耗时 {elapsed}s, 响应长度 {content_len})")
-                    return content
+                    return message if return_message else content
 
             except Exception as e:
                 elapsed = round(time.time() - start_time, 1)

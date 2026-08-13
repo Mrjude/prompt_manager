@@ -38,11 +38,13 @@ prompt_manager/
 ├── agent_frontend/                # Agent 前端（index.html + app.js + style.css）
 ├── client_sdk/
 │   ├── prompt_client.py           # PromptClient：提示词 + 知识库 + 流程树 + 机器人配置
-│   └── __init__.py
-├── knowledge_retriever.py         # KnowledgeRetriever：TF-IDF + 可选语义检索
+│   ├── knowledge_retriever.py     # KnowledgeRetriever：倒排索引 + TF-IDF + 可选语义检索
+│   └── __init__.py                # 导出 PromptClient / KnowledgeRetriever
+├── knowledge_retriever.py         # 兼容层（re-export client_sdk 实现，旧代码零改动）
 ├── pyproject.toml                 # SDK 打包（prompt-manager-client）
 ├── start.sh                       # 一键启动主服务 + Agent
 ├── AGENT_ARCHITECTURE.md          # Agent 架构设计文档
+├── 操作手册.md                     # 页面配置操作手册（面向运营 / 业务方）
 └── README.md                      # 本文件
 ```
 
@@ -83,20 +85,20 @@ prompt_manager/
 
 ## 3. 数据库表
 
-| 表                  | 关键字段                                                                                                                                                            | 说明                                                          |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `prompts`         | `name UNIQUE`, `department/platform/scene`, `content`, `variables`, `variable_bindings`, `version`, `is_active`                                         | 当前激活提示词                                                |
-| `prompt_versions` | `prompt_id, version, content, change_log`                                                                                                                         | 全量版本历史                                                  |
-| `knowledge_bases` | `(department, platform) UNIQUE`, `content`                                                                                                                      | JSON 数组：`[{text, type, bot_id}, ...]`                    |
-| `flow_trees`      | `(department, platform) UNIQUE`, `description`                                                                                                                  | 流程树库（按科室+平台分组）                                   |
-| `flow_records`    | `flow_id`, `file_name`, `file_type`, `file_path`, `description`, `structure`, `status`, `error`, `bot_id`                                                  | 一次上传 = 一条记录；`description` 为纯自然语言               |
-| `settings`        | `key, value`                                                                                                                                                        | 旧版 LLM 配置兼容存储                                         |
-| `llm_versions`    | `name, base_url, api_key, model_name, is_active`                                                                                                                  | LLM 多版本，激活时同步写入 `settings`                        |
-| `users`           | `username UNIQUE, password_hash, role, can_prompt_*/can_knowledge_*/can_flow_*, is_active, **managed_departments**`                            | 登录账号 + 页面权限 + **管理科室列表**                  |
-| `auth_sessions`   | `token, user_id, expires_at`                                                                                                                                        | 登录会话（默认 30 天；服务重启时自动清空）                   |
-| `bot_ids`         | `bot_id UNIQUE`                                                                                                                                                     | 机器人 ID 白名单（前端下拉候选）                              |
-| `robot_configs`   | `bot_id UNIQUE, department, platform, company, enabled, updated_at`                                                                                              | 机器人配置（`qwen` 服务按此热更新到运行时映射）                |
-| `tag_records`     | `department, platform, tag_type(主题/意图/动作), name, description, created_at, updated_at`                                                                          | 标签管理（独立模块）                                          |
+| 表                  | 关键字段                                                                                                                      | 说明                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `prompts`         | `name UNIQUE`, `department/platform/scene`, `content`, `variables`, `variable_bindings`, `version`, `is_active` | 当前激活提示词                                    |
+| `prompt_versions` | `prompt_id, version, content, change_log`                                                                                   | 全量版本历史                                      |
+| `knowledge_bases` | `(department, platform) UNIQUE`, `content`                                                                                | JSON 数组：`[{text, type, bot_id}, ...]`        |
+| `flow_trees`      | `(department, platform) UNIQUE`, `description`                                                                            | 流程树库（按科室+平台分组）                       |
+| `flow_records`    | `flow_id`, `file_name`, `file_type`, `file_path`, `description`, `structure`, `status`, `error`, `bot_id`   | 一次上传 = 一条记录；`description` 为纯自然语言 |
+| `settings`        | `key, value`                                                                                                                | 旧版 LLM 配置兼容存储                             |
+| `llm_versions`    | `name, base_url, api_key, model_name, is_active`                                                                            | LLM 多版本，激活时同步写入`settings`            |
+| `users`           | `username UNIQUE, password_hash, role, can_prompt_*/can_knowledge_*/can_flow_*, is_active, **managed_departments**`         | 登录账号 + 页面权限 +**管理科室列表**       |
+| `auth_sessions`   | `token, user_id, expires_at`                                                                                                | 登录会话（默认 30 天；服务重启时自动清空）        |
+| `bot_ids`         | `bot_id UNIQUE`                                                                                                             | 机器人 ID 白名单（前端下拉候选）                  |
+| `robot_configs`   | `bot_id UNIQUE, department, platform, company, enabled, updated_at`                                                         | 机器人配置（`qwen` 服务按此热更新到运行时映射） |
+| `tag_records`     | `department, platform, tag_type(主题/意图/动作), name, description, created_at, updated_at`                                 | 标签管理（独立模块）                              |
 
 `flow_records.status ∈ {pending, parsing, success, partial, failed, unparsed}`。
 
@@ -112,16 +114,16 @@ prompt_manager/
 
 ## 4. 元数据枚举
 
-| 维度                 | 取值                                                                                                                                                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 科室`department`   | `hair` 植发 · `dentistry` 口腔 · `dermatology` 皮肤 · `ophthalmology` 眼科 · `pediatrics` 儿科 · `beauty` 医美 · `thyroid` 甲状腺 · `psychiatry` 精神科 · `andrology` 男科 · `gynaecology` 妇科 · `general` 通用                                                                  |
-| 平台`platform`     | `xhs` 小红书 · `bd` 百度 · `dy` 抖音 · `kuaishou` 快手 · `wechat` 微信 · `general` 通用                                                                                                                                                                                                                  |
-| 场景`scene`        | `system_prompt` 系统提示词 · `warmup` 暖场语 · `knowledge` 知识模板 · `action_desc` 动作描述 · `score` 评分 · `general` 通用                                                                                                                                                                                |
-| 知识标签`KB_TYPES` | 答疑 · 问诊 · 套联 · 流程 · 默认认知 · 额外 · 问诊约束 · 答疑约束 · 套联约束 · 核心约束 · 违禁词                                                                                                                                                                                                                |
-| 标签类型           | `主题` · `意图` · `动作`                                                                                                                                                                                                                                                                                |
-| 机器人配置         | 表 `robot_configs`：`bot_id`（唯一）/ `department` / `platform` / `company`（如 雍禾、牙博士、邦泰）/ `enabled`                                                                                                                                                                                       |
-| 内置机器人 ID        | `7422 / 8714 / 8686 / 8542 / 8771 / 9125 / 9378 / 10122 / 10569 / 9352 / 9358 / 9682`                                                                                                                                                                                                                       |
-| 内置变量             | `{公司} {域中文} {域英文} {时间} {轮次} {轮次k} {套联描述} {动作描述} {知识描述} {暖场描述}`                                                                                                                                                                                                                  |
+| 维度                 | 取值                                                                                                                                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 科室`department`   | `hair` 植发 · `dentistry` 口腔 · `dermatology` 皮肤 · `ophthalmology` 眼科 · `pediatrics` 儿科 · `beauty` 医美 · `thyroid` 甲状腺 · `psychiatry` 精神科 · `andrology` 男科 · `gynaecology` 妇科 · `general` 通用 |
+| 平台`platform`     | `xhs` 小红书 · `bd` 百度 · `dy` 抖音 · `kuaishou` 快手 · `wechat` 微信 · `general` 通用                                                                                                                                         |
+| 场景`scene`        | `system_prompt` 系统提示词 · `warmup` 暖场语 · `knowledge` 知识模板 · `action_desc` 动作描述 · `score` 评分 · `general` 通用                                                                                                    |
+| 知识标签`KB_TYPES` | 答疑 · 问诊 · 套联 · 流程 · 默认认知 · 额外 · 问诊约束 · 答疑约束 · 套联约束 · 核心约束 · 违禁词                                                                                                                                       |
+| 标签类型             | `主题` · `意图` · `动作`                                                                                                                                                                                                                 |
+| 机器人配置           | 表`robot_configs`：`bot_id`（唯一）/ `department` / `platform` / `company`（如 雍禾、牙博士、邦泰）/ `enabled`                                                                                                                       |
+| 内置机器人 ID        | `7422 / 8714 / 8686 / 8542 / 8771 / 9125 / 9378 / 10122 / 10569 / 9352 / 9358 / 9682`                                                                                                                                                          |
+| 内置变量             | `{公司} {域中文} {域英文} {时间} {轮次} {轮次k} {套联描述} {动作描述} {知识描述} {暖场描述}`                                                                                                                                                   |
 
 `{公司}` 默认通过 `ROBOT_COMPANY_MAP` 由 `robot_id` 映射为 `雍禾 / 碧莲盛 / 唐森`；当 `robot_configs` 中显式配置了 `company` 时，**该映射被远端配置覆盖**。
 
@@ -142,95 +144,96 @@ PUBLIC_API_PREFIXES = (
 
 ### 5.2 登录与权限
 
-| 方法                | 路径                  | 说明                                                                  |
-| ------------------- | --------------------- | --------------------------------------------------------------------- |
-| POST                | `/api/auth/login`   | 用户名密码登录，返回 `token` + `user`                              |
-| GET                 | `/api/auth/me`      | 当前登录用户（Header `Authorization: Bearer` 或 cookie `pm_token`）  |
-| POST                | `/api/auth/logout`  | 注销 token                                                            |
-| GET/POST/PUT/DELETE | `/api/users[/{id}]` | admin：账号 CRUD（含 `managed_departments` 字段）                  |
+| 方法                | 路径                  | 说明                                                                   |
+| ------------------- | --------------------- | ---------------------------------------------------------------------- |
+| POST                | `/api/auth/login`   | 用户名密码登录，返回`token` + `user`                               |
+| GET                 | `/api/auth/me`      | 当前登录用户（Header`Authorization: Bearer` 或 cookie `pm_token`） |
+| POST                | `/api/auth/logout`  | 注销 token                                                             |
+| GET/POST/PUT/DELETE | `/api/users[/{id}]` | admin：账号 CRUD（含`managed_departments` 字段）                     |
 
 权限中间件白名单之外的其他 `/api/**`，未登录返回 401，不满足对应 `can_*` 位返回 403。普通用户的 `data.department` 不在 `managed_departments` 内时，创建/更新/导入直接返回 403。
 
 ### 5.3 提示词（主服务）
 
-| 方法                | 路径                                                        | 说明                                                                                          |
-| ------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| POST                | `/api/prompts`                                            | 创建；非 admin 校验 `department` 在管理科室内                                              |
-| GET                 | `/api/prompts`                                            | 列表（`department / platform / scene / keyword`，分页）                                  |
-| GET / PUT / DELETE  | `/api/prompts/{id}`                                       | 详情 / 更新（内容变更版本+1） / 软删除                                                     |
-| GET                 | `/api/prompts/{id}/versions`                              | 版本历史                                                                                     |
-| POST                | `/api/prompts/{id}/rollback`                              | 回滚到指定版本                                                                               |
-| DELETE              | `/api/prompts/{id}/versions/{vid}`                        | 删除某条历史版本（禁止删当前版本）                                                          |
-| GET                 | `/api/v1/fetch?department&platform&scene&current_version` | 三维查询（命中内存缓存；**无需 token**）                                                  |
-| GET                 | `/api/v1/fetch/{name}?current_version`                    | 按名称查询（无需 token）                                                                    |
-| POST                | `/api/v1/resolve`                                         | 变量解析：返回填充好的提示词（无需 token）                                                 |
-| POST                | `/api/v1/batch_fetch`                                     | 批量按名称获取（无需 token）                                                                |
-| GET                 | `/api/v1/sync`                                            | 全量同步（供 SDK 冷启动；无需 token）                                                       |
+| 方法               | 路径                                                        | 说明                                                      |
+| ------------------ | ----------------------------------------------------------- | --------------------------------------------------------- |
+| POST               | `/api/prompts`                                            | 创建；非 admin 校验`department` 在管理科室内            |
+| GET                | `/api/prompts`                                            | 列表（`department / platform / scene / keyword`，分页） |
+| GET / PUT / DELETE | `/api/prompts/{id}`                                       | 详情 / 更新（内容变更版本+1） / 软删除（`is_active=0`）  |
+| POST                | `/api/prompts/{id}/toggle_active`                        | 启用 / 停用切换；body 可传 `{"is_active": true/false}`，不传则自动取反；非 admin 校验管理科室 |
+| GET                | `/api/prompts/{id}/versions`                              | 版本历史                                                  |
+| POST               | `/api/prompts/{id}/rollback`                              | 回滚到指定版本                                            |
+| DELETE             | `/api/prompts/{id}/versions/{vid}`                        | 删除某条历史版本（禁止删当前版本）                        |
+| GET                | `/api/v1/fetch?department&platform&scene&current_version` | 三维查询（命中内存缓存；**无需 token**）            |
+| GET                | `/api/v1/fetch/{name}?current_version`                    | 按名称查询（无需 token）                                  |
+| POST               | `/api/v1/resolve`                                         | 变量解析：返回填充好的提示词（无需 token）                |
+| POST               | `/api/v1/batch_fetch`                                     | 批量按名称获取（无需 token）                              |
+| GET                | `/api/v1/sync`                                            | 全量同步（供 SDK 冷启动；无需 token）                     |
 
 调试：`/api/stats`、`/api/debug/cache`、`/api/debug/db`、`POST /api/debug/reload_cache`。
 
 ### 5.4 知识库（主服务）
 
-| 方法               | 路径                                | 说明                                                                                                  |
-| ------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| POST               | `/api/knowledge`                  | 创建（`(department, platform)` 唯一）；非 admin 校验科室                                       |
-| GET                | `/api/knowledge`                  | 列表（`department / platform / keyword`）；**非 admin 自动加 `managed_departments` 过滤**         |
-| GET / PUT / DELETE | `/api/knowledge/{kb_id}`          | 详情 / 更新 `content` / 删除                                                                          |
-| GET                | `/api/knowledge/export`           | 按当前筛选导出为 Excel（`xlsx`）；表头 `科室, 平台, 类型, 机器人ID, 知识内容`                 |
-| POST               | `/api/knowledge/import`           | 上传 Excel 导入（按 `(dept, plat)` 合并到现有内容；非 admin 跳过越权科室行）                     |
-| GET                | `/api/v1/knowledge`               | 供 SDK 拉取（公开只读，无需 token）                                                                  |
-| GET                | `/api/meta/kb_types`              | 知识标签枚举（含约束/违禁词类）                                                                       |
-| GET / POST         | `/api/meta/bot_ids`               | 机器人 ID 枚举（GET 查询、POST 追加，POST 需知识库编辑权限）                                          |
+| 方法               | 路径                       | 说明                                                                                                |
+| ------------------ | -------------------------- | --------------------------------------------------------------------------------------------------- |
+| POST               | `/api/knowledge`         | 创建（`(department, platform)` 唯一）；非 admin 校验科室                                          |
+| GET                | `/api/knowledge`         | 列表（`department / platform / keyword`）；**非 admin 自动加 `managed_departments` 过滤** |
+| GET / PUT / DELETE | `/api/knowledge/{kb_id}` | 详情 / 更新`content` / 删除                                                                       |
+| GET                | `/api/knowledge/export`  | 按当前筛选导出为 Excel（`xlsx`）；表头 `科室, 平台, 类型, 机器人ID, 知识内容`                   |
+| POST               | `/api/knowledge/import`  | 上传 Excel 导入（按`(dept, plat)` 合并到现有内容；非 admin 跳过越权科室行）                       |
+| GET                | `/api/v1/knowledge`      | 供 SDK 拉取（公开只读，无需 token）                                                                 |
+| GET                | `/api/meta/kb_types`     | 知识标签枚举（含约束/违禁词类）                                                                     |
+| GET / POST         | `/api/meta/bot_ids`      | 机器人 ID 枚举（GET 查询、POST 追加，POST 需知识库编辑权限）                                        |
 
 ### 5.5 流程树（主服务 + Agent 双端提供）
 
-| 方法                | 路径                                                        | 说明                                                                                          |
-| ------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| POST                | `/api/flow_trees`                                         | 创建流程树库（`科室+平台` 唯一）；非 admin 校验科室                                            |
-| GET                 | `/api/flow_trees`                                         | 列表（`department / platform / keyword / bot_id`），**非 admin 自动加 `managed_departments` 过滤** |
-| GET / PUT / DELETE  | `/api/flow_trees/{flow_id}`                               | 详情 / 改描述 / 删除（级联删记录）                                                              |
-| GET                 | `/api/flow_trees/{flow_id}/records`                       | 库下所有解析记录                                                                              |
-| POST                | `/api/flow_trees/{flow_id}/records/upload`                | 上传图片/PDF + 可选自动解析（主服务异步、Agent 同步）                                          |
-| GET / PUT / DELETE  | `/api/flow_records/{record_id}`                           | 单条记录                                                                                      |
-| POST                | `/api/flow_records/{record_id}/reparse`                  | 重新解析                                                                                       |
-| GET                 | `/api/flow_records/search`（Agent）                        | 跨库搜索：`department / platform / keyword`，附 `file_url`                                  |
-| GET                 | `/api/files/{flow_id}/{file_name}`（Agent）                | 直链访问上传文件                                                                              |
-| POST                | `/api/parse_image`（Agent）                               | 上传图片直接解析（不入库）                                                                     |
-| GET                 | `/api/v1/flow_records/search`（主服务）                    | 供 SDK 拉取流程树描述（公开只读）                                                              |
+| 方法               | 路径                                          | 说明                                                                                                                                                                                    |
+| ------------------ | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST               | `/api/flow_trees`                           | 创建流程树库（`科室+平台` 唯一）；非 admin 校验科室                                                                                                                                   |
+| GET                | `/api/flow_trees`                           | 列表（`department / platform / keyword / bot_id`）；`keyword` 全局检索 **库描述 + 记录文件名/流程描述/结构/机器人ID**；**非 admin 自动加 `managed_departments` 过滤** |
+| GET / PUT / DELETE | `/api/flow_trees/{flow_id}`                 | 详情 / 改描述 / 删除（级联删记录）                                                                                                                                                      |
+| GET                | `/api/flow_trees/{flow_id}/records`         | 库下所有解析记录                                                                                                                                                                        |
+| POST               | `/api/flow_trees/{flow_id}/records/upload`  | 上传图片/PDF + 可选自动解析（主服务异步、Agent 同步）                                                                                                                                   |
+| GET / PUT / DELETE | `/api/flow_records/{record_id}`             | 单条记录                                                                                                                                                                                |
+| POST               | `/api/flow_records/{record_id}/reparse`     | 重新解析                                                                                                                                                                                |
+| GET                | `/api/flow_records/search`（Agent）         | 跨库搜索：`department / platform / keyword`，附 `file_url`；`keyword` 覆盖 记录文件名 / 流程描述 / 结构 / 机器人ID / **所属库描述**                                         |
+| GET                | `/api/files/{flow_id}/{file_name}`（Agent） | 直链访问上传文件                                                                                                                                                                        |
+| POST               | `/api/parse_image`（Agent）                 | 上传图片直接解析（不入库）                                                                                                                                                              |
+| GET                | `/api/v1/flow_records/search`（主服务）     | 供 SDK 拉取流程树描述（公开只读）                                                                                                                                                       |
 
 ### 5.6 机器人配置（主服务）
 
-| 方法                | 路径                                                                          | 说明                                                                            |
-| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GET                 | `/api/robot_configs`                                                       | 列表（需 `require_knowledge_view`）                                            |
-| POST                | `/api/robot_configs`                                                       | 写入或更新（需 `require_knowledge_edit`）                                       |
-| GET                 | `/api/robot_configs/{bot_id}`                                             | 详情                                                                              |
-| PUT                 | `/api/robot_configs/{bot_id}`                                             | 局部更新（需 `require_knowledge_edit`）                                       |
-| DELETE              | `/api/robot_configs/{bot_id}`                                             | 删除（需 `require_knowledge_edit`）                                            |
-| GET                 | `/api/v1/robot_configs`                                                   | 公开只读，供 SDK 拉取（**无需 token**）                                     |
-| GET                 | `/api/v1/robot_configs/{bot_id}/prompt_version?department=&platform=`   | 公开只读，返回该机器人在指定科室+平台下命中的提示词最新版本号                  |
+| 方法   | 路径                                                                    | 说明                                                          |
+| ------ | ----------------------------------------------------------------------- | ------------------------------------------------------------- |
+| GET    | `/api/robot_configs`                                                  | 列表（需`require_knowledge_view`）                          |
+| POST   | `/api/robot_configs`                                                  | 写入或更新（需`require_knowledge_edit`）                    |
+| GET    | `/api/robot_configs/{bot_id}`                                         | 详情                                                          |
+| PUT    | `/api/robot_configs/{bot_id}`                                         | 局部更新（需`require_knowledge_edit`）                      |
+| DELETE | `/api/robot_configs/{bot_id}`                                         | 删除（需`require_knowledge_edit`）                          |
+| GET    | `/api/v1/robot_configs`                                               | 公开只读，供 SDK 拉取（**无需 token**）                 |
+| GET    | `/api/v1/robot_configs/{bot_id}/prompt_version?department=&platform=` | 公开只读，返回该机器人在指定科室+平台下命中的提示词最新版本号 |
 
 > `qwen` 服务通过 `GET /api/v1/robot_configs`（公开）定期拉取并热更新 `ROBOT_DEPT_PLATFORM_MAP` / `ROBOT_COMPANY_MAP`；用户在前端修改/启用/停用会通过 30s 轮询回调自动同步，无需重启业务服务。
 
 ### 5.7 LLM 配置（主服务）
 
-| 方法                | 路径                                                            | 说明                                                                            |
-| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GET                 | `/api/settings/llm`                                          | 当前激活配置（api_key 掩码）                                                    |
-| GET                 | `/api/settings/llm/raw`                                      | 原始配置（Agent 内部调用，无需 token）                                          |
-| PUT                 | `/api/settings/llm`                                          | 兼容旧接口直接保存                                                                |
-| GET / POST / PUT / DELETE | `/api/settings/llm/versions[/{id}]`                    | 多版本 CRUD（`****` 的 `api_key` 保持不变）                                     |
-| POST                | `/api/settings/llm/versions/{id}/activate`                 | 激活（同步写入 `settings` 与 `llm_versions.is_active`）                       |
+| 方法                      | 路径                                         | 说明                                                       |
+| ------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| GET                       | `/api/settings/llm`                        | 当前激活配置（api_key 掩码）                               |
+| GET                       | `/api/settings/llm/raw`                    | 原始配置（Agent 内部调用，无需 token）                     |
+| PUT                       | `/api/settings/llm`                        | 兼容旧接口直接保存                                         |
+| GET / POST / PUT / DELETE | `/api/settings/llm/versions[/{id}]`        | 多版本 CRUD（`****` 的 `api_key` 保持不变）            |
+| POST                      | `/api/settings/llm/versions/{id}/activate` | 激活（同步写入`settings` 与 `llm_versions.is_active`） |
 
 ### 5.8 Agent 通用
 
-| 方法    | 路径                                              | 说明                                                                |
-| ------- | ------------------------------------------------- | ------------------------------------------------------------------- |
-| GET     | `/api/llm/status`                              | 检查激活配置是否完整                                                |
-| POST    | `/api/llm/refresh`                             | 清空 LLM 配置缓存重新拉取                                          |
-| POST    | `/api/llm/test`                                 | 一句话探活                                                          |
-| POST    | `/api/chat`                                     | 通用对话（OpenAI 兼容）                                             |
-| GET     | `/api/meta/departments` / `/api/meta/platforms` | 元数据                                                                |
+| 方法 | 路径                                                | 说明                      |
+| ---- | --------------------------------------------------- | ------------------------- |
+| GET  | `/api/llm/status`                                 | 检查激活配置是否完整      |
+| POST | `/api/llm/refresh`                                | 清空 LLM 配置缓存重新拉取 |
+| POST | `/api/llm/test`                                   | 一句话探活                |
+| POST | `/api/chat`                                       | 通用对话（OpenAI 兼容）   |
+| GET  | `/api/meta/departments` / `/api/meta/platforms` | 元数据                    |
 
 ### 5.9 WebSocket
 
@@ -350,8 +353,13 @@ text = client.get_knowledge_text(
 
 ### 7.4 通过检索器（KnowledgeRetriever）
 
+> 自 SDK `0.3.0` 起，检索器已整合进 `client_sdk`，并做了 9 项性能优化。
+> 旧路径 `from knowledge_retriever import KnowledgeRetriever` 仍可用（兼容层 re-export）。
+
+#### 7.4.1 基础用法
+
 ```python
-from knowledge_retriever import KnowledgeRetriever
+from client_sdk import KnowledgeRetriever
 
 retriever = KnowledgeRetriever(base_url="http://localhost:8900")
 retriever.preload(department="hair", platform="xhs")
@@ -361,20 +369,44 @@ history = [
     {"role": "assistant", "content": "请问您掉发持续多长时间了？"},
 ]
 
-# 关键词检索（默认 TF-IDF）
+# 关键词检索（倒排索引 + TF-IDF 加权余弦）
 results = retriever.retrieve(history, "hair", "xhs", top_k=5)
 
-# 按类型 / 机器人过滤
+# 按类型 / 机器人过滤（bot_id 传具体值时同时命中 bot_id="" 的通用记录）
 kb = retriever.retrieve(history, "hair", "xhs", top_k=5, knowledge_type="答疑", bot_id="9378")
 
-# 直接拿拼接文本
+# 直接拿拼接文本插入 prompt
 kb_text = retriever.retrieve_as_text(history, "hair", "xhs", top_k=5, separator="\n")
+
+# 带分数返回，便于调试与二次排序
+scored = retriever.retrieve_with_scores(history, "hair", "xhs", top_k=5)
+# -> [("脱发主要分为雄激素性脱发和斑秃两大类", 0.4821), ...]
+
+# 索引统计（排查检索效果与内存占用）
+print(retriever.stats())
+# -> {'kb_count': 1, 'total_items': 168, 'indexed_keys': ['hair/xhs'],
+#     'vocab_sizes': {'hair/xhs': 3241}, 'semantic': False}
 ```
 
-启用语义检索（可选）：
+#### 7.4.2 复用 PromptClient 缓存（推荐，零网络请求）
+
+```python
+from client_sdk import PromptClient, KnowledgeRetriever
+
+client = PromptClient(base_url="http://localhost:8900")
+client.preload()                      # 已经拉过一次知识库
+
+retriever = KnowledgeRetriever(prompt_client=client)   # 直接读 client._kb_cache
+retriever.preload(department="hair", platform="xhs")   # 不再发 HTTP 请求
+```
+
+业务服务（如 `qwen-proj`）里若已经有 `PromptClient` 实例，务必用这种方式，避免重复拉取与重复解析。
+
+#### 7.4.3 语义检索（可选）
 
 ```bash
-pip install sentence-transformers numpy
+pip install "prompt-manager-client[semantic]"
+# 等价于 pip install sentence-transformers numpy
 ```
 
 ```python
@@ -383,7 +415,64 @@ retriever = KnowledgeRetriever(
     use_semantic=True,
     semantic_model="shibing624/text2vec-base-chinese",
 )
+retriever.preload(department="hair", platform="xhs")
+
+# method="auto"：装了语义模型走语义，否则自动回退关键词
+results = retriever.retrieve(history, "hair", "xhs", top_k=5, method="auto")
+# 强制指定
+results = retriever.retrieve(history, "hair", "xhs", top_k=5, method="keyword")
+results = retriever.retrieve(history, "hair", "xhs", top_k=5, method="semantic")
 ```
+
+#### 7.4.4 构造参数
+
+| 参数                 | 默认值                               | 说明                                                              |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| `base_url`         | `http://localhost:8900`            | 主服务地址；使用公开端点`/api/v1/knowledge`，**无需鉴权** |
+| `use_semantic`     | `False`                            | 是否启用语义检索（需`sentence-transformers`）                   |
+| `semantic_model`   | `shibing624/text2vec-base-chinese` | 语义编码模型                                                      |
+| `prompt_client`    | `None`                             | 传入`PromptClient` 实例可复用其知识库缓存，零网络请求           |
+| `enable_stopwords` | `True`                             | 停用词过滤；关闭后回到旧版分词行为                                |
+
+#### 7.4.5 检索方法一览
+
+| 方法                              | 返回                        | 说明                                          |
+| --------------------------------- | --------------------------- | --------------------------------------------- |
+| `preload(department, platform)` | `None`                    | 拉取数据 + 构建倒排索引 / 分组索引 / 向量索引 |
+| `retrieve(...)`                 | `List[str]`               | 文本列表，按相关度降序                        |
+| `retrieve_with_scores(...)`     | `List[Tuple[str, float]]` | 带相关度分数                                  |
+| `retrieve_as_text(...)`         | `str`                     | 用`separator` 拼接为单段文本                |
+| `get_available_keys()`          | `List[str]`               | 已缓存的`"dept/plat"` 列表                  |
+| `stats()`                       | `dict`                    | 索引统计：条目数 / 词表大小 / 是否启用语义    |
+
+#### 7.4.6 性能优化说明（v0.3.0）
+
+`preload()` 时一次性构建三套索引，之后每次 `retrieve()` **零网络延迟、零重复计算**：
+
+| 索引                 | 结构                                     | 作用                                           |
+| -------------------- | ---------------------------------------- | ---------------------------------------------- |
+| **倒排索引**   | `{term: {doc_idx: tfidf}}`             | 只遍历命中查询词的文档，跳过全部无关文档       |
+| **文档范数表** | `{doc_idx: L2_norm}`                   | 预计算，检索时直接查表算余弦                   |
+| **分组索引**   | `{(type, bot_id): frozenset(doc_idx)}` | `knowledge_type` / `bot_id` 筛选 O(1) 命中 |
+| **向量索引**   | 预 L2 归一化的`np.ndarray`             | 点积即余弦相似度，省掉每次 norm                |
+
+相比旧实现的 9 项改进：
+
+| # | 优化点                      | 优化前                                        | 优化后                              | 复杂度改善                        |
+| - | --------------------------- | --------------------------------------------- | ----------------------------------- | --------------------------------- |
+| 1 | 倒排索引                    | 遍历全部文档算相似度                          | 只累加命中查询词的文档              | O(n) →**O(\|q\|·df)**     |
+| 2 | 预计算文档范数              | 每次检索重算每个文档 L2 norm                  | 建索引时算一次                      | 省掉重复 O(n·\|V\|)              |
+| 3 | `heapq.nlargest` 取 TopK  | `sorted()` 全排序                           | 堆选 TopK                           | O(n log n) →**O(n log k)** |
+| 4 | 位置索引替代对象比较        | `item not in search_items`（dict 深度比较） | `frozenset` 位置集合              | **O(n×m) → O(1)**         |
+| 5 | 分组预筛索引                | 每次`for item in items` 逐项过滤            | 建索引时预建`(type, bot_id)` 集合 | O(n) →**O(1) 命中**        |
+| 6 | 语义向量预归一化            | 每次`np.linalg.norm` 逐条算                 | 建索引时统一归一化                  | 省掉每次 norm                     |
+| 7 | `np.argpartition` 选 TopK | `np.argsort` 全排序                         | 分区选 TopK 再排序 K 个             | O(n log n) →**O(n)**       |
+| 8 | 停用词 + 分词降噪           | 全部单字 / bigram / trigram 入表              | 过滤 130+ 停用词与低区分度单字      | token 减约**30%**           |
+| 9 | **修复鉴权 Bug**      | 用`/api/knowledge`（需登录）→ 必然 401     | 改用`/api/v1/knowledge` 公开端点  | 从"不可用"到可用                  |
+
+**分词策略**：中文按「高区分度单字 + bigram + trigram」切分，英文取 ≥2 字母单词，数字单独成 token；`_STOPWORDS`（130+ 词）与 `_SINGLE_CHAR_KEEP`（症状类单字白名单）共同控制噪声。
+
+**查询构造**：取最近 6 轮对话，**用户消息优先**；最后 2 条用户消息重复计入，提升近期意图权重。
 
 ---
 
@@ -420,10 +509,10 @@ retriever = KnowledgeRetriever(
 
 ### 8.2 视觉 / OCR 兼容矩阵
 
-| LLM 是否支持图片输入 | 处理路径 | 依赖 |
-|---|---|---|
-| 支持（如 `qwen-vl-max`、`gpt-4o`、`glm-4v`） | 多模态直读 + OCR 锚点 | LLM 视觉能力 |
-| 不支持（如 `deepseek-v4-flash`） | OCR 抽文本 + 纯文本 chat 抽象 | `rapidocr_onnxruntime`（推荐）或 `paddleocr` |
+| LLM 是否支持图片输入                              | 处理路径                      | 依赖                                             |
+| ------------------------------------------------- | ----------------------------- | ------------------------------------------------ |
+| 支持（如`qwen-vl-max`、`gpt-4o`、`glm-4v`） | 多模态直读 + OCR 锚点         | LLM 视觉能力                                     |
+| 不支持（如`deepseek-v4-flash`）                 | OCR 抽文本 + 纯文本 chat 抽象 | `rapidocr_onnxruntime`（推荐）或 `paddleocr` |
 
 - 视觉能力探测结果按 `(base_url, model)` 缓存，切换 LLM 版本时自动重探。
 - OCR Python 解释器探测顺序：`OCR_PYTHON` 环境变量 → `sys.executable` → `/data/miniconda3/bin/python3` → `/usr/bin/python3` → `which python3`。找到装了 `rapidocr_onnxruntime` 的即用。
@@ -462,7 +551,6 @@ prompt = client.get_resolved(
 )
 ```
 
-
 ---
 
 ## 9. 机器人配置与 qwen 服务热更新
@@ -471,13 +559,13 @@ prompt = client.get_resolved(
 
 `robot_configs` 表存储 4 字段：
 
-| 字段         | 含义                                                        |
-| ------------ | ----------------------------------------------------------- |
-| `bot_id`   | 机器人 ID（唯一）                                          |
-| `department`| 所属科室（如 `hair`）                                       |
-| `platform`  | 所属平台（如 `xhs`）                                        |
-| `company`   | 公司名（雍禾 / 牙博士 / 邦泰 等）                          |
-| `enabled`   | 是否启用（`enabled=0` 的不会被 SDK 同步到运行时映射）     |
+| 字段           | 含义                                                    |
+| -------------- | ------------------------------------------------------- |
+| `bot_id`     | 机器人 ID（唯一）                                       |
+| `department` | 所属科室（如`hair`）                                  |
+| `platform`   | 所属平台（如`xhs`）                                   |
+| `company`    | 公司名（雍禾 / 牙博士 / 邦泰 等）                       |
+| `enabled`    | 是否启用（`enabled=0` 的不会被 SDK 同步到运行时映射） |
 
 ### 9.2 公开端点
 
@@ -544,12 +632,12 @@ ROBOT_COMPANY_MAP: Dict[str, str] = {}
 
 ### 11.2 普通用户可见范围
 
-| 场景            | 行为                                                                                         |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| 列表查询        | 提示词 / 知识库 / 流程树 列表自动追加 `department IN (managed_departments)` 过滤       |
-| 创建/更新       | 校验 `data.department` 是否在 `managed_departments` 内，否则 `403`                       |
-| 知识库导入      | 跳过非授权科室的行（`skipped++`），不阻断整体导入                                            |
-| 顶部科室下拉    | 仅显示 `managed_departments` 中的项；admin 才出现"全部科室"                             |
+| 场景         | 行为                                                                              |
+| ------------ | --------------------------------------------------------------------------------- |
+| 列表查询     | 提示词 / 知识库 / 流程树 列表自动追加`department IN (managed_departments)` 过滤 |
+| 创建/更新    | 校验`data.department` 是否在 `managed_departments` 内，否则 `403`           |
+| 知识库导入   | 跳过非授权科室的行（`skipped++`），不阻断整体导入                               |
+| 顶部科室下拉 | 仅显示`managed_departments` 中的项；admin 才出现"全部科室"                      |
 
 admin 角色完全不受 `managed_departments` 限制，看到全部。
 
@@ -563,7 +651,6 @@ admin 角色完全不受 `managed_departments` 限制，看到全部。
 - 登录成功后 `auth_sessions` 写入 `token`，默认 30 天过期。
 - **服务启动时 `clear_auth_sessions()` 会清空所有会话**，即"重启 = 强制全部用户重新登录"。这是有意为之，避免长时间无主 token 累积。
 - 主前端 `index.html` 由 `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` 头控制，禁止浏览器缓存。
-
 
 ---
 
@@ -618,6 +705,9 @@ pip install dist/prompt_manager_client-*.whl
 
 # 可选依赖：WebSocket 热更新
 pip install "prompt-manager-client[ws]"
+
+# 可选依赖：语义检索（KnowledgeRetriever use_semantic=True）
+pip install "prompt-manager-client[semantic]"
 ```
 
 发布到 PyPI：
@@ -640,27 +730,32 @@ twine upload dist/*
 - 生命周期：`preload / on_update / start_auto_update / start_ws_update / stop`
 
 `on_update` 回调 key：
+
 - `kb:{dept}/{plat}` — 知识库更新
 - `robot_configs` — 机器人配置列表变化
 
-`KnowledgeRetriever`（详见 `knowledge_retriever.py`）：
+`KnowledgeRetriever`（详见 `client_sdk/knowledge_retriever.py`，v0.3.0 起整合进 SDK）：
 
-- 关键词检索（TF-IDF + 中文 unigram/bigram/trigram + 余弦相似度）
-- 可选语义检索（`use_semantic=True`，需 `sentence-transformers`）
-- 接口：`preload / retrieve / retrieve_as_text / get_available_keys`
+- 构造：`KnowledgeRetriever(base_url=..., use_semantic=False, prompt_client=None, enable_stopwords=True)`
+- 关键词检索：**倒排索引** + TF-IDF 加权余弦（中文高区分度单字 / bigram / trigram + 停用词过滤）
+- 可选语义检索：`use_semantic=True`（需 `pip install "prompt-manager-client[semantic]"`）
+- 接口：`preload / retrieve / retrieve_with_scores / retrieve_as_text / get_available_keys / stats`
+- 复用缓存：传 `prompt_client=<PromptClient 实例>` 可零网络请求初始化
+- 兼容层：`from knowledge_retriever import KnowledgeRetriever` 仍可用
+- 详细优化说明见「7.4.6 性能优化说明」
 
 ---
 
 ## 14. 环境变量
 
-| 变量                           | 默认值                                       | 说明                                                                                                       |
-| ------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `PROMPT_DB_PATH`             | `<backend>/prompt_manager.db`              | SQLite 路径，主服务 / Agent 共享同一文件                                                                   |
-| `PROMPT_MANAGER_URL`         | `http://localhost:8900`                    | Agent 拉取 LLM 配置的主服务地址                                                                            |
-| `FLOW_DATA_DIR`              | `<backend>/flow_data`                      | 上传文件落盘目录                                                                                           |
-| `DIALOGUE_FLOW_PARSER_SKILL` | `~/.codebuddy/skills/dialogue-flow-parser` | OCR skill 根路径；缺失时自动降级到内置 rapidocr                                                            |
-| `LLM_API_LOG_DIR`            | `<flow_data>/api_logs`                     | LLM API 调用日志目录                                                                                       |
-| `OCR_PYTHON`                 | 无                                           | 显式指定跑 OCR 的 Python 解释器（需装 `rapidocr_onnxruntime`），例如 `/data/miniconda3/bin/python3` |
+| 变量                           | 默认值                                       | 说明                                                                                                   |
+| ------------------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `PROMPT_DB_PATH`             | `<backend>/prompt_manager.db`              | SQLite 路径，主服务 / Agent 共享同一文件                                                               |
+| `PROMPT_MANAGER_URL`         | `http://localhost:8900`                    | Agent 拉取 LLM 配置的主服务地址                                                                        |
+| `FLOW_DATA_DIR`              | `<backend>/flow_data`                      | 上传文件落盘目录                                                                                       |
+| `DIALOGUE_FLOW_PARSER_SKILL` | `~/.codebuddy/skills/dialogue-flow-parser` | OCR skill 根路径；缺失时自动降级到内置 rapidocr                                                        |
+| `LLM_API_LOG_DIR`            | `<flow_data>/api_logs`                     | LLM API 调用日志目录                                                                                   |
+| `OCR_PYTHON`                 | 无                                           | 显式指定跑 OCR 的 Python 解释器（需装`rapidocr_onnxruntime`），例如 `/data/miniconda3/bin/python3` |
 
 > 已移除 `PROMPT_MANAGER_TOKEN` / `PROMPT_MANAGER_USER` / `PROMPT_MANAGER_PASS` —— SDK 现在只调公开端点，无需鉴权。
 
@@ -736,5 +831,16 @@ Agent 前端 `agent_frontend/`：
 - **前端**：Vue 3（本地 `vue.global.prod.js`，零构建）
 - **流程树解析**：`dialogue-flow-parser` skill（OCR）+ `rapidocr_onnxruntime` 兜底 + OpenAI 兼容多模态 LLM
 - **PDF 转图**：PyMuPDF（`fitz`）优先，`pdf2image` 兜底，200 DPI
-- **客户端 SDK**：仅依赖 Python 标准库，可选 `websocket-client`（热更新）/ `sentence-transformers`（语义检索）
+- **客户端 SDK**：仅依赖 Python 标准库，可选 `websocket-client`（热更新）/ `sentence-transformers` + `numpy`（语义检索）
+- **知识库检索**：倒排索引 + TF-IDF 加权余弦；`heapq.nlargest` / `np.argpartition` 取 TopK；停用词降噪；语义向量预 L2 归一化
 - **认证**：token 存 `auth_sessions` 表，30 天过期；服务启动时清空；中间件白名单公开 `/api/v1/*`、`/api/meta/*`、`/api/auth/login`、`/api/settings/*`
+
+---
+
+## 18. 相关文档
+
+| 文档                      | 说明                                                           |
+| ------------------------- | -------------------------------------------------------------- |
+| `README.md`             | 本文件：架构 / API / SDK / 部署（面向开发）                    |
+| `操作手册.md`           | 页面配置操作手册：逐页操作步骤 + 字段说明（面向运营 / 业务方） |
+| `AGENT_ARCHITECTURE.md` | Agent 架构设计：当前架构判定 + 业界方案对比 + 演进路线         |

@@ -217,10 +217,16 @@ def init_db():
                 platform TEXT NOT NULL,
                 company TEXT NOT NULL DEFAULT '',
                 enabled INTEGER NOT NULL DEFAULT 1,
+                prompt_version INTEGER NOT NULL DEFAULT -1,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
         """)
+        # 旧库兼容：增加 prompt_version 列
+        try:
+            conn.execute("SELECT prompt_version FROM robot_configs LIMIT 1")
+        except sqlite3.OperationalError:
+            conn.execute("ALTER TABLE robot_configs ADD COLUMN prompt_version INTEGER NOT NULL DEFAULT -1")
         conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_robot_configs_filter
             ON robot_configs(department, platform, enabled)
@@ -739,6 +745,7 @@ def update_prompt(
 
 
 def delete_prompt(prompt_id: int) -> bool:
+    """停用提示词（软删除：is_active = 0）"""
     prompt = get_prompt_by_id(prompt_id)
     if not prompt:
         return False
@@ -746,6 +753,28 @@ def delete_prompt(prompt_id: int) -> bool:
         conn.execute("UPDATE prompts SET is_active = 0 WHERE id = ?", (prompt_id,))
     _refresh_cache()
     return True
+
+
+def set_prompt_active(prompt_id: int, is_active: bool) -> Optional[dict]:
+    """启用 / 停用提示词。
+
+    - is_active=True  -> 恢复启用（SDK 与业务侧重新可取到）
+    - is_active=False -> 停用（等价于 delete_prompt 的软删除）
+
+    Returns:
+        更新后的提示词；提示词不存在时返回 None
+    """
+    prompt = get_prompt_by_id(prompt_id)
+    if not prompt:
+        return None
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE prompts SET is_active = ?, updated_at = ? WHERE id = ?",
+            (1 if is_active else 0, now, prompt_id),
+        )
+    _refresh_cache()
+    return get_prompt_by_id(prompt_id)
 
 
 def get_prompt_versions(prompt_id: int) -> List[dict]:
@@ -980,22 +1009,37 @@ def _now_str() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def upsert_robot_config(bot_id: str, department: str, platform: str, company: str = "", enabled: bool = True) -> dict:
+def upsert_robot_config(
+    bot_id: str,
+    department: str,
+    platform: str,
+    company: str = "",
+    enabled: bool = True,
+    prompt_version: int = -1,
+) -> dict:
     bot_id = str(bot_id).strip()
     if not bot_id:
         raise ValueError("bot_id 不能为空")
+    # prompt_version: -1 = 跟随最新；>=0 表示固定版本号
+    try:
+        pv = int(prompt_version)
+    except (TypeError, ValueError):
+        pv = -1
+    if pv < 0:
+        pv = -1
     now = _now_str()
     with get_connection() as conn:
         conn.execute(
-            """INSERT INTO robot_configs (bot_id, department, platform, company, enabled, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?)
+            """INSERT INTO robot_configs (bot_id, department, platform, company, enabled, prompt_version, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(bot_id) DO UPDATE SET
                  department=excluded.department,
                  platform=excluded.platform,
                  company=excluded.company,
                  enabled=excluded.enabled,
+                 prompt_version=excluded.prompt_version,
                  updated_at=excluded.updated_at""",
-            (bot_id, department, platform, company, 1 if enabled else 0, now, now)
+            (bot_id, department, platform, company, 1 if enabled else 0, pv, now, now)
         )
     return get_robot_config(bot_id)  # type: ignore[return-value]
 
@@ -1007,6 +1051,8 @@ def get_robot_config(bot_id: str) -> Optional[dict]:
             return None
         d = dict(row)
         d["enabled"] = bool(d.get("enabled", 1))
+        # 兼容旧库无该列
+        d.setdefault("prompt_version", -1)
         return d
 
 
@@ -1039,8 +1085,48 @@ def list_robot_configs(
     for r in rows:
         d = dict(r)
         d["enabled"] = bool(d.get("enabled", 1))
+        d.setdefault("prompt_version", -1)
         result.append(d)
     return result
+
+
+def resolve_robot_prompt_version(bot_id: str, department: str, platform: str) -> dict:
+    """按机器人配置 + 提示词表，解析该机器人应当使用的提示词版本号。
+
+    - 若 robot_configs.prompt_version >= 0：返回该固定版本（若版本不存在则降级为最新）
+    - 若 robot_configs.prompt_version == -1 或机器人未配置：取该 (department, platform) 下最新版本
+    """
+    cfg = get_robot_config(bot_id)
+    if not cfg:
+        return {"bot_id": bot_id, "version": 0, "prompt_name": None, "locked": False}
+    pv = cfg.get("prompt_version", -1)
+    if pv is None:
+        pv = -1
+    dept = department or cfg.get("department")
+    plat = platform or cfg.get("platform")
+    with get_connection() as conn:
+        row = None
+        if pv >= 0 and dept and plat:
+            row = conn.execute(
+                "SELECT name, version FROM prompts WHERE department=? AND platform=? AND version=? "
+                "AND is_active=1 LIMIT 1",
+                (dept, plat, pv),
+            ).fetchone()
+        if not row and dept and plat:
+            row = conn.execute(
+                "SELECT name, version FROM prompts WHERE department=? AND platform=? AND is_active=1 "
+                "ORDER BY id DESC LIMIT 1",
+                (dept, plat),
+            ).fetchone()
+    if not row:
+        return {"bot_id": bot_id, "version": 0, "prompt_name": None, "locked": pv >= 0}
+    d = dict(row)
+    return {
+        "bot_id": bot_id,
+        "version": d.get("version", 0),
+        "prompt_name": d.get("name"),
+        "locked": pv >= 0,
+    }
 
 
 def _ensure_bot_ids_seeded():
@@ -1219,9 +1305,19 @@ def list_flow_trees(
         conditions.append("ft.platform = ?")
         params.append(platform)
     if keyword:
-        conditions.append("EXISTS (SELECT 1 FROM flow_records frs WHERE frs.flow_id = ft.id AND (frs.file_name LIKE ? OR frs.description LIKE ? OR frs.structure LIKE ? OR frs.bot_id LIKE ?))")
+        # 关键字全局检索：同时覆盖
+        #   1) 流程树库自身的描述 ft.description
+        #   2) 库下任意解析记录的 文件名 / 流程描述 / 结构 / 机器人ID
+        conditions.append(
+            "("
+            "ft.description LIKE ? OR "
+            "EXISTS (SELECT 1 FROM flow_records frs WHERE frs.flow_id = ft.id AND ("
+            "frs.file_name LIKE ? OR frs.description LIKE ? OR frs.structure LIKE ? OR frs.bot_id LIKE ?"
+            "))"
+            ")"
+        )
         kw = f"%{keyword}%"
-        params.extend([kw, kw, kw, kw])
+        params.extend([kw, kw, kw, kw, kw])
     if bot_id is not None:
         bot_conditions = []
         bot_params = []
@@ -1401,11 +1497,13 @@ def search_flow_records(
         conditions.append("ft.platform = ?")
         params.append(platform)
     if keyword:
+        # 记录级检索：覆盖记录自身字段 + 所属流程树库的描述
         conditions.append(
-            "(fr.file_name LIKE ? OR fr.description LIKE ? OR fr.structure LIKE ? OR fr.bot_id LIKE ?)"
+            "(fr.file_name LIKE ? OR fr.description LIKE ? OR fr.structure LIKE ? "
+            "OR fr.bot_id LIKE ? OR ft.description LIKE ?)"
         )
         kw = f"%{keyword}%"
-        params.extend([kw, kw, kw, kw])
+        params.extend([kw, kw, kw, kw, kw])
     _flow_bot_condition("fr", bot_id, conditions, params)
 
     where = " WHERE " + " AND ".join(conditions) if conditions else ""

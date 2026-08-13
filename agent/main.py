@@ -30,6 +30,10 @@ from flow_parser_service import (
     save_uploaded_file, parse_file, delete_record_file,
     FLOW_DATA_DIR
 )
+import robot_config_service
+from dialog_agent import get_agent
+from conversation_store import conversation_store
+from skills.registry import skill_registry
 
 # 导入 prompt_manager 的数据库模块（共享同一数据库）
 PM_BACKEND = os.path.join(os.path.dirname(__file__), "..", "backend")
@@ -62,6 +66,22 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     content: str
     model: str = ""
+
+
+class AgentChatRequest(BaseModel):
+    """智能客服 Agent 对话请求（配置由 科室+平台+机器人id 三级筛选决定）"""
+    message: str = Field(..., description="访客本轮输入")
+    session_id: Optional[str] = Field(None, description="会话 id，为空则新建")
+    bot_id: Optional[str] = Field(None, description="机器人 id")
+    department: Optional[str] = Field(None, description="科室，留空则用机器人配置中的科室")
+    platform: Optional[str] = Field(None, description="平台，留空则用机器人配置中的平台")
+    temperature: float = Field(0.7, ge=0, le=2)
+    use_tools: bool = Field(True, description="是否启用工具调用")
+    enable_thinking: bool = Field(False, description="是否开启模型思考（推理模式）")
+
+
+class AgentResetRequest(BaseModel):
+    session_id: str
 
 
 class FlowTreeCreateReq(BaseModel):
@@ -102,10 +122,31 @@ async def favicon():
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
+    """返回前端页面
+
+    静态资源版本号由 app.js / style.css 的最后修改时间生成，
+    改动前端文件后浏览器会自动拉取新版本，无需手动清缓存。
+    """
     html_path = os.path.join(FRONTEND_DIR, "index.html")
-    if os.path.exists(html_path):
+    if not os.path.exists(html_path):
+        return HTMLResponse("<h1>Agent 服务</h1><p>前端文件未找到，请检查 agent_frontend 目录</p>")
+
+    try:
+        mtimes = [
+            os.path.getmtime(os.path.join(FRONTEND_DIR, name))
+            for name in ("app.js", "style.css")
+            if os.path.exists(os.path.join(FRONTEND_DIR, name))
+        ]
+        asset_ver = str(int(max(mtimes))) if mtimes else "0"
+        with open(html_path, "r", encoding="utf-8") as f:
+            html = f.read().replace("__ASSET_VER__", asset_ver)
+        return HTMLResponse(
+            html,
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )
+    except Exception as e:
+        logger.error("渲染首页失败: %s", e)
         return FileResponse(html_path)
-    return HTMLResponse("<h1>Agent 服务</h1><p>前端文件未找到，请检查 agent_frontend 目录</p>")
 
 
 # ==================== LLM 配置状态 ====================
@@ -168,6 +209,135 @@ async def chat(req: ChatRequest):
         return ChatResponse(content=content, model=cfg.get("model_name", ""))
     except Exception as e:
         raise HTTPException(500, f"对话失败: {e}")
+
+
+# ==================== 智能客服 Agent ====================
+
+@app.get("/api/agent/cascade")
+async def api_agent_cascade(
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+):
+    """科室 -> 平台 -> 机器人id 三级级联选项（一次性返回，减少前端请求）"""
+    return robot_config_service.get_cascade_options(department=department, platform=platform)
+
+
+@app.get("/api/agent/bots")
+async def api_agent_bots(
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+    keyword: Optional[str] = None,
+    enabled_only: bool = False,
+    include_unconfigured: bool = True,
+):
+    """按科室+平台级联筛选机器人 id（实时直查库，含禁用与未配置机器人）"""
+    bots = robot_config_service.list_bots(
+        department=department, platform=platform,
+        enabled_only=enabled_only, keyword=keyword,
+        include_unconfigured=include_unconfigured,
+    )
+    return {
+        "bots": bots,
+        "total": len(bots),
+        **robot_config_service.get_config_signature(),
+    }
+
+
+@app.get("/api/agent/bots/signature")
+async def api_agent_bots_signature():
+    """机器人配置指纹，供前端轮询检测提示词管理侧的配置变更"""
+    return robot_config_service.get_config_signature()
+
+
+@app.get("/api/agent/config")
+async def api_agent_config(
+    bot_id: Optional[str] = None,
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+):
+    """预览当前筛选条件下将生效的 agent 配置（提示词版本、流程树、工具）"""
+    try:
+        return get_agent(PM_URL).inspect_config(
+            bot_id=bot_id, department=department, platform=platform
+        )
+    except Exception as e:
+        logger.exception("解析 agent 配置失败")
+        raise HTTPException(500, f"解析配置失败: {e}")
+
+
+@app.post("/api/agent/chat")
+async def api_agent_chat(req: AgentChatRequest):
+    """智能客服 Agent 对话：带会话记忆 + 工具调用 + 按机器人配置装配提示词"""
+    llm = get_llm_client(PM_URL)
+    if not llm.is_configured():
+        raise HTTPException(400, "LLM API 未配置，请先在提示词管理系统中配置")
+
+    if not req.message.strip():
+        raise HTTPException(400, "message 不能为空")
+
+    try:
+        return get_agent(PM_URL).chat(
+            message=req.message,
+            session_id=req.session_id,
+            bot_id=req.bot_id,
+            department=req.department,
+            platform=req.platform,
+            temperature=req.temperature,
+            use_tools=req.use_tools,
+            enable_thinking=req.enable_thinking,
+        )
+    except Exception as e:
+        logger.exception("Agent 对话失败")
+        raise HTTPException(500, f"Agent 对话失败: {e}")
+
+
+@app.get("/api/agent/sessions")
+async def api_agent_sessions(
+    bot_id: Optional[str] = None,
+    department: Optional[str] = None,
+    platform: Optional[str] = None,
+    keyword: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 30,
+):
+    """对话列表：支持按机器人 id 筛选、按对话内容关键词检索"""
+    return conversation_store.list_sessions(
+        bot_id=bot_id, department=department, platform=platform,
+        keyword=keyword, page=page, page_size=page_size,
+    )
+
+
+@app.get("/api/agent/sessions/{session_id}")
+async def api_agent_session_detail(session_id: str):
+    """加载历史会话消息，并把上下文恢复到内存以便继续对话"""
+    result = get_agent(PM_URL).load_session(session_id)
+    if not result.get("found"):
+        raise HTTPException(404, "会话不存在")
+    return result
+
+
+@app.delete("/api/agent/sessions/{session_id}")
+async def api_agent_session_delete(session_id: str):
+    """删除会话（从列表移除，消息明细保留用于审计）"""
+    get_agent(PM_URL).reset_session(session_id)
+    return {"success": conversation_store.delete_session(session_id)}
+
+
+@app.get("/api/agent/skills")
+async def api_agent_skills(department: Optional[str] = None):
+    """列出病种话术 Skill"""
+    return {"skills": skill_registry.list_skills(department=department)}
+
+
+@app.post("/api/agent/reset")
+async def api_agent_reset(req: AgentResetRequest):
+    """清空指定会话的多轮记忆"""
+    return {"success": get_agent(PM_URL).reset_session(req.session_id)}
+
+
+@app.get("/api/agent/stats")
+async def api_agent_stats():
+    return get_agent(PM_URL).stats()
 
 
 # ==================== 元数据 ====================

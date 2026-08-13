@@ -18,7 +18,7 @@ import json
 from io import BytesIO
 from datetime import datetime
 from typing import Optional, Dict, Tuple, List
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Header, Depends, Request
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Header, Depends, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response, JSONResponse
 from contextlib import asynccontextmanager
@@ -46,7 +46,7 @@ from models import (
 )
 from database import (
     init_db, create_prompt, get_prompt_by_id, get_prompt_by_name,
-    list_prompts, update_prompt, delete_prompt,
+    list_prompts, update_prompt, delete_prompt, set_prompt_active,
     get_prompt_versions, rollback_prompt, delete_version,
     fetch_prompt, fetch_prompt_by_name,
     fetch_all_active, get_cache_stats, resolve_prompt_variables,
@@ -60,7 +60,7 @@ from database import (
     list_flow_trees, update_flow_tree, delete_flow_tree,
     create_flow_record, get_flow_record_by_id, list_flow_records,
     update_flow_record, delete_flow_record, search_flow_records,
-    upsert_robot_config, get_robot_config, delete_robot_config, list_robot_configs,
+    upsert_robot_config, get_robot_config, delete_robot_config, list_robot_configs, resolve_robot_prompt_version,
     authenticate_user, create_session, get_user_by_token, delete_session,
     list_users, create_user, update_user, delete_user, user_has_permission,
     get_llm_config, set_llm_config,
@@ -586,6 +586,42 @@ async def api_delete(prompt_id: int, _: dict = Depends(require_prompt_delete)):
     return {"message": "删除成功"}
 
 
+@app.post("/api/prompts/{prompt_id}/toggle_active", response_model=PromptResponse)
+async def api_toggle_active(
+    prompt_id: int,
+    data: dict = Body(default={}),
+    user: dict = Depends(require_prompt_edit),
+):
+    """启用 / 停用提示词。
+
+    请求体可选 `{"is_active": true/false}`；不传则自动取反当前状态。
+    """
+    prompt = get_prompt_by_id(prompt_id)
+    if not prompt:
+        raise HTTPException(404, "提示词不存在")
+
+    # 非 admin 需校验科室在其管理范围内
+    if user.get("role") != "admin" and prompt.get("department") not in (user.get("managed_departments") or []):
+        raise HTTPException(403, "该科室不在你的管理范围内")
+
+    target = data.get("is_active")
+    if target is None:
+        target = not bool(prompt.get("is_active"))
+    target = bool(target)
+
+    updated = set_prompt_active(prompt_id, target)
+    if not updated:
+        raise HTTPException(404, "提示词不存在")
+
+    await ws_manager.broadcast({
+        "event": "updated",
+        "prompt_id": prompt_id,
+        "name": updated.get("name"),
+        "is_active": target,
+    })
+    return PromptResponse(**updated)
+
+
 @app.get("/api/prompts/{prompt_id}/versions", response_model=list[PromptVersionResponse])
 async def api_versions(prompt_id: int, _: dict = Depends(require_prompt_view)):
     vs = get_prompt_versions(prompt_id)
@@ -991,28 +1027,14 @@ async def api_v1_robot_configs(
     return {"total": len(items), "items": items}
 
 
-# 公开只读：单条机器人配置 + 默认按其自身 department/platform 返回
+# 公开只读：根据机器人配置的 prompt_version 字段决定返回最新还是固定版本
 @app.get("/api/v1/robot_configs/{bot_id}/prompt_version")
 async def api_v1_robot_config_prompt_version(
     bot_id: str,
     department: Optional[str] = None,
     platform: Optional[str] = None,
 ):
-    cfg = get_robot_config(bot_id)
-    dept = department or (cfg.get("department") if cfg else None)
-    plat = platform or (cfg.get("platform") if cfg else None)
-    if not dept or not plat:
-        return {"bot_id": bot_id, "version": 0, "prompt_name": None}
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT name, version FROM prompts WHERE department=? AND platform=? AND is_active=1 "
-            "ORDER BY id DESC LIMIT 1",
-            (dept, plat),
-        ).fetchone()
-    if not row:
-        return {"bot_id": bot_id, "version": 0, "prompt_name": None}
-    d = dict(row)
-    return {"bot_id": bot_id, "version": d.get("version", 0), "prompt_name": d.get("name")}
+    return resolve_robot_prompt_version(bot_id, department or "", platform or "")
 
 
 @app.get("/api/robot_configs", response_model=RobotConfigListResponse)
@@ -1032,6 +1054,7 @@ async def api_robot_config_upsert(data: RobotConfigCreate, _: dict = Depends(req
         item = upsert_robot_config(
             bot_id=data.bot_id, department=data.department,
             platform=data.platform, company=data.company, enabled=data.enabled,
+            prompt_version=data.prompt_version,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -1051,6 +1074,7 @@ async def api_robot_config_update(bot_id: str, data: RobotConfigUpdate, _: dict 
         platform=data.platform or item["platform"],
         company=data.company if data.company is not None else item["company"],
         enabled=data.enabled if data.enabled is not None else item["enabled"],
+        prompt_version=data.prompt_version if data.prompt_version is not None else item.get("prompt_version", -1),
     )
     return RobotConfigResponse(**item)
 

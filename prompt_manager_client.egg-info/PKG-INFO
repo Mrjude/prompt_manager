@@ -1,12 +1,12 @@
 Metadata-Version: 2.4
 Name: prompt-manager-client
-Version: 0.2.9
-Summary: 提示词管理系统 - 提示词 / 知识库 / 流程树 一体化管理平台
+Version: 0.3.0
+Summary: 提示词管理系统 - 提示词 / 知识库 / 流程树 一体化管理平台（含知识库检索器）
 Author: prompt-manager
 License-Expression: MIT
 Project-URL: Homepage, http://localhost:8900
 Project-URL: Source, https://github.com/Mrjude/prompt-manager
-Keywords: prompt,prompt-manager,llm
+Keywords: prompt,prompt-manager,llm,retrieval,tf-idf
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
@@ -16,6 +16,9 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.8
 Provides-Extra: ws
 Requires-Dist: websocket-client; extra == "ws"
+Provides-Extra: semantic
+Requires-Dist: sentence-transformers; extra == "semantic"
+Requires-Dist: numpy; extra == "semantic"
 Provides-Extra: dev
 Requires-Dist: build; extra == "dev"
 Requires-Dist: twine; extra == "dev"
