@@ -311,3 +311,53 @@ class LLMVersionResponse(BaseModel):
     is_active: bool
     created_at: str
     updated_at: str
+
+
+# ==================== KICP 机器人视角页面 ====================
+class KicpSessionRequest(BaseModel):
+    """KICP 页面会话初始化：按机器人ID换取访问令牌
+
+    - 不传 username/password 时使用服务端配置的默认账号（admin）免登录
+    - 传入账号密码时按该账号的权限访问
+    """
+    bot_id: str = Field(..., min_length=1, max_length=64, description="机器人ID")
+    username: Optional[str] = Field(None, description="账号；留空表示使用默认 admin 免登录")
+    password: Optional[str] = Field(None, description="密码；留空表示使用默认 admin 免登录")
+
+
+class KicpRobotInfo(BaseModel):
+    """机器人上下文（科室 / 平台 / 公司）"""
+    bot_id: str
+    department: str = ""
+    department_label: str = ""
+    platform: str = ""
+    platform_label: str = ""
+    company: str = ""
+    enabled: bool = True
+    prompt_version: int = -1
+    configured: bool = False
+    updated_at: str = ""
+
+
+class KicpScope(BaseModel):
+    """当前账号在该机器人科室下的可操作范围"""
+    is_admin: bool = False
+    dept_allowed: bool = False
+    default_login: bool = False
+    can_prompt_view: bool = False
+    can_prompt_edit: bool = False
+    can_prompt_delete: bool = False
+    can_knowledge_view: bool = False
+    can_knowledge_edit: bool = False
+    can_knowledge_delete: bool = False
+    can_flow_view: bool = False
+    can_flow_edit: bool = False
+    can_flow_delete: bool = False
+
+
+class KicpSessionResponse(BaseModel):
+    token: str
+    expires_at: str
+    user: UserResponse
+    robot: KicpRobotInfo
+    scope: KicpScope

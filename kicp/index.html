@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KICP 机器人配置管理</title>
+<link rel="stylesheet" href="/kicp/style.css">
+</head>
+<body>
+<div id="app">
+  <!-- 登录浮层：仅在默认账号不可用或指定账号登录失败时出现 -->
+  <div class="k-login" v-if="needLogin">
+    <div class="card">
+      <h2>KICP 配置管理</h2>
+      <div class="sub">机器人 <b>{{ botId || '未指定' }}</b><br>请输入账号密码以继续</div>
+      <div class="err" v-if="loginError">{{ loginError }}</div>
+      <input v-model="loginForm.username" placeholder="用户名" @keyup.enter="doLogin">
+      <input v-model="loginForm.password" type="password" placeholder="密码" @keyup.enter="doLogin">
+      <button class="k-btn" :disabled="logining" @click="doLogin">{{ logining ? '登录中...' : '登录' }}</button>
+    </div>
+  </div>
+
+  <template v-if="!needLogin && ready">
+    <div class="k-body">
+      <aside class="k-side">
+        <div class="k-robot">
+          <div class="bid">
+            <span>{{ robot.bot_id }}</span>
+            <span class="k-tag off" v-if="robot.configured && !robot.enabled">已停用</span>
+          </div>
+          <div class="row">
+            <span class="k-tag dept" v-if="robot.department_label">{{ robot.department_label }}</span>
+            <span class="k-tag plat" v-if="robot.platform_label">{{ robot.platform_label }}</span>
+            <span class="k-tag company" v-if="robot.company">{{ robot.company }}</span>
+            <span class="k-tag" v-if="robot.configured && robot.prompt_version >= 0">提示词 v{{ robot.prompt_version }}</span>
+            <span class="k-tag" v-else-if="robot.configured">提示词最新版</span>
+          </div>
+          <div class="warn" v-if="!robot.configured">该机器人尚未配置科室/平台，内容按全部范围展示</div>
+          <div class="warn" v-else-if="!scope.dept_allowed">当前账号无该科室权限，内容不可见</div>
+          <div class="k-acct">
+            <span class="who">{{ user.username }} · {{ roleText }}</span>
+          </div>
+        </div>
+
+        <div class="k-nav-title">管理模块</div>
+        <div class="k-card" v-for="m in modules" :key="m.key"
+             :class="{ active: tab === m.key, disabled: !m.allowed }"
+             @click="switchTab(m)">
+          <div class="ico">{{ m.icon }}</div>
+          <div class="tx">
+            <div class="nm">{{ m.name }}</div>
+            <div class="ds" v-if="m.allowed">{{ m.desc }}</div>
+            <div class="no" v-else>无访问权限</div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="k-main">
+        <div class="k-empty" v-if="!currentModule || !currentModule.allowed" style="background:#fff;border-radius:8px">
+          <div style="font-size:34px">🔒</div>
+          <div>{{ currentModule ? '当前账号没有「' + currentModule.name + '」的查看权限' : '当前账号无任何模块访问权限' }}</div>
+          <div style="font-size:12px">如需访问请联系管理员开通权限</div>
+        </div>
+
+        <template v-else>
+          <!-- ============ 提示词管理 ============ -->
+          <template v-if="tab === 'prompt'">
+            <div class="k-toolbar">
+              <span class="h2">提示词管理</span>
+              <input v-model="pQuery.keyword" placeholder="搜索名称或描述..." @keyup.enter="reloadPrompts">
+              <button class="k-btn" @click="reloadPrompts">搜索</button>
+            </div>
+            <div class="k-panes">
+              <div class="k-left-stack">
+                <div class="k-list">
+                  <div class="hd"><span>提示词列表</span><span class="cnt">共 {{ pTotal }} 条</span></div>
+                  <div class="bd">
+                    <div class="k-empty" v-if="!prompts.length">暂无数据</div>
+                    <div class="k-item" v-for="p in prompts" :key="p.id"
+                         :class="{ active: current && current.id === p.id }" @click="selectPrompt(p)">
+                      <div class="nm">{{ p.name }}</div>
+                      <div class="tags">
+                        <span class="k-tag dept">{{ label('departments', p.department) }}</span>
+                        <span class="k-tag plat">{{ label('platforms', p.platform) }}</span>
+                        <span class="k-tag">{{ label('scenes', p.scene) }}</span>
+                        <span class="k-tag">v{{ p.version }}</span>
+                        <span class="k-tag" :class="{ off: !p.is_active }">{{ p.is_active ? '启用' : '停用' }}</span>
+                      </div>
+                      <div class="ds" v-if="p.description">{{ p.description }}</div>
+                    </div>
+                  </div>
+                  <div class="k-pager" v-if="pTotal > pQuery.page_size">
+                    <button class="k-btn sm ghost" :disabled="pQuery.page <= 1" @click="pQuery.page--; loadPrompts()">上一页</button>
+                    <span>{{ pQuery.page }} / {{ pPages }}</span>
+                    <button class="k-btn sm ghost" :disabled="pQuery.page >= pPages" @click="pQuery.page++; loadPrompts()">下一页</button>
+                  </div>
+                </div>
+
+                <!-- 历史版本 -->
+                <div class="k-list k-versions">
+                  <div class="hd">
+                    <span>历史版本</span>
+                    <span class="cnt">{{ current ? versions.length + ' 个版本' : '未选择' }}</span>
+                  </div>
+                  <div class="bd">
+                    <div class="k-empty" v-if="!current">选择提示词后展示其历史版本</div>
+                    <div class="k-empty" v-else-if="!versions.length">暂无历史版本</div>
+                    <div class="k-ver" v-for="v in versions" :key="v.id"
+                         :class="{ active: viewVersion && viewVersion.id === v.id, cur: v.version === current.version }"
+                         @click="previewVersion(v)">
+                      <div class="top">
+                        <span class="vn">v{{ v.version }}</span>
+                        <span class="k-tag" v-if="v.version === current.version">当前</span>
+                        <span class="tm">{{ v.created_at }}</span>
+                      </div>
+                      <div class="lg" v-if="v.change_log">{{ v.change_log }}</div>
+                      <div class="ops">
+                        <button class="k-btn sm ghost" @click.stop="previewVersion(v)">查看</button>
+                        <button class="k-btn sm" v-if="scope.can_prompt_edit && v.version !== current.version"
+                                @click.stop="doRollback(v)">回滚</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="k-detail">
+                <div class="hd">
+                  <span>提示词详情<span class="sub-tip" v-if="viewVersion">· 正在查看 v{{ viewVersion.version }} 历史内容</span></span>
+                  <span v-if="current" style="display:flex;gap:6px">
+                    <button class="k-btn sm ghost" v-if="viewVersion" @click="exitVersionView">返回当前版本</button>
+                    <button class="k-btn sm" v-if="scope.can_prompt_edit && !editing && !viewVersion" @click="startPromptEdit">编辑</button>
+                    <button class="k-btn sm green" v-if="editing" @click="savePrompt">保存</button>
+                    <button class="k-btn sm ghost" v-if="editing" @click="cancelEdit">取消</button>
+                    <button class="k-btn sm red" v-if="scope.can_prompt_delete && !editing && !viewVersion" @click="removePrompt">删除</button>
+                  </span>
+                </div>
+                <div class="bd pd-fill">
+                  <div class="k-empty" v-if="!current">请从左侧列表选择一个提示词查看</div>
+                  <template v-else>
+                    <div class="k-meta">
+                      <span>名称：{{ current.name }}</span>
+                      <span>版本：v{{ viewVersion ? viewVersion.version : current.version }}</span>
+                      <span>状态：{{ current.is_active ? '启用' : '停用' }}</span>
+                      <span>更新：{{ viewVersion ? viewVersion.created_at : current.updated_at }}</span>
+                    </div>
+                    <textarea class="k-ta fill" v-model="form.content" :readonly="!editing"></textarea>
+                    <template v-if="editing">
+                      <label style="display:block;font-size:12px;color:#5c6b7a;margin:10px 0 4px">描述</label>
+                      <input v-model="form.description" style="width:100%;padding:8px 11px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none">
+                    </template>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ============ 知识库管理 ============ -->
+          <template v-if="tab === 'knowledge'">
+            <div class="k-toolbar">
+              <span class="h2">知识库管理</span>
+              <span style="font-size:12px;color:#8c9bab">按「科室 + 平台」分组</span>
+              <div class="spacer"></div>
+              <input class="kw" v-model="iQuery.keyword" placeholder="检索知识记录关键词...">
+              <select v-model="iQuery.type">
+                <option value="">全部类型</option>
+                <option v-for="t in meta.kb_types" :key="t" :value="t">{{ t }}</option>
+              </select>
+              <button class="k-btn ghost" v-if="iQuery.keyword || iQuery.type" @click="iQuery.keyword=''; iQuery.type=''">重置</button>
+            </div>
+            <div class="k-panes">
+              <div class="k-list">
+                <div class="hd"><span>知识库列表</span><span class="cnt">共 {{ kTotal }} 条</span></div>
+                <div class="bd">
+                  <div class="k-empty" v-if="!kbs.length">暂无数据</div>
+                  <div class="k-item" v-for="k in kbs" :key="k.id"
+                       :class="{ active: current && current.id === k.id }" @click="selectKb(k)">
+                    <div class="nm">{{ label('departments', k.department) }} · {{ label('platforms', k.platform) }}</div>
+                    <div class="tags">
+                      <span class="k-tag dept">{{ label('departments', k.department) }}</span>
+                      <span class="k-tag plat">{{ label('platforms', k.platform) }}</span>
+                      <span class="k-tag">{{ kbCount(k.content) }} 条</span>
+                    </div>
+                    <div class="ds">更新于 {{ k.updated_at }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="k-detail">
+                <div class="hd">
+                  <span>知识库内容</span>
+                  <span v-if="current" style="display:flex;gap:6px">
+                    <button class="k-btn sm green" v-if="scope.can_knowledge_edit" @click="openCreateItem">+ 新增记录</button>
+                    <button class="k-btn sm red" v-if="scope.can_knowledge_delete" @click="removeKb">删除知识库</button>
+                  </span>
+                </div>
+                <div class="bd">
+                  <div class="k-empty" v-if="!current">请从左侧列表选择一个知识库查看</div>
+                  <template v-else>
+                    <div class="k-meta">
+                      <span>科室：{{ label('departments', current.department) }}</span>
+                      <span>平台：{{ label('platforms', current.platform) }}</span>
+                      <span>本机器人条目：{{ kbItems.length }}</span>
+                      <span v-if="filteredItems.length !== kbItems.length">筛选后：{{ filteredItems.length }}</span>
+                      <span>更新：{{ current.updated_at }}</span>
+                    </div>
+
+                    <div class="k-empty" v-if="!kbItems.length">该机器人暂无知识记录</div>
+                    <div class="k-empty" v-else-if="!filteredItems.length">没有匹配的知识记录</div>
+                    <div class="k-line" v-for="it in filteredItems" :key="it._idx">
+                      <div class="tx">
+                        <div class="line-tags">
+                          <span class="k-tag type" v-if="it.type">{{ it.type }}</span>
+                          <span class="k-tag" v-if="it.bot_id">{{ it.bot_id }}</span>
+                          <span class="k-tag" v-else>通用</span>
+                        </div>
+                        <div class="line-body">{{ it.text }}</div>
+                      </div>
+                      <div class="ops">
+                        <button class="k-btn sm ghost" v-if="scope.can_knowledge_edit" @click="openEditItem(it)">编辑</button>
+                        <button class="k-btn sm red" v-if="scope.can_knowledge_delete" @click="removeItem(it)">删除</button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ============ 流程树管理 ============ -->
+          <template v-if="tab === 'flow'">
+            <div class="k-toolbar">
+              <span class="h2">流程树管理</span>
+              <span style="font-size:12px;color:#8c9bab">按「科室 + 平台」分组</span>
+            </div>
+            <div class="k-panes">
+              <div class="k-list">
+                <div class="hd"><span>流程树库</span><span class="cnt">共 {{ fTotal }} 条</span></div>
+                <div class="bd">
+                  <div class="k-empty" v-if="!flows.length">暂无数据</div>
+                  <div class="k-item" v-for="f in flows" :key="f.id"
+                       :class="{ active: current && current.id === f.id }" @click="selectFlow(f)">
+                    <div class="nm">{{ label('departments', f.department) }} · {{ label('platforms', f.platform) }}</div>
+                    <div class="tags">
+                      <span class="k-tag dept">{{ label('departments', f.department) }}</span>
+                      <span class="k-tag plat">{{ label('platforms', f.platform) }}</span>
+                      <span class="k-tag">{{ f.record_count }} 条记录</span>
+                    </div>
+                    <div class="ds" v-if="f.description">{{ f.description }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="k-detail">
+                <div class="hd">
+                  <span>流程记录<span style="font-weight:400;color:#94a3b8;font-size:11.5px" v-if="current"> · 已过滤本机器人</span></span>
+                  <span v-if="current" style="display:flex;gap:6px">
+                    <button class="k-btn sm red" v-if="scope.can_flow_delete" @click="removeFlow">删除流程树库</button>
+                  </span>
+                </div>
+                <div class="bd">
+                  <div class="k-empty" v-if="!current">请从左侧列表选择一个流程树库查看</div>
+                  <template v-else>
+                    <div class="k-meta">
+                      <span>科室：{{ label('departments', current.department) }}</span>
+                      <span>平台：{{ label('platforms', current.platform) }}</span>
+                      <span>记录数：{{ flowRecords.length }}</span>
+                      <span>更新：{{ current.updated_at }}</span>
+                    </div>
+                    <div class="k-empty" v-if="!flowRecords.length">该流程树库暂无记录</div>
+                    <div class="k-line" v-for="r in flowRecords" :key="r.id">
+                      <div class="tx">
+                        <div style="font-weight:600;font-size:12px;color:#3a6ea5">
+                          {{ r.file_name || ('记录 #' + r.id) }}
+                          <span class="k-tag" style="margin-left:6px">{{ r.file_type }}</span>
+                          <span class="k-tag" :class="{ off: r.status !== 'success' }">{{ r.status }}</span>
+                          <span class="k-tag" v-if="r.bot_id">{{ r.bot_id }}</span>
+                        </div>
+                        <div style="margin-top:5px;color:#5c6b7a">{{ r.description || '（无描述）' }}</div>
+                        <div style="margin-top:4px;color:#e74c3c;font-size:11.5px" v-if="r.error">{{ r.error }}</div>
+                      </div>
+                      <div class="ops" v-if="scope.can_flow_edit">
+                        <button class="k-btn sm ghost" @click="openEditRecord(r)">编辑</button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </template>
+      </main>
+    </div>
+  </template>
+
+  <!-- 新建/编辑 知识记录 -->
+  <div class="k-mask" v-if="modal === 'item'" @click.self="modal = ''">
+    <div class="k-modal">
+      <h3>{{ itemForm._idx === null ? '新增知识记录' : '编辑知识记录' }}</h3>
+      <label>类型</label>
+      <select v-model="itemForm.type">
+        <option value="">（不指定）</option>
+        <option v-for="t in meta.kb_types" :key="t" :value="t">{{ t }}</option>
+      </select>
+      <label>归属机器人ID</label>
+      <input v-model="itemForm.bot_id" placeholder="留空表示该科室平台全部机器人通用">
+      <label>内容 *</label>
+      <textarea v-model="itemForm.text" style="min-height:180px" placeholder="知识记录正文"></textarea>
+      <div class="acts">
+        <button class="k-btn ghost" @click="modal = ''">取消</button>
+        <button class="k-btn green" @click="saveItem">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="k-mask" v-if="modal === 'record'" @click.self="modal = ''">
+    <div class="k-modal">
+      <h3>编辑流程记录描述</h3>
+      <div style="font-size:12px;color:#8c9bab;margin-bottom:6px">{{ editRecord.file_name }}</div>
+      <label>自然语言描述</label>
+      <textarea v-model="editRecord.description" style="min-height:200px"></textarea>
+      <label>归属机器人ID</label>
+      <input v-model="editRecord.bot_id" placeholder="留空表示不限机器人">
+      <div class="acts">
+        <button class="k-btn ghost" @click="modal = ''">取消</button>
+        <button class="k-btn green" @click="saveRecord">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="k-toast" :class="toast.type" v-if="toast.show">{{ toast.msg }}</div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+if (!window.Vue) {
+  document.write('<script src="/kicp/vendor/vue.global.prod.js"><\/script>');
+}
+</script>
+<script src="/kicp/app.js"></script>
+</body>
+</html>

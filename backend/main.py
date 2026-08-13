@@ -42,7 +42,8 @@ from models import (
     FlowTreeCreate, FlowTreeUpdate, FlowTreeResponse, FlowTreeListResponse,
     FlowRecordResponse, FlowRecordListResponse, FlowRecordUpdate,
     RobotConfigCreate, RobotConfigUpdate, RobotConfigResponse, RobotConfigListResponse,
-    LLMConfig, LLMVersionCreate, LLMVersionUpdate, LLMVersionResponse
+    LLMConfig, LLMVersionCreate, LLMVersionUpdate, LLMVersionResponse,
+    KicpSessionRequest, KicpSessionResponse, KicpRobotInfo, KicpScope
 )
 from database import (
     init_db, create_prompt, get_prompt_by_id, get_prompt_by_name,
@@ -52,7 +53,7 @@ from database import (
     fetch_all_active, get_cache_stats, resolve_prompt_variables,
     _refresh_cache, DB_PATH, get_connection,
     DEPARTMENTS, PLATFORMS, SCENES, DEPARTMENT_ZH, PLATFORM_ZH, SCENE_ZH,
-    BUILTIN_VARIABLES, KB_TYPES, BOT_IDS,
+    BUILTIN_VARIABLES, KB_TYPES, BOT_IDS, ROBOT_COMPANY_MAP,
     list_bot_ids, add_bot_id,
     create_knowledge_base, get_kb_by_id, get_kb_by_key,
     list_knowledge_bases, update_knowledge_base, delete_knowledge_base,
@@ -108,6 +109,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 
 PUBLIC_API_PREFIXES = (
     "/api/auth/login", "/api/auth/heartbeat", "/api/v1/", "/api/meta/", "/api/settings/",
+    "/api/kicp/session",
     "/docs", "/openapi.json", "/redoc", "/favicon.ico"
 )
 
@@ -115,7 +117,7 @@ PUBLIC_API_PREFIXES = (
 @app.middleware("http")
 async def auth_middleware(request, call_next):
     path = request.url.path
-    if path == "/" or path.startswith(PUBLIC_API_PREFIXES) or path.startswith("/ws/"):
+    if path == "/" or path == "/kicp" or path.startswith("/kicp/") or path.startswith(PUBLIC_API_PREFIXES) or path.startswith("/ws/"):
         return await call_next(request)
     if path.startswith("/api/"):
         auth = request.headers.get("Authorization", "")
@@ -126,6 +128,11 @@ async def auth_middleware(request, call_next):
 
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
+KICP_DIR = os.path.join(os.path.dirname(__file__), "..", "kicp")
+
+# KICP 页面免登录使用的默认账号（可通过环境变量覆盖）
+KICP_DEFAULT_USERNAME = os.environ.get("KICP_DEFAULT_USERNAME", "admin")
+KICP_DEFAULT_PASSWORD = os.environ.get("KICP_DEFAULT_PASSWORD", "admin123456")
 
 
 def _schedule_parse(record_id: int, file_path: str, file_type: str, file_name: str):
@@ -386,6 +393,44 @@ async def index():
     return HTMLResponse("<h1>提示词管理系统</h1>")
 
 
+@app.get("/kicp", response_class=HTMLResponse)
+@app.get("/kicp/", response_class=HTMLResponse)
+async def kicp_index():
+    """KICP 机器人视角页面（按 bot_id 访问）"""
+    html_path = os.path.join(KICP_DIR, "index.html")
+    if os.path.exists(html_path):
+        return FileResponse(
+            html_path,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
+    return HTMLResponse("<h1>KICP 页面未找到</h1>", status_code=404)
+
+
+_KICP_MIME = {".js": "application/javascript; charset=utf-8", ".css": "text/css; charset=utf-8"}
+
+
+@app.get("/kicp/{asset_path:path}")
+async def kicp_asset(asset_path: str):
+    """KICP 页面静态资源（css / js / vendor）"""
+    if not asset_path or asset_path.endswith("/"):
+        raise HTTPException(404, "资源不存在")
+    safe_root = os.path.realpath(KICP_DIR)
+    target = os.path.realpath(os.path.join(safe_root, asset_path))
+    # 防目录穿越
+    if not target.startswith(safe_root + os.sep) or not os.path.isfile(target):
+        raise HTTPException(404, "资源不存在")
+    ext = os.path.splitext(target)[1].lower()
+    return FileResponse(
+        target,
+        media_type=_KICP_MIME.get(ext),
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+    )
+
+
 # ==================== 登录与账户权限 ====================
 
 @app.get("/api/auth/heartbeat")
@@ -470,6 +515,129 @@ async def api_user_delete(user_id: int, current_user: dict = Depends(require_adm
     if not delete_user(user_id):
         raise HTTPException(400, "无法删除该账号")
     return {"message": "删除成功"}
+
+
+# ==================== KICP 机器人视角会话 ====================
+
+def _build_kicp_scope(user: dict, robot_department: str, default_login: bool) -> KicpScope:
+    """计算账号在指定机器人科室下的可操作范围
+
+    规则：
+    1. 管理员（role=admin）拥有全部权限，且不受科室限制
+    2. 非管理员：managed_departments 为空表示不限科室；否则必须包含机器人科室
+       （'general' 视为通用科室，任何人可见）
+    3. 科室不匹配时，所有查看/编辑/删除权限一律关闭
+    """
+    is_admin = user.get("role") == "admin"
+    managed = user.get("managed_departments") or []
+    if is_admin or not managed:
+        dept_allowed = True
+    else:
+        dept_allowed = (robot_department in managed) or (robot_department == "general")
+
+    def cap(flag: str) -> bool:
+        if not dept_allowed:
+            return False
+        if is_admin:
+            return True
+        return bool(user.get(flag))
+
+    return KicpScope(
+        is_admin=is_admin,
+        dept_allowed=dept_allowed,
+        default_login=default_login,
+        can_prompt_view=cap("can_prompt_view"),
+        can_prompt_edit=cap("can_prompt_edit"),
+        can_prompt_delete=cap("can_prompt_delete"),
+        can_knowledge_view=cap("can_knowledge_view"),
+        can_knowledge_edit=cap("can_knowledge_edit"),
+        can_knowledge_delete=cap("can_knowledge_delete"),
+        can_flow_view=cap("can_flow_view"),
+        can_flow_edit=cap("can_flow_edit"),
+        can_flow_delete=cap("can_flow_delete"),
+    )
+
+
+def _build_kicp_robot(bot_id: str) -> KicpRobotInfo:
+    cfg = get_robot_config(bot_id)
+    if cfg:
+        dept = cfg.get("department") or ""
+        plat = cfg.get("platform") or ""
+        return KicpRobotInfo(
+            bot_id=bot_id,
+            department=dept,
+            department_label=DEPARTMENT_ZH.get(dept, dept),
+            platform=plat,
+            platform_label=PLATFORM_ZH.get(plat, plat),
+            company=cfg.get("company") or ROBOT_COMPANY_MAP.get(bot_id, ""),
+            enabled=bool(cfg.get("enabled", True)),
+            prompt_version=int(cfg.get("prompt_version", -1) or -1),
+            configured=True,
+            updated_at=cfg.get("updated_at") or "",
+        )
+    # 未配置的机器人：仅返回可推断的公司信息，科室/平台留空由前端提示
+    return KicpRobotInfo(
+        bot_id=bot_id,
+        company=ROBOT_COMPANY_MAP.get(bot_id, ""),
+        configured=False,
+    )
+
+
+@app.post("/api/kicp/session", response_model=KicpSessionResponse)
+async def api_kicp_session(data: KicpSessionRequest):
+    """KICP 页面初始化：按机器人ID建立访问会话
+
+    - 不传账号密码：使用服务端默认 admin 账号免登录
+    - 传账号密码：按该账号真实权限访问
+    """
+    bot_id = data.bot_id.strip()
+    if not bot_id:
+        raise HTTPException(400, "bot_id 不能为空")
+
+    default_login = not (data.username and data.password)
+    if default_login:
+        username, password = KICP_DEFAULT_USERNAME, KICP_DEFAULT_PASSWORD
+    else:
+        username, password = data.username.strip(), data.password
+
+    user = authenticate_user(username, password)
+    if not user:
+        if default_login:
+            raise HTTPException(500, "默认账号不可用，请联系管理员或改用账号密码访问")
+        raise HTTPException(401, "用户名或密码错误")
+
+    robot = _build_kicp_robot(bot_id)
+    scope = _build_kicp_scope(user, robot.department, default_login)
+    session = create_session(user["id"])
+    return KicpSessionResponse(
+        token=session["token"],
+        expires_at=session["expires_at"],
+        user=UserResponse(**user),
+        robot=robot,
+        scope=scope,
+    )
+
+
+@app.get("/api/kicp/context", response_model=KicpSessionResponse)
+async def api_kicp_context(
+    bot_id: str = Query(..., description="机器人ID"),
+    authorization: Optional[str] = Header(None),
+    current_user: dict = Depends(get_current_user),
+):
+    """已登录状态下刷新机器人上下文与权限范围"""
+    bot_id = bot_id.strip()
+    if not bot_id:
+        raise HTTPException(400, "bot_id 不能为空")
+    robot = _build_kicp_robot(bot_id)
+    scope = _build_kicp_scope(current_user, robot.department, False)
+    token = authorization.split(" ", 1)[1].strip() if authorization and authorization.startswith("Bearer ") else ""
+    return KicpSessionResponse(
+        token=token,
+        expires_at="",
+        user=UserResponse(**current_user),
+        robot=robot,
+        scope=scope,
+    )
 
 
 # ==================== 元数据接口 ====================
