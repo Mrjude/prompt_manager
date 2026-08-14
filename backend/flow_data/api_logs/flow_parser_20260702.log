@@ -1,6 +1,0 @@
-2026-07-14 16:25:14 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/4/1784017514344_f65223ff250b479c97544df564ce2e6d.png (107371 bytes)
-2026-07-14 16:25:14 [INFO] flow_parser - ==================================================
-2026-07-14 16:25:14 [INFO] flow_parser - 📋 开始解析: file=f65223ff250b479c97544df564ce2e6d.png, type=image
-2026-07-14 16:25:14 [INFO] flow_parser - LLM 解析: page=1/1, image=1784017514344_f65223ff250b479c97544df564ce2e6d.png, ocr_len=0
-2026-07-14 16:25:19 [INFO] flow_parser - 📋 解析完成: status=success, success=1/1
-2026-07-14 16:25:19 [INFO] flow_parser - ==================================================

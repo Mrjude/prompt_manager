@@ -1,7 +1,0 @@
-2026-06-14 00:10:14 [INFO] flow_parser - 日志文件: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/backend/flow_data/api_logs/flow_parser_20260614.log
-2026-06-14 00:46:05 [INFO] flow_parser - 文件已保存: /data/songzb/project/chatglm-proj/baichuan-finetune/prompt_manager/agent/../backend/flow_data/2/1781369165708_小红书-检测花钱吗.png (82308 bytes)
-2026-06-14 00:46:05 [INFO] flow_parser - ==================================================
-2026-06-14 00:46:05 [INFO] flow_parser - 📋 开始解析: file=小红书-检测花钱吗.png, type=image
-2026-06-14 00:46:07 [INFO] flow_parser - LLM 解析: page=1/1, image=1781369165708_小红书-检测花钱吗.png, ocr_len=302
-2026-06-14 00:46:15 [INFO] flow_parser - 📋 解析完成: status=success, success=1/1
-2026-06-14 00:46:15 [INFO] flow_parser - ==================================================
