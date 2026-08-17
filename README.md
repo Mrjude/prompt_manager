@@ -97,6 +97,7 @@ prompt_manager/
 | `users`           | `username UNIQUE, password_hash, role, can_prompt_*/can_knowledge_*/can_flow_*, is_active, **managed_departments**`         | 登录账号 + 页面权限 +**管理科室列表**       |
 | `auth_sessions`   | `token, user_id, expires_at`                                                                                                | 登录会话（默认 30 天；服务重启时自动清空）        |
 | `bot_ids`         | `bot_id UNIQUE`                                                                                                             | 机器人 ID 白名单（前端下拉候选）                  |
+| `meta_options`    | `(meta_type, key) UNIQUE`, `label`, `sort_order`                                                                    | 可自定义元数据：科室 / 平台 / 知识类型；`meta_type ∈ {department, platform, kb_type}` |
 | `robot_configs`   | `bot_id UNIQUE, department, platform, company, enabled, updated_at`                                                         | 机器人配置（`qwen` 服务按此热更新到运行时映射） |
 | `tag_records`     | `department, platform, tag_type(主题/意图/动作), name, description, created_at, updated_at`                                 | 标签管理（独立模块）                              |
 
@@ -126,6 +127,23 @@ prompt_manager/
 | 内置变量             | `{公司} {域中文} {域英文} {时间} {轮次} {轮次k} {套联描述} {动作描述} {知识描述} {暖场描述}`                                                                                                                                                   |
 
 `{公司}` 默认通过 `ROBOT_COMPANY_MAP` 由 `robot_id` 映射为 `雍禾 / 碧莲盛 / 唐森`；当 `robot_configs` 中显式配置了 `company` 时，**该映射被远端配置覆盖**。
+
+### 4.1 可自定义元数据
+
+**科室 / 平台 / 知识类型**三者已改为**数据库持久化 + 页面可维护**（表 `meta_options`），上表中的取值仅为首次初始化的默认种子数据。
+
+| 维度         | `meta_type`  | 字段含义                            | 页面入口                       |
+| ------------ | -------------- | ----------------------------------- | ------------------------------ |
+| 科室         | `department` | `key` = 英文标记，`label` = 中文名 | 顶部科室下拉 → `⚙ 自定义科室...` |
+| 平台         | `platform`   | `key` = 英文标记，`label` = 中文名 | 顶部平台下拉 → `⚙ 自定义平台...` |
+| 知识类型     | `kb_type`    | `key` 与 `label` 相同（仅中文名） | 知识库页类型下拉 → `⚙ 自定义类型...` |
+
+**实现要点**：
+
+- `database.py` 中 `DEPARTMENTS` / `DEPARTMENT_ZH` / `PLATFORMS` / `PLATFORM_ZH` / `KB_TYPES` 仍是模块级变量，但由 `_refresh_meta_cache()` 在启动与每次增删改后**原地刷新**，因此 `from database import DEPARTMENTS` 这类引用无需改动。
+- 修改 `key` 会**级联更新** `prompts` / `knowledge_bases` / `flow_trees` / `robot_configs`，避免历史数据失配。
+- 删除前做**占用检查**：科室/平台检查四张业务表，知识类型扫描 `knowledge_bases.content` 中的 `type` 字段；仍被引用时拒绝删除并返回占用数量。
+- 英文标记限制为 `[A-Za-z0-9_-]+`；`(meta_type, key)` 唯一。
 
 ## 5. API 概览
 
@@ -183,6 +201,10 @@ PUBLIC_API_PREFIXES = (
 | POST               | `/api/knowledge/import`  | 上传 Excel 导入（按`(dept, plat)` 合并到现有内容；非 admin 跳过越权科室行）                       |
 | GET                | `/api/v1/knowledge`      | 供 SDK 拉取（公开只读，无需 token）                                                                 |
 | GET                | `/api/meta/kb_types`     | 知识标签枚举（含约束/违禁词类）                                                                     |
+| GET                | `/api/meta/options/{meta_type}`          | 列出可自定义元数据选项，`meta_type ∈ {department, platform, kb_type}`（公开只读） |
+| POST               | `/api/meta/options/{meta_type}`          | 新增选项，body `{key, label}`；`kb_type` 只需 `label`（需提示词编辑权限） |
+| PUT                | `/api/meta/options/{meta_type}/{key}`    | 修改选项，body `{label, new_key}`；改 `key` 会**级联更新** prompts / knowledge_bases / flow_trees / robot_configs |
+| DELETE             | `/api/meta/options/{meta_type}/{key}`    | 删除选项；仍被业务数据引用时返回 400 并说明占用数量（需提示词删除权限） |
 | GET / POST         | `/api/meta/bot_ids`      | 机器人 ID 枚举（GET 查询、POST 追加，POST 需知识库编辑权限）                                        |
 
 ### 5.5 流程树（主服务 + Agent 双端提供）

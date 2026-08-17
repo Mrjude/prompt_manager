@@ -15,6 +15,7 @@ import sqlite3
 import os
 import json
 import re
+import logging
 import secrets
 import hashlib
 from datetime import datetime, timedelta
@@ -30,32 +31,44 @@ DB_PATH = os.environ.get(
 # cache_key = f"{department}::{platform}::{scene}"
 _version_cache: Dict[str, Tuple[int, str, str, str]] = {}
 
-# 科室定义
-DEPARTMENTS = [
-    "hair", "dentistry", "dermatology", "ophthalmology", "pediatrics", "beauty",
-    "thyroid", "psychiatry", "andrology", "gynaecology",
-    "general",
+# ==================== 可自定义元数据（科室 / 平台 / 知识类型）====================
+# 下面的 _DEFAULT_* 仅作为首次初始化的种子数据；运行时以 meta_options 表为准。
+# DEPARTMENTS / DEPARTMENT_ZH / PLATFORMS / PLATFORM_ZH / KB_TYPES 会在
+# init_db() 与每次增删改后由 _refresh_meta_cache() 原地刷新，
+# 因此其它模块 `from database import DEPARTMENTS` 的引用无需改动。
+
+_DEFAULT_DEPARTMENTS = [
+    ("hair", "植发科"), ("dentistry", "口腔科"), ("dermatology", "皮肤科"),
+    ("ophthalmology", "眼科"), ("pediatrics", "儿科"), ("beauty", "医美"),
+    ("thyroid", "甲状腺科"), ("psychiatry", "精神科"), ("andrology", "男科"),
+    ("gynaecology", "妇科"), ("general", "通用"),
 ]
-DEPARTMENT_ZH = {
-    "hair": "植发科", "dentistry": "口腔科", "dermatology": "皮肤科",
-    "ophthalmology": "眼科", "pediatrics": "儿科", "beauty": "医美",
-    "thyroid": "甲状腺科", "psychiatry": "精神科", "andrology": "男科", "gynaecology": "妇科",
-    "general": "通用",
-}
-# 平台定义
-PLATFORMS = ["xhs", "bd", "dy", "kuaishou", "wechat", "general"]
-PLATFORM_ZH = {
-    "xhs": "小红书", "bd": "百度", "dy": "抖音",
-    "kuaishou": "快手", "wechat": "微信", "general": "通用"
-}
-# 场景定义
-SCENES = ["system_prompt", "warmup", "knowledge", "action_desc", "score", "general"]
+_DEFAULT_PLATFORMS = [
+    ("xhs", "小红书"), ("bd", "百度"), ("dy", "抖音"),
+    ("ks", "快手"), ("wechat", "微信"), ("general", "通用"),
+]
+_DEFAULT_KB_TYPES = [
+    "答疑", "问诊", "套联", "流程", "默认认知", "额外",
+    "问诊约束", "答疑约束", "套联约束", "核心约束", "违禁词",
+]
+
+# 科室定义（运行时映射，由 _refresh_meta_cache 刷新）
+DEPARTMENTS = [k for k, _ in _DEFAULT_DEPARTMENTS]
+DEPARTMENT_ZH = {k: v for k, v in _DEFAULT_DEPARTMENTS}
+# 平台定义（运行时映射）
+PLATFORMS = [k for k, _ in _DEFAULT_PLATFORMS]
+PLATFORM_ZH = {k: v for k, v in _DEFAULT_PLATFORMS}
+# 场景定义（暂不支持自定义）
+SCENES = ["system_prompt", "warmup", "knowledge", "action_desc", "score"]
 SCENE_ZH = {
     "system_prompt": "系统提示词", "warmup": "暖场语", "knowledge": "知识模板",
-    "action_desc": "动作描述", "score": "评分", "general": "通用"
+    "action_desc": "动作描述", "score": "评分"
 }
-# 知识类型定义
-KB_TYPES = ["答疑", "问诊", "套联", "流程", "默认认知", "额外", "问诊约束", "答疑约束", "套联约束", "核心约束", "违禁词"]
+# 知识类型定义（运行时列表）
+KB_TYPES = list(_DEFAULT_KB_TYPES)
+
+# 合法的元数据类型
+META_TYPES = ("department", "platform", "kb_type")
 
 # 机器人ID列表（与 ROBOT_COMPANY_MAP 的 key 保持一致）
 BOT_IDS = ["7422", "8714", "8686", "8542", "8771", "9125", "9378", "10122", "10569", "9352", "9358", "9682"]
@@ -209,6 +222,25 @@ def init_db():
                 created_at TEXT NOT NULL
             )
         """)
+        # 可自定义的元数据：科室 / 平台 / 知识类型
+        # meta_type: 'department' | 'platform' | 'kb_type'
+        # key: 英文标记（kb_type 与 label 相同）；label: 中文名
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS meta_options (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                meta_type TEXT NOT NULL,
+                key TEXT NOT NULL,
+                label TEXT NOT NULL,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(meta_type, key)
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_meta_options_type
+            ON meta_options(meta_type, sort_order)
+        """)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS robot_configs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -284,6 +316,8 @@ def init_db():
     _ensure_default_admin()
     _migrate_kb_content()
     _ensure_bot_ids_seeded()
+    _seed_meta_options()      # 首次写入默认科室/平台/知识类型
+    _refresh_meta_cache()     # 把库中元数据同步到模块级常量
     _refresh_cache()
 
 
@@ -984,6 +1018,211 @@ def resolve_prompt_variables(
 
 
 # ==================== 机器人ID管理 ====================
+
+# ==================== 元数据选项 CRUD（科室 / 平台 / 知识类型）====================
+
+def _validate_meta_type(meta_type: str) -> str:
+    if meta_type not in META_TYPES:
+        raise ValueError(f"meta_type 只能是: {', '.join(META_TYPES)}")
+    return meta_type
+
+
+def _seed_meta_options() -> None:
+    """首次启动时把默认科室 / 平台 / 知识类型写入 meta_options 表（幂等）。"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    seeds = []
+    for i, (k, v) in enumerate(_DEFAULT_DEPARTMENTS):
+        seeds.append(("department", k, v, i))
+    for i, (k, v) in enumerate(_DEFAULT_PLATFORMS):
+        seeds.append(("platform", k, v, i))
+    for i, name in enumerate(_DEFAULT_KB_TYPES):
+        seeds.append(("kb_type", name, name, i))
+
+    with get_connection() as conn:
+        for meta_type, key, label, order in seeds:
+            conn.execute(
+                "INSERT OR IGNORE INTO meta_options (meta_type, key, label, sort_order, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (meta_type, key, label, order, now, now),
+            )
+
+
+def list_meta_options(meta_type: str) -> List[dict]:
+    """按类型列出元数据选项，返回 [{key, label, sort_order}, ...]。"""
+    _validate_meta_type(meta_type)
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT key, label, sort_order FROM meta_options WHERE meta_type = ? "
+            "ORDER BY sort_order, id",
+            (meta_type,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def _refresh_meta_cache() -> None:
+    """把 meta_options 表内容同步到模块级常量（原地修改，保持其它模块引用有效）。"""
+    try:
+        depts = list_meta_options("department")
+        plats = list_meta_options("platform")
+        kbs = list_meta_options("kb_type")
+    except Exception as e:
+        logging.getLogger("database").warning(f"刷新元数据缓存失败，继续使用当前值: {e}")
+        return
+
+    if depts:
+        DEPARTMENTS.clear()
+        DEPARTMENTS.extend(d["key"] for d in depts)
+        DEPARTMENT_ZH.clear()
+        DEPARTMENT_ZH.update({d["key"]: d["label"] for d in depts})
+    if plats:
+        PLATFORMS.clear()
+        PLATFORMS.extend(p["key"] for p in plats)
+        PLATFORM_ZH.clear()
+        PLATFORM_ZH.update({p["key"]: p["label"] for p in plats})
+    if kbs:
+        KB_TYPES.clear()
+        KB_TYPES.extend(k["label"] for k in kbs)
+
+
+def create_meta_option(meta_type: str, key: str, label: str) -> dict:
+    """新增一个元数据选项。kb_type 时 key 与 label 保持一致。"""
+    _validate_meta_type(meta_type)
+    key = str(key or "").strip()
+    label = str(label or "").strip()
+    if meta_type == "kb_type":
+        # 知识类型只有中文名，key 与 label 相同
+        key = key or label
+        label = label or key
+    if not key or not label:
+        raise ValueError("名称与标记都不能为空")
+    if meta_type in ("department", "platform") and not re.fullmatch(r"[A-Za-z0-9_-]+", key):
+        raise ValueError("英文标记只能包含字母、数字、下划线和连字符")
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as conn:
+        max_order = conn.execute(
+            "SELECT COALESCE(MAX(sort_order), -1) FROM meta_options WHERE meta_type = ?",
+            (meta_type,),
+        ).fetchone()[0]
+        conn.execute(
+            "INSERT INTO meta_options (meta_type, key, label, sort_order, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (meta_type, key, label, int(max_order) + 1, now, now),
+        )
+    _refresh_meta_cache()
+    return {"key": key, "label": label}
+
+
+def update_meta_option(meta_type: str, key: str, label: str = None, new_key: str = None) -> Optional[dict]:
+    """修改元数据选项的中文名 / 英文标记。
+
+    注意：修改 key 会导致历史数据（prompts / knowledge_bases 等）中的旧 key 失配，
+    因此这里会同步更新相关业务表，保证数据一致。
+    """
+    _validate_meta_type(meta_type)
+    key = str(key or "").strip()
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT key, label FROM meta_options WHERE meta_type = ? AND key = ?",
+            (meta_type, key),
+        ).fetchone()
+    if not row:
+        return None
+
+    target_label = str(label).strip() if label is not None else row["label"]
+    target_key = str(new_key).strip() if new_key else key
+    if meta_type == "kb_type":
+        # 知识类型 key 与 label 同步
+        target_key = target_label = (target_label or target_key)
+    if not target_key or not target_label:
+        raise ValueError("名称与标记都不能为空")
+    if meta_type in ("department", "platform") and not re.fullmatch(r"[A-Za-z0-9_-]+", target_key):
+        raise ValueError("英文标记只能包含字母、数字、下划线和连字符")
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE meta_options SET key = ?, label = ?, updated_at = ? WHERE meta_type = ? AND key = ?",
+            (target_key, target_label, now, meta_type, key),
+        )
+        # key 变更时级联更新业务表，避免历史数据失配
+        if target_key != key:
+            if meta_type == "department":
+                conn.execute("UPDATE prompts SET department = ? WHERE department = ?", (target_key, key))
+                conn.execute("UPDATE knowledge_bases SET department = ? WHERE department = ?", (target_key, key))
+                conn.execute("UPDATE flow_trees SET department = ? WHERE department = ?", (target_key, key))
+                conn.execute("UPDATE robot_configs SET department = ? WHERE department = ?", (target_key, key))
+            elif meta_type == "platform":
+                conn.execute("UPDATE prompts SET platform = ? WHERE platform = ?", (target_key, key))
+                conn.execute("UPDATE knowledge_bases SET platform = ? WHERE platform = ?", (target_key, key))
+                conn.execute("UPDATE flow_trees SET platform = ? WHERE platform = ?", (target_key, key))
+                conn.execute("UPDATE robot_configs SET platform = ? WHERE platform = ?", (target_key, key))
+
+    _refresh_meta_cache()
+    if meta_type in ("department", "platform"):
+        _refresh_cache()
+    return {"key": target_key, "label": target_label}
+
+
+def delete_meta_option(meta_type: str, key: str) -> Tuple[bool, str]:
+    """删除元数据选项。若仍被业务数据引用则拒绝删除。
+
+    Returns:
+        (是否成功, 失败原因)
+    """
+    _validate_meta_type(meta_type)
+    key = str(key or "").strip()
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT key FROM meta_options WHERE meta_type = ? AND key = ?",
+            (meta_type, key),
+        ).fetchone()
+        if not row:
+            return False, "选项不存在"
+
+        # 占用检查
+        if meta_type == "department":
+            used = conn.execute(
+                "SELECT (SELECT COUNT(*) FROM prompts WHERE department=? AND is_active=1) + "
+                "(SELECT COUNT(*) FROM knowledge_bases WHERE department=?) + "
+                "(SELECT COUNT(*) FROM flow_trees WHERE department=?) + "
+                "(SELECT COUNT(*) FROM robot_configs WHERE department=?)",
+                (key, key, key, key),
+            ).fetchone()[0]
+            if used:
+                return False, f"该科室仍被 {used} 条数据引用（提示词/知识库/流程树/机器人配置），无法删除"
+        elif meta_type == "platform":
+            used = conn.execute(
+                "SELECT (SELECT COUNT(*) FROM prompts WHERE platform=? AND is_active=1) + "
+                "(SELECT COUNT(*) FROM knowledge_bases WHERE platform=?) + "
+                "(SELECT COUNT(*) FROM flow_trees WHERE platform=?) + "
+                "(SELECT COUNT(*) FROM robot_configs WHERE platform=?)",
+                (key, key, key, key),
+            ).fetchone()[0]
+            if used:
+                return False, f"该平台仍被 {used} 条数据引用（提示词/知识库/流程树/机器人配置），无法删除"
+        else:
+            # 知识类型：检查知识库 content JSON 中是否有该类型
+            rows = conn.execute("SELECT content FROM knowledge_bases").fetchall()
+            cnt = 0
+            for r in rows:
+                try:
+                    arr = json.loads(r["content"] or "[]")
+                except (json.JSONDecodeError, TypeError):
+                    continue
+                if isinstance(arr, list):
+                    cnt += sum(
+                        1 for it in arr
+                        if isinstance(it, dict) and it.get("type") == key
+                    )
+            if cnt:
+                return False, f"该知识类型仍被 {cnt} 条知识记录使用，无法删除"
+
+        conn.execute("DELETE FROM meta_options WHERE meta_type = ? AND key = ?", (meta_type, key))
+
+    _refresh_meta_cache()
+    return True, ""
+
 def list_bot_ids() -> List[str]:
     """从数据库获取所有机器人ID列表"""
     with get_connection() as conn:

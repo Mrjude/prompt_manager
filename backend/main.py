@@ -55,6 +55,7 @@ from database import (
     DEPARTMENTS, PLATFORMS, SCENES, DEPARTMENT_ZH, PLATFORM_ZH, SCENE_ZH,
     BUILTIN_VARIABLES, KB_TYPES, BOT_IDS, ROBOT_COMPANY_MAP,
     list_bot_ids, add_bot_id,
+    list_meta_options, create_meta_option, update_meta_option, delete_meta_option,
     create_knowledge_base, get_kb_by_id, get_kb_by_key,
     list_knowledge_bases, update_knowledge_base, delete_knowledge_base,
     create_flow_tree, get_flow_tree_by_id, get_flow_tree_by_key,
@@ -546,6 +547,10 @@ def _build_kicp_scope(user: dict, robot_department: str, default_login: bool) ->
         is_admin=is_admin,
         dept_allowed=dept_allowed,
         default_login=default_login,
+        # 机器人配置沿用「知识库编辑」权限（与 /api/robot_configs 接口的
+        # require_knowledge_edit 保持一致）；未配置机器人科室为空，此时
+        # 不做科室校验，否则限定科室的账号将无法完成首次配置
+        can_robot_config=is_admin or bool(user.get("can_knowledge_edit")),
         can_prompt_view=cap("can_prompt_view"),
         can_prompt_edit=cap("can_prompt_edit"),
         can_prompt_delete=cap("can_prompt_delete"),
@@ -667,6 +672,20 @@ async def api_kb_types():
     return {"kb_types": KB_TYPES}
 
 
+@app.get("/api/meta/companies")
+async def api_companies():
+    """可选公司名列表：内置映射表中的公司 + 已配置机器人使用过的公司"""
+    names = set(ROBOT_COMPANY_MAP.values())
+    try:
+        _, items = list_robot_configs()
+        for it in items:
+            if it.get("company"):
+                names.add(it["company"])
+    except Exception:
+        pass
+    return {"companies": sorted(names)}
+
+
 @app.get("/api/meta/bot_ids")
 async def api_bot_ids():
     return {"bot_ids": list_bot_ids()}
@@ -682,6 +701,79 @@ async def api_add_bot_id(data: dict, _: dict = Depends(require_knowledge_edit)):
     return {"bot_ids": list_bot_ids()}
 
 
+
+
+# ==================== 可自定义元数据管理接口 ====================
+# meta_type: department（科室）/ platform（平台）/ kb_type（知识类型）
+
+@app.get("/api/meta/options/{meta_type}")
+async def api_meta_options_list(meta_type: str):
+    """列出某类元数据的全部选项（公开只读，供前端下拉框使用）。"""
+    try:
+        return {"items": list_meta_options(meta_type)}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.post("/api/meta/options/{meta_type}")
+async def api_meta_options_create(
+    meta_type: str,
+    data: dict = Body(...),
+    _: dict = Depends(require_prompt_edit),
+):
+    """新增元数据选项。body: {key, label}；kb_type 只需 label。"""
+    try:
+        create_meta_option(meta_type, data.get("key", ""), data.get("label", ""))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:
+        if "UNIQUE" in str(e).upper():
+            raise HTTPException(400, "该标记已存在")
+        raise
+    return {"items": list_meta_options(meta_type)}
+
+
+@app.put("/api/meta/options/{meta_type}/{key}")
+async def api_meta_options_update(
+    meta_type: str,
+    key: str,
+    data: dict = Body(...),
+    _: dict = Depends(require_prompt_edit),
+):
+    """修改元数据选项。body: {label, new_key}；改 key 会级联更新业务表。"""
+    try:
+        item = update_meta_option(
+            meta_type, key,
+            label=data.get("label"),
+            new_key=data.get("new_key"),
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:
+        if "UNIQUE" in str(e).upper():
+            raise HTTPException(400, "该标记已存在")
+        raise
+    if not item:
+        raise HTTPException(404, "选项不存在")
+    return {"items": list_meta_options(meta_type)}
+
+
+@app.delete("/api/meta/options/{meta_type}/{key}")
+async def api_meta_options_delete(
+    meta_type: str,
+    key: str,
+    _: dict = Depends(require_prompt_delete),
+):
+    """删除元数据选项；仍被业务数据引用时拒绝删除。"""
+    try:
+        ok, reason = delete_meta_option(meta_type, key)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    if not ok:
+        # 被引用而拒绝删除 -> 400；选项不存在 -> 404
+        is_conflict = bool(reason) and ("引用" in reason or "使用" in reason)
+        raise HTTPException(400 if is_conflict else 404, reason or "删除失败")
+    return {"items": list_meta_options(meta_type)}
 # ==================== 管理接口 ====================
 
 @app.post("/api/prompts", response_model=PromptResponse)

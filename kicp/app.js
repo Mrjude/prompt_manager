@@ -24,7 +24,17 @@ createApp({
       company: '', enabled: true, prompt_version: -1, configured: false, updated_at: ''
     });
     const scope = reactive({});
-    const meta = reactive({ departments: [], platforms: [], scenes: [], kb_types: [] });
+    const meta = reactive({ departments: [], platforms: [], scenes: [], kb_types: [], companies: [] });
+
+    // 机器人未配置时的配置引导表单
+    const setupForm = reactive({
+      bot_id: '', department: '', platform: '', company: '',
+      enabled: true, prompt_version: -1, followLatest: true
+    });
+    const setupError = ref('');
+    const saving = ref(false);
+    const noBotId = ref(false);
+    const sampleUrl = location.origin + '/kicp?bot_id=10122';
 
     const tab = ref('');
     const modal = ref('');
@@ -162,11 +172,59 @@ createApp({
       Object.assign(scope, data.scope || {});
       needLogin.value = false;
       ready.value = true;
+
+      // 机器人未配置：展示配置引导页，不加载业务数据
+      if (!robot.configured) {
+        setupError.value = '';
+        Object.assign(setupForm, {
+          bot_id: robot.bot_id || botId.value,
+          department: '', platform: '',
+          company: robot.company || '',   // 后端已按 bot_id 推断公司
+          enabled: true, prompt_version: -1, followLatest: true
+        });
+        loadMeta();
+        return;
+      }
+
       // 默认落到第一个有权限的模块
       const first = modules.value.find(m => m.allowed);
       tab.value = first ? first.key : (modules.value[0] ? modules.value[0].key : '');
       resetDetail();
       loadMeta().then(loadCurrentTab);
+    }
+
+    // 保存机器人配置后重新进入正常页面
+    async function saveSetup() {
+      setupError.value = '';
+      if (!setupForm.department) { setupError.value = '请选择科室名称'; return; }
+      if (!setupForm.platform) { setupError.value = '请选择平台名称'; return; }
+      const ver = setupForm.followLatest ? -1 : Number(setupForm.prompt_version);
+      if (!setupForm.followLatest && (!Number.isInteger(ver) || ver < 0)) {
+        setupError.value = '请输入有效的提示词版本号（≥0），或勾选「跟随最新版本」'; return;
+      }
+      saving.value = true;
+      try {
+        await api('/api/robot_configs', {
+          method: 'POST',
+          body: JSON.stringify({
+            bot_id: setupForm.bot_id,
+            department: setupForm.department,
+            platform: setupForm.platform,
+            company: setupForm.company.trim(),
+            enabled: setupForm.enabled,
+            prompt_version: ver
+          })
+        });
+        notify('配置已保存');
+        // 重新拉取上下文：此时 configured=true，自动进入管理界面
+        const data = await api('/api/kicp/context?bot_id=' + encodeURIComponent(botId.value));
+        data.token = token.value;
+        applySession(data);
+      } catch (e) {
+        setupError.value = e.message;
+      } finally {
+        saving.value = false;
+      }
     }
 
     async function initSession(username, password) {
@@ -178,7 +236,7 @@ createApp({
 
     async function boot() {
       if (!botId.value) {
-        notify('缺少机器人ID参数，请使用 /kicp?bot_id=xxx 访问', 'error');
+        noBotId.value = true;
         needLogin.value = false; ready.value = false;
         return;
       }
@@ -212,9 +270,10 @@ createApp({
 
     async function loadMeta() {
       try {
-        const [d, p, s, k] = await Promise.all([
+        const [d, p, s, k, co] = await Promise.all([
           api('/api/meta/departments'), api('/api/meta/platforms'),
-          api('/api/meta/scenes'), api('/api/meta/kb_types')
+          api('/api/meta/scenes'), api('/api/meta/kb_types'),
+          api('/api/meta/companies')
         ]);
         // 后端返回 {departments:[{key,label}]}，统一成 {value,label}
         const norm = (list) => (list || []).map(i => ({ value: i.key || i.value, label: i.label || i.key || i.value }));
@@ -222,6 +281,7 @@ createApp({
         meta.platforms = norm(p.platforms);
         meta.scenes = norm(s.scenes);
         meta.kb_types = k.kb_types || [];
+        meta.companies = co.companies || [];
       } catch (e) { /* 元数据失败不阻塞主流程 */ }
     }
 
@@ -446,6 +506,7 @@ createApp({
 
     return {
       botId, ready, needLogin, logining, loginError, loginForm, doLogin,
+      setupForm, setupError, saving, saveSetup, noBotId, sampleUrl,
       user, robot, scope, meta, roleText, modules, currentModule, tab, switchTab,
       label, modal, editing, current, form, toast, cancelEdit,
       prompts, pTotal, pQuery, pPages, loadPrompts, reloadPrompts, selectPrompt,

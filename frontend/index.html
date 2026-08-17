@@ -83,6 +83,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 .modal-group label{display:block;margin-bottom:6px;font-size:13px;font-weight:500;color:#555}
 .modal-group input{width:100%;padding:9px 14px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;transition:all .2s;background:#fff;color:#2c3e50}
 .modal-group input:focus{border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.1)}
+
+/* 自定义元数据弹窗（科室 / 平台 / 知识类型） */
+.meta-hint{font-size:12px;color:#999;line-height:1.6;margin-bottom:12px}
+.meta-table{width:100%;border-collapse:collapse;font-size:13px;border:1px solid #e8ecf0;border-radius:6px;overflow:hidden}
+.meta-table th{background:#f7faff;color:#2c3e50;font-weight:600;font-size:12px;padding:8px 10px;text-align:left;border-bottom:1px solid #eef1f5}
+.meta-table td{padding:7px 10px;color:#44566c;border-bottom:1px solid #f2f4f7;vertical-align:middle}
+.meta-table tr:last-child td{border-bottom:none}
+.meta-table tbody tr:hover{background:#f8faff}
+.meta-code{background:#f0f4f8;color:#4a90d9;padding:2px 7px;border-radius:4px;font-size:12px;font-family:'JetBrains Mono',Consolas,monospace}
+.meta-input{width:100%;padding:5px 9px;border:1px solid #d9dde3;border-radius:4px;font-size:13px;outline:none;color:#2c3e50}
+.meta-input:focus{border-color:#4a90d9}
+.meta-ops{display:flex;gap:5px}
+.meta-add{display:flex;gap:8px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed #e0e6ed}
+.meta-add .meta-input{flex:1}
 .modal-group .hint{margin-top:4px;font-size:11px;color:#999}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -407,21 +421,88 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
     </div>
   </div>
 
+  <!-- 自定义元数据弹窗：科室 / 平台 / 知识类型 通用 -->
+  <div v-if="metaOpen" class="modal-overlay" @click.self="closeMetaModal">
+    <div class="modal" style="max-width:620px">
+      <div class="modal-header">
+        <h3>自定义{{metaTypeLabel}}</h3>
+        <button class="modal-close" @click="closeMetaModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="meta-hint">
+          {{metaType === 'kb_type'
+            ? '维护知识记录类型列表；已被知识记录使用的类型无法删除。'
+            : '维护' + metaTypeLabel + '列表；修改英文标记会同步更新历史数据，仍被引用的选项无法删除。'}}
+        </div>
+
+        <table class="meta-table">
+          <thead>
+            <tr>
+              <th>{{metaType === 'kb_type' ? '类型名称' : metaTypeLabel + '名称'}}</th>
+              <th v-if="metaType !== 'kb_type'" style="width:170px">英文标记</th>
+              <th style="width:110px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(it, i) in metaItems" :key="it.key">
+              <td>
+                <input v-if="metaEditKey === it.key" v-model="metaEditForm.label" class="meta-input" placeholder="中文名称">
+                <span v-else>{{it.label}}</span>
+              </td>
+              <td v-if="metaType !== 'kb_type'">
+                <input v-if="metaEditKey === it.key" v-model="metaEditForm.new_key" class="meta-input" placeholder="英文标记">
+                <code v-else class="meta-code">{{it.key}}</code>
+              </td>
+              <td>
+                <div class="meta-ops">
+                  <template v-if="metaEditKey === it.key">
+                    <button class="btn btn-primary btn-sm" @click="saveMetaEdit(it)">保存</button>
+                    <button class="btn btn-ghost btn-sm" @click="cancelMetaEdit">取消</button>
+                  </template>
+                  <template v-else>
+                    <button class="btn btn-primary btn-sm" @click="startMetaEdit(it)">编辑</button>
+                    <button class="btn btn-danger btn-sm" @click="deleteMetaItem(it)">删除</button>
+                  </template>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!metaItems.length">
+              <td :colspan="metaType === 'kb_type' ? 2 : 3" style="text-align:center;color:#999;padding:18px">
+                暂无数据，请在下方新增
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="meta-add">
+          <input v-model="metaNewForm.label" class="meta-input" placeholder="中文名称，如：耳鼻喉科">
+          <input v-if="metaType !== 'kb_type'" v-model="metaNewForm.key" class="meta-input" placeholder="英文标记，如：ent">
+          <button class="btn btn-success btn-sm" @click="createMetaItem">+ 新增</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" @click="closeMetaModal">完成</button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="filter-group">
         <div class="select-wrap">
-          <select v-model="filterDept" @change="onFilterChange">
+          <select v-model="filterDept" @change="onDeptFilterChange">
             <!-- "全部"代表当前用户权限下所有科室：admin 看全部，普通用户看 managed_departments 的并集 -->
             <option value="">全部科室</option>  <!-- （{{deptScopeSummary}}） -->
             <option v-for="d in visibleDepartments" :key="d.key" :value="d.key">{{d.label}}</option>
+            <option v-if="canPromptEdit" value="__custom__">⚙ 自定义科室...</option>
           </select>
         </div>
         <div class="select-wrap">
-          <select v-model="filterPlat" @change="onFilterChange">
+          <select v-model="filterPlat" @change="onPlatFilterChange">
             <option value="">全部平台</option>
             <option v-for="p in platforms" :key="p.key" :value="p.key">{{p.label}}</option>
+            <option v-if="canPromptEdit" value="__custom__">⚙ 自定义平台...</option>
           </select>
         </div>
         <div class="select-wrap" v-if="mode === 'prompt'">
@@ -431,9 +512,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
           </select>
         </div>
         <div class="select-wrap" v-if="mode === 'knowledge'">
-          <select v-model="filterKbType" @change="onFilterChange">
+          <select v-model="filterKbType" @change="onKbTypeFilterChange">
             <option value="">全部类型</option>
             <option v-for="t in kbTypes" :key="t" :value="t">{{t}}</option>
+            <option v-if="canPromptEdit" value="__custom__">⚙ 自定义类型...</option>
           </select>
         </div>
         <div class="select-wrap" v-if="mode === 'knowledge'">
@@ -1559,6 +1641,137 @@ createApp({
       if (bi && bi.bot_ids) kbBotIds.value = bi.bot_ids.filter(b => b !== '');
     }
 
+
+    // ===== 自定义元数据（科室 / 平台 / 知识类型）=====
+    const metaOpen = ref(false);
+    const metaType = ref('department');          // department | platform | kb_type
+    const metaItems = ref([]);                    // [{key, label, sort_order}]
+    const metaEditKey = ref('');                  // 正在编辑的行 key
+    const metaEditForm = reactive({label: '', new_key: ''});
+    const metaNewForm = reactive({label: '', key: ''});
+
+    const META_TYPE_LABELS = {department: '科室', platform: '平台', kb_type: '知识类型'};
+    const metaTypeLabel = Vue.computed(() => META_TYPE_LABELS[metaType.value] || '选项');
+
+    // 下拉框选中"⚙ 自定义..."时打开弹窗，并把下拉值复位为"全部"
+    function onDeptFilterChange() {
+      if (filterDept.value === '__custom__') {
+        filterDept.value = '';
+        openMetaModal('department');
+        return;
+      }
+      onFilterChange();
+    }
+    function onPlatFilterChange() {
+      if (filterPlat.value === '__custom__') {
+        filterPlat.value = '';
+        openMetaModal('platform');
+        return;
+      }
+      onFilterChange();
+    }
+    function onKbTypeFilterChange() {
+      if (filterKbType.value === '__custom__') {
+        filterKbType.value = '';
+        openMetaModal('kb_type');
+        return;
+      }
+      onFilterChange();
+    }
+
+    async function openMetaModal(type) {
+      metaType.value = type;
+      metaEditKey.value = '';
+      metaNewForm.label = '';
+      metaNewForm.key = '';
+      metaOpen.value = true;
+      await loadMetaItems();
+    }
+
+    function closeMetaModal() {
+      metaOpen.value = false;
+      metaEditKey.value = '';
+    }
+
+    async function loadMetaItems() {
+      const r = await api(`/api/meta/options/${metaType.value}`);
+      if (r) metaItems.value = r.items || [];
+    }
+
+    function startMetaEdit(it) {
+      metaEditKey.value = it.key;
+      metaEditForm.label = it.label;
+      metaEditForm.new_key = it.key;
+    }
+
+    function cancelMetaEdit() {
+      metaEditKey.value = '';
+      metaEditForm.label = '';
+      metaEditForm.new_key = '';
+    }
+
+    async function saveMetaEdit(it) {
+      const label = (metaEditForm.label || '').trim();
+      if (!label) { showToast('名称不能为空', 'error'); return; }
+      const body = {label};
+      if (metaType.value !== 'kb_type') {
+        const nk = (metaEditForm.new_key || '').trim();
+        if (!nk) { showToast('英文标记不能为空', 'error'); return; }
+        if (nk !== it.key && !confirm(`修改英文标记会同步更新历史数据（${it.key} → ${nk}），确定继续？`)) return;
+        body.new_key = nk;
+      }
+      const r = await api(`/api/meta/options/${metaType.value}/${encodeURIComponent(it.key)}`, {
+        method: 'PUT', body: JSON.stringify(body)
+      });
+      if (r) {
+        showToast('已保存', 'success');
+        metaItems.value = r.items || [];
+        cancelMetaEdit();
+        await afterMetaChanged();
+      }
+    }
+
+    async function createMetaItem() {
+      const label = (metaNewForm.label || '').trim();
+      if (!label) { showToast('名称不能为空', 'error'); return; }
+      const body = {label};
+      if (metaType.value !== 'kb_type') {
+        const k = (metaNewForm.key || '').trim();
+        if (!k) { showToast('英文标记不能为空', 'error'); return; }
+        body.key = k;
+      } else {
+        body.key = label;
+      }
+      const r = await api(`/api/meta/options/${metaType.value}`, {
+        method: 'POST', body: JSON.stringify(body)
+      });
+      if (r) {
+        showToast('已新增', 'success');
+        metaItems.value = r.items || [];
+        metaNewForm.label = '';
+        metaNewForm.key = '';
+        await afterMetaChanged();
+      }
+    }
+
+    async function deleteMetaItem(it) {
+      if (!confirm(`确定删除${metaTypeLabel.value}「${it.label}」？`)) return;
+      const r = await api(`/api/meta/options/${metaType.value}/${encodeURIComponent(it.key)}`, {method: 'DELETE'});
+      if (r) {
+        showToast('已删除', 'success');
+        metaItems.value = r.items || [];
+        await afterMetaChanged();
+      }
+    }
+
+    // 元数据变更后刷新下拉框数据源与当前列表
+    async function afterMetaChanged() {
+      await loadMeta();
+      if (mode.value === 'prompt') await loadList();
+      else if (mode.value === 'knowledge') await loadKbList();
+      else if (mode.value === 'flow') await loadFtList();
+    }
+
     async function reloadBotIds() {
       const bi = await api('/api/meta/bot_ids');
       if (bi && bi.bot_ids) kbBotIds.value = bi.bot_ids.filter(b => b !== '');
@@ -1729,8 +1942,10 @@ createApp({
       robotSelected.value = null;
       Object.assign(robotForm, {
         bot_id: '',
-        department: form.department || 'hair',
-        platform: form.platform || 'xhs',
+        // 用 currentPromptDept/Plat：详情态取 selected，编辑态取 form，
+        // 避免详情态下 form 未填充而落到默认的 general（通用）
+        department: currentPromptDept.value || 'hair',
+        platform: currentPromptPlat.value || 'xhs',
         company: '',
         enabled: true,
         prompt_version: -1,
@@ -2753,6 +2968,10 @@ createApp({
 
     return {
       isAuthed, currentUser, isAdmin, managedDepartments, visibleDepartments,
+      metaOpen, metaType, metaTypeLabel, metaItems, metaEditKey, metaEditForm, metaNewForm,
+      onDeptFilterChange, onPlatFilterChange, onKbTypeFilterChange,
+      openMetaModal, closeMetaModal, startMetaEdit, cancelMetaEdit,
+      saveMetaEdit, createMetaItem, deleteMetaItem,
       canPromptView, canPromptEdit, canPromptDelete,
       canKnowledgeView, canKnowledgeEdit, canKnowledgeDelete,
       canFlowView, canFlowEdit, canFlowDelete,

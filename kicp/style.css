@@ -151,3 +151,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 .k-detail .bd.pd-fill > label,
 .k-detail .bd.pd-fill > input{flex:0 0 auto}
 .k-ta.fill{flex:1 1 auto;min-height:120px;height:auto;resize:none;overflow-y:auto}
+
+/* ===== 机器人未配置：配置引导页 ===== */
+.k-setup{position:fixed;inset:0;background:#f0f2f5;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;z-index:700}
+.k-setup .panel{width:720px;max-width:100%;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(53,122,189,.14);overflow:hidden}
+.k-setup .hd{padding:20px 26px;background:linear-gradient(135deg,#4a90d9 0%,#357abd 100%);color:#fff}
+.k-setup .hd .ttl{font-size:17px;font-weight:600}
+.k-setup .hd .sub{font-size:12.5px;margin-top:7px;line-height:1.7;opacity:.94}
+.k-setup .hd .sub b{background:rgba(255,255,255,.2);border-radius:5px;padding:1px 7px}
+.k-setup .bd{padding:22px 26px 24px}
+.k-setup .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px 20px}
+.k-setup .fld label{display:block;font-size:12.5px;color:#5c6b7a;font-weight:600;margin-bottom:6px}
+.k-setup .fld label i{color:#e74c3c;font-style:normal;margin-left:2px}
+.k-setup .fld input,.k-setup .fld select{width:100%;height:38px;padding:0 11px;border:1px solid #d9dde3;border-radius:8px;font-size:13px;outline:none;background:#fff;color:#2c3e50}
+.k-setup .fld input:focus,.k-setup .fld select:focus{border-color:#4a90d9;box-shadow:0 0 0 3px rgba(74,144,217,.12)}
+.k-setup .fld input[readonly]{background:#f5f7fa;color:#7a8899;cursor:not-allowed}
+.k-setup .fld input:disabled,.k-setup .fld select:disabled{background:#f5f7fa;color:#a3b1bf;cursor:not-allowed}
+.k-setup .fld .tip{font-size:11px;color:#94a3b8;margin-top:5px;line-height:1.5}
+.k-setup .ver-row{display:flex;align-items:center;gap:10px}
+.k-setup .ver-row input[type=number]{flex:1;min-width:0}
+.k-setup .ck{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:#3a6ea5;font-weight:500;white-space:nowrap;margin:0;cursor:pointer}
+.k-setup .ck input[type=checkbox]{width:auto;height:auto;margin:0;cursor:pointer}
+.k-setup .err{margin-top:16px;padding:9px 13px;background:#fdeced;border:1px solid #f6c4c8;border-radius:8px;color:#c0392b;font-size:12.5px;line-height:1.6}
+.k-setup .no-perm{margin-top:16px;padding:9px 13px;background:#fff8e6;border:1px solid #ffe0a3;border-radius:8px;color:#b8860b;font-size:12.5px;line-height:1.6}
+.k-setup .acts{margin-top:20px;display:flex;justify-content:flex-end}
+.k-setup .acts .k-btn{height:40px;padding:0 26px;font-size:13.5px}
+@media (max-width:640px){.k-setup .grid{grid-template-columns:1fr}}

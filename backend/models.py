@@ -344,6 +344,7 @@ class KicpScope(BaseModel):
     is_admin: bool = False
     dept_allowed: bool = False
     default_login: bool = False
+    can_robot_config: bool = False
     can_prompt_view: bool = False
     can_prompt_edit: bool = False
     can_prompt_delete: bool = False
