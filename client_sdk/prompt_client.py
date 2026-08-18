@@ -72,6 +72,8 @@ class PromptClient:
         self._flow_cache: Dict[tuple, List[dict]] = {}
         # 机器人配置缓存: [ {bot_id, department, platform, company, enabled, ...} ]
         self._robot_cache: List[dict] = []
+        # 元数据缓存: {departments: [{key,label}], platforms: [...], kb_types: [str]}
+        self._meta_cache: Dict[str, list] = {}
         self._lock = threading.Lock()
         self._running = False
         self._poll_thread: Optional[threading.Thread] = None
@@ -488,6 +490,77 @@ class PromptClient:
         with self._lock:
             self._flow_cache[key] = result.get("items", [])
 
+    # ==================== 元数据（科室 / 平台 / 知识类型） ====================
+    def refresh_meta(self) -> dict:
+        """拉取最新元数据（科室、平台、知识记录类型）。
+
+        含运营在界面上新增的"自定义科室 / 自定义类型"。
+        网络异常时保留上一次缓存，不抛异常，避免线上服务因元数据拉取失败而中断。
+        """
+        result = self._http_get("/api/v1/meta")
+        if not result:
+            logger.warning("[同步] 元数据拉取失败，沿用缓存")
+            with self._lock:
+                return dict(self._meta_cache)
+
+        with self._lock:
+            old = dict(self._meta_cache)
+            self._meta_cache = {
+                "departments": list(result.get("departments") or []),
+                "platforms": list(result.get("platforms") or []),
+                "kb_types": list(result.get("kb_types") or []),
+            }
+            new = dict(self._meta_cache)
+
+        if old != new:
+            logger.info(
+                f"[同步] 元数据更新: 科室 {len(new['departments'])} 个, "
+                f"平台 {len(new['platforms'])} 个, 知识类型 {len(new['kb_types'])} 个"
+            )
+            if self._on_update_callback:
+                try:
+                    self._on_update_callback("meta", new)
+                except Exception as e:
+                    logger.error(f"元数据更新回调失败: {e}")
+        return new
+
+    def _get_meta(self, key: str) -> list:
+        """读缓存，首次访问时惰性拉取"""
+        with self._lock:
+            cached = self._meta_cache.get(key)
+        if cached:
+            return list(cached)
+        self.refresh_meta()
+        with self._lock:
+            return list(self._meta_cache.get(key) or [])
+
+    def get_kb_types(self, default: Optional[List[str]] = None) -> List[str]:
+        """知识记录类型列表，如 ["答疑", "问诊", "套联", ...]"""
+        items = self._get_meta("kb_types")
+        return items if items else list(default or [])
+
+    def get_departments(self) -> List[dict]:
+        """科室列表：[{key: "hair", label: "植发科"}, ...]"""
+        return self._get_meta("departments")
+
+    def get_platforms(self) -> List[dict]:
+        """平台列表：[{key: "xhs", label: "小红书"}, ...]"""
+        return self._get_meta("platforms")
+
+    def get_domain_zh2en(self, default: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+        """科室中文名 -> 英文 key 映射，等价于原先硬编码的 domain_zh2en"""
+        items = self._get_meta("departments")
+        if not items:
+            return dict(default or {})
+        return {d["label"]: d["key"] for d in items if d.get("label") and d.get("key")}
+
+    def get_domain_en2zh(self, default: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+        """科室英文 key -> 中文名映射"""
+        items = self._get_meta("departments")
+        if not items:
+            return dict(default or {})
+        return {d["key"]: d["label"] for d in items if d.get("label") and d.get("key")}
+
     # ==================== 机器人配置（公司/科室/平台） ====================
     def refresh_robot_configs(self) -> List[dict]:
         """拉取最新的机器人配置列表（bot_id/department/platform/company/enabled）。
@@ -532,11 +605,12 @@ class PromptClient:
     # ==================== 通用接口 ====================
 
     def preload(self):
-        """全量预加载所有提示词、知识库、流程树描述和机器人配置"""
+        """全量预加载所有提示词、知识库、流程树描述、机器人配置和元数据"""
         self._sync_all()
         self._sync_all_knowledge()
         self.refresh_flow_records()
         self.refresh_robot_configs()
+        self.refresh_meta()
 
     def on_update(self, callback: Callable[[str, dict], None]):
         """注册更新回调: callback(key, data)，key 对提示词为名称，对知识库为 kb:科室/平台"""
@@ -648,6 +722,7 @@ class PromptClient:
                 self._sync_all_knowledge()
                 self.refresh_flow_records()
                 self.refresh_robot_configs()
+                self.refresh_meta()
             except Exception as e:
                 logger.error(f"轮询异常: {e}")
             for _ in range(interval):

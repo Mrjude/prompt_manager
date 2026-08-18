@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prompt-manager-client"
-version = "0.3.0"
+version = "0.3.1"
 description = "提示词管理系统 - 提示词 / 知识库 / 流程树 一体化管理平台（含知识库检索器）"
 requires-python = ">=3.8"
 license = "MIT"

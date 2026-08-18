@@ -981,6 +981,23 @@ async def api_sync():
     return {"prompts": fetch_all_active()}
 
 
+@app.get("/api/v1/meta")
+async def api_v1_meta():
+    """公开元数据接口，供 client_sdk / 线上服务同步科室与知识类型。
+
+    DEPARTMENTS / KB_TYPES 等常量由 meta_options 表刷新，
+    因此这里返回的内容已包含运营在界面上新增的"自定义科室/自定义类型"。
+    """
+    return {
+        # 科室：[{key: "hair", label: "植发科"}, ...]
+        "departments": [{"key": k, "label": DEPARTMENT_ZH.get(k, k)} for k in DEPARTMENTS],
+        # 平台：附带返回，便于调用方一次拉齐
+        "platforms": [{"key": k, "label": PLATFORM_ZH.get(k, k)} for k in PLATFORMS],
+        # 知识记录类型：["答疑", "问诊", ...]，纯中文标签，无 key
+        "kb_types": list(KB_TYPES),
+    }
+
+
 @app.get("/api/v1/knowledge", response_model=KnowledgeBaseListResponse)
 async def api_v1_knowledge(
     department: Optional[str] = None,
