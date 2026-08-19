@@ -13,10 +13,12 @@ import os
 import sys
 import json
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
+from urllib.request import urlopen, Request as URLRequest
+from urllib.error import HTTPError
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +33,7 @@ from flow_parser_service import (
     FLOW_DATA_DIR
 )
 import robot_config_service
+import service_api
 from dialog_agent import get_agent
 from conversation_store import conversation_store
 from skills.registry import skill_registry
@@ -161,7 +164,73 @@ async def llm_status():
         "base_url": cfg.get("base_url", ""),
         "model_name": cfg.get("model_name", ""),
         "api_key_set": bool(cfg.get("api_key")),
+        "provider": cfg.get("provider", "openai"),
+        "version_name": cfg.get("version_name", ""),
     }
+
+
+# ==================== LLM 版本管理（代理到提示词管理系统） ====================
+# agent 服务不直连数据库，统一转发给 prompt_manager，保证两处配置始终一致。
+
+def _pm_request(path: str, method: str = "GET", payload: Optional[dict] = None) -> Any:
+    """向 prompt_manager 发起请求并返回解析后的 JSON"""
+    url = f"{PM_URL}{path}"
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8") if payload is not None else None
+    headers = {"Content-Type": "application/json"} if data else {}
+    req = URLRequest(url, data=data, headers=headers, method=method)
+    try:
+        with urlopen(req, timeout=15) as resp:
+            body = resp.read().decode()
+            return json.loads(body) if body else {}
+    except HTTPError as e:
+        detail = e.read().decode(errors="ignore")
+        logger.error("代理请求失败 %s %s: %s %s", method, path, e.code, detail[:200])
+        raise HTTPException(e.code, f"提示词管理系统返回错误: {detail[:200]}")
+    except Exception as e:
+        logger.error("代理请求异常 %s %s: %s", method, path, e)
+        raise HTTPException(502, f"无法连接提示词管理系统({PM_URL}): {e}")
+
+
+@app.get("/api/llm/versions")
+async def llm_versions_list():
+    """LLM 版本列表（api_key 已由上游掩码）"""
+    return {"versions": _pm_request("/api/settings/llm/versions")}
+
+
+@app.post("/api/llm/versions")
+async def llm_versions_create(data: Dict[str, Any] = Body(...)):
+    """新建 LLM 版本"""
+    return _pm_request("/api/settings/llm/versions", "POST", {
+        "name": data.get("name", ""),
+        "base_url": data.get("base_url", ""),
+        "api_key": data.get("api_key", ""),
+        "model_name": data.get("model_name", ""),
+        "provider": data.get("provider", "openai"),
+    })
+
+
+@app.put("/api/llm/versions/{version_id}")
+async def llm_versions_update(version_id: int, data: Dict[str, Any] = Body(...)):
+    """编辑 LLM 版本"""
+    result = _pm_request(f"/api/settings/llm/versions/{version_id}", "PUT", data)
+    get_llm_client(PM_URL)._refresh_config()
+    return result
+
+
+@app.post("/api/llm/versions/{version_id}/activate")
+async def llm_versions_activate(version_id: int):
+    """激活指定版本，并立即刷新 agent 侧配置缓存"""
+    result = _pm_request(f"/api/settings/llm/versions/{version_id}/activate", "POST")
+    get_llm_client(PM_URL)._refresh_config()
+    logger.info("已切换 LLM 版本: %s (provider=%s)",
+                result.get("name"), result.get("provider"))
+    return result
+
+
+@app.delete("/api/llm/versions/{version_id}")
+async def llm_versions_delete(version_id: int):
+    """删除 LLM 版本"""
+    return _pm_request(f"/api/settings/llm/versions/{version_id}", "DELETE")
 
 
 @app.post("/api/llm/refresh")
@@ -338,6 +407,29 @@ async def api_agent_reset(req: AgentResetRequest):
 @app.get("/api/agent/stats")
 async def api_agent_stats():
     return get_agent(PM_URL).stats()
+
+
+# ==================== 对外服务接口 ====================
+# 入参/响应格式对齐 qwen-proj/llm_service/service_qwen_controller.py 的 on_post，
+# 已接入该控制器的外部系统可零改造切换。详见 service_api.py 顶部说明。
+
+@app.post("/llm/dialog")
+async def api_external_dialog(payload: Dict[str, Any] = Body(...)):
+    """外部系统调用入口（控制器兼容格式）"""
+    params = service_api.parse_request(payload)
+    return service_api.handle_dialog(
+        params, get_agent(PM_URL), robot_config_service
+    )
+
+
+# 与控制器保持一致的路径别名，方便直接替换 URL
+@app.post("/llm/generate")
+async def api_external_generate(payload: Dict[str, Any] = Body(...)):
+    """/llm/dialog 的别名"""
+    params = service_api.parse_request(payload)
+    return service_api.handle_dialog(
+        params, get_agent(PM_URL), robot_config_service
+    )
 
 
 # ==================== 元数据 ====================

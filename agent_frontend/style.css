@@ -178,6 +178,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .actions-bar{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
 
+/* LLM API 版本管理弹窗 */
+.llm-dialog{width:620px}
+.llm-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.llm-bar-title{font-size:13px;font-weight:600;color:#2c3e50}
+.llm-form{padding:14px;margin-bottom:14px;background:#f7f9fc;border:1px solid #e3ecf6;border-radius:8px}
+.llm-form-title{font-size:13px;font-weight:600;color:#2c6cb0;margin-bottom:10px}
+.llm-hint{margin-top:8px;padding:8px 10px;background:#fffbe6;border-left:3px solid #faad14;border-radius:4px;font-size:11.5px;line-height:1.7;color:#8c6b1f}
+.llm-hint code{padding:1px 5px;background:#fff3cd;border-radius:3px;font-size:11px}
+.llm-list{display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto}
+.llm-item{padding:10px 12px;border:1px solid #e8ecf0;border-radius:8px;background:#fff;transition:all .15s}
+.llm-item:hover{border-color:#a8c7e8}
+.llm-item.active{border-color:#52c41a;background:#f6ffed}
+.llm-item-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.llm-name{font-size:13px;font-weight:600;color:#2c3e50}
+.llm-active-tag{font-size:11px;color:#52c41a;font-weight:600}
+.llm-prov{padding:1px 7px;border-radius:3px;font-size:10px;font-weight:600;background:#eef2f7;color:#5a6b7d}
+.llm-prov.vllm{background:#f0e6ff;color:#722ed1}
+.llm-prov.openai{background:#eef6ff;color:#2c6cb0}
+.llm-item-btns{display:flex;gap:6px;margin-left:auto}
+.llm-item-btns .llm-del:hover{color:#e74c3c}
+.llm-item-meta{margin-top:6px;font-size:11px;color:#8494a6;word-break:break-all;line-height:1.6}
+.provider-tag{margin-left:6px;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.22);font-size:10px;font-weight:600}
+
 /* Empty */
 .empty-state{text-align:center;padding:60px 20px;color:#ccc;font-size:14px}
 

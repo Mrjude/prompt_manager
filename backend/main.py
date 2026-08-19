@@ -1281,13 +1281,31 @@ async def api_kb_update(kb_id: int, data: KnowledgeBaseUpdate, _: dict = Depends
     kb = update_knowledge_base(kb_id, data.content)
     if not kb:
         raise HTTPException(404, "知识库不存在")
+    # 广播知识库变更，client_sdk 收到后会重新拉取该科室+平台的知识库。
+    # 缺少该广播时，线上服务只能等下一轮轮询（默认 60s）才生效。
+    await ws_manager.broadcast({
+        "type": "knowledge_updated",
+        "event": "updated",
+        "kb_id": kb["id"],
+        "department": kb.get("department"),
+        "platform": kb.get("platform"),
+    })
     return KnowledgeBaseResponse(**kb)
 
 
 @app.delete("/api/knowledge/{kb_id}")
 async def api_kb_delete(kb_id: int, _: dict = Depends(require_knowledge_delete)):
+    kb = get_kb_by_id(kb_id)
     if not delete_knowledge_base(kb_id):
         raise HTTPException(404, "知识库不存在")
+    if kb:
+        await ws_manager.broadcast({
+            "type": "knowledge_updated",
+            "event": "deleted",
+            "kb_id": kb_id,
+            "department": kb.get("department"),
+            "platform": kb.get("platform"),
+        })
     return {"message": "删除成功"}
 
 
@@ -1553,7 +1571,7 @@ async def api_list_llm_versions():
 
 @app.post("/api/settings/llm/versions", response_model=LLMVersionResponse)
 async def api_create_llm_version(data: LLMVersionCreate):
-    ver = create_llm_version(data.name, data.base_url, data.api_key, data.model_name)
+    ver = create_llm_version(data.name, data.base_url, data.api_key, data.model_name, data.provider)
     return LLMVersionResponse(**ver)
 
 
@@ -1573,6 +1591,8 @@ async def api_update_llm_version(version_id: int, data: LLMVersionUpdate):
             update_data["api_key"] = data.api_key
     if data.model_name is not None:
         update_data["model_name"] = data.model_name
+    if data.provider is not None:
+        update_data["provider"] = data.provider
     ver = update_llm_version(version_id, **update_data)
     if not ver:
         raise HTTPException(404, "版本不存在")

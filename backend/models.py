@@ -283,6 +283,8 @@ class LLMConfig(BaseModel):
     base_url: str = ""
     api_key: str = ""
     model_name: str = ""
+    provider: str = "openai"
+    version_name: str = ""
 
 
 class LLMVersionCreate(BaseModel):
@@ -291,6 +293,7 @@ class LLMVersionCreate(BaseModel):
     base_url: str = Field("", description="API Base URL")
     api_key: str = Field("", description="API Key")
     model_name: str = Field("", description="模型名称")
+    provider: str = Field("openai", description="接口协议: openai(兼容接口) | vllm(本地 vLLM 原生接口)")
 
 
 class LLMVersionUpdate(BaseModel):
@@ -299,6 +302,7 @@ class LLMVersionUpdate(BaseModel):
     base_url: Optional[str] = None
     api_key: Optional[str] = None
     model_name: Optional[str] = None
+    provider: Optional[str] = None
 
 
 class LLMVersionResponse(BaseModel):
@@ -308,6 +312,7 @@ class LLMVersionResponse(BaseModel):
     base_url: str
     api_key: str
     model_name: str
+    provider: str = "openai"
     is_active: bool
     created_at: str
     updated_at: str

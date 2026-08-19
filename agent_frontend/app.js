@@ -3,7 +3,7 @@ const {createApp,ref,reactive,onMounted,onUnmounted,nextTick,computed}=Vue;
 const API='';
 createApp({
   setup(){
-    const mode=ref('flow'),llmOk=ref(false),llmModel=ref('');
+    const mode=ref('flow'),llmOk=ref(false),llmModel=ref(''),llmProvider=ref('openai');
     const depts=ref([]),plats=ref([]),fDept=ref(''),fPlat=ref('');
     const searchKw=ref(''),searchTimer=ref(null);
     const toast=reactive({show:false,msg:'',type:'info'}),ftPT=ref(false);
@@ -37,8 +37,61 @@ createApp({
     function pL(k){return plats.value.find(p=>p.key===k)?.label||k;}
 
     async function loadMeta(){const[d,p]=await Promise.all([api('/api/meta/departments'),api('/api/meta/platforms')]);if(d)depts.value=d.departments;if(p)plats.value=p.platforms;}
-    async function chkLLM(){const r=await api('/api/llm/status');if(r){llmOk.value=r.configured;llmModel.value=r.model_name||'';}}
+    async function chkLLM(){const r=await api('/api/llm/status');if(r){llmOk.value=r.configured;llmModel.value=r.model_name||'';llmProvider.value=r.provider||'openai';}}
     async function testLLM(){ST('测试中...','info');try{const r=await fetch(API+'/api/llm/test',{method:'POST',headers:{'Content-Type':'application/json'}});if(r.ok){ST('成功: '+(await r.json()).response,'success');}else ST('失败: '+await r.text(),'error');}catch(e){ST('失败: '+e.message,'error');}}
+
+    // ========== LLM API 版本管理 ==========
+    const llmCfgShow=ref(false),llmVers=ref([]),llmLoad=ref(false);
+    const llmForm=ref(null),llmSaving=ref(false);
+
+    async function openLlmCfg(){llmCfgShow.value=true;llmForm.value=null;await loadLlmVers();}
+
+    async function loadLlmVers(){
+      llmLoad.value=true;
+      const r=await api('/api/llm/versions');
+      llmVers.value=(r&&r.versions)||[];
+      llmLoad.value=false;
+    }
+
+    function newLlmVer(){
+      llmForm.value={id:0,name:'',base_url:'',api_key:'',model_name:'',provider:'openai'};
+    }
+
+    function editLlmVer(v){
+      // api_key 上游已掩码，留空表示不修改
+      llmForm.value={id:v.id,name:v.name||'',base_url:v.base_url||'',
+                     api_key:'',model_name:v.model_name||'',provider:v.provider||'openai'};
+    }
+
+    async function saveLlmVer(){
+      const f=llmForm.value;
+      if(!f)return;
+      if(!f.base_url.trim()){ST('Base URL 不能为空','error');return;}
+      llmSaving.value=true;
+      const body={name:f.name,base_url:f.base_url.trim(),model_name:f.model_name,provider:f.provider};
+      // 编辑时 api_key 留空则不覆盖原值
+      if(f.api_key.trim()||!f.id)body.api_key=f.api_key.trim();
+      const r=f.id
+        ? await api('/api/llm/versions/'+f.id,{method:'PUT',body:JSON.stringify(body)})
+        : await api('/api/llm/versions',{method:'POST',body:JSON.stringify(body)});
+      llmSaving.value=false;
+      if(r){ST(f.id?'版本已更新':'版本已创建','success');llmForm.value=null;await loadLlmVers();await chkLLM();}
+    }
+
+    async function activateLlmVer(v){
+      const r=await api('/api/llm/versions/'+v.id+'/activate',{method:'POST'});
+      if(r){
+        ST(`已切换到「${r.name||v.name}」`,'success');
+        await loadLlmVers();
+        await chkLLM();
+      }
+    }
+
+    async function delLlmVer(v){
+      if(!confirm(`确定删除版本「${v.name||'未命名'}」？`))return;
+      const r=await api('/api/llm/versions/'+v.id,{method:'DELETE'});
+      if(r){ST('版本已删除','success');await loadLlmVers();}
+    }
 
     function swM(m){
       mode.value=m;
@@ -357,22 +410,87 @@ createApp({
     });
     onUnmounted(()=>{clearInterval(botSigTimer);});
     return{
-      mode,llmOk,llmModel,depts,plats,fDept,fPlat,searchKw,
+      mode,llmOk,llmModel,llmProvider,depts,plats,fDept,fPlat,searchKw,
       toast,ftPT,recList,recTotal,selRec,recPg,recPS,recTP,recPage,
       upShow,upFile,upFm,edId,edDesc,
       cMsgs,cIn,cLoad,
       bots,fBot,botCfg,cfgLoad,cSession,cUseTools,cThink,botSig,botSyncAt,
       convList,convTotal,convPg,convPS,convTP,convBotKw,convKw,convLoad,
+      llmCfgShow,llmVers,llmLoad,llmForm,llmSaving,
       dL,pL,swM,testLLM,doSearch,selRecord,openUpload,upFC,doUpload,
       delRecord,reparse,startEdit,cancelEdit,saveEdit,
       loadBots,onBotChange,onFilterChange,loadBotConfig,syncBots,
       loadSessions,loadSessionsDebounced,openConv,delConv,newConv,fmtTime,
+      openLlmCfg,loadLlmVers,newLlmVer,editLlmVer,saveLlmVer,activateLlmVer,delLlmVer,
       cSend,cClear,isImage,isPdf
     };
   },
   template:`
 <div>
-<div class="header"><h1>Agent 服务</h1><div class="header-actions"><div class="llm-status"><span :class="['status-dot',llmOk?'on':'off']"></span><span>{{llmOk?'LLM 已连接':'LLM 未配置'}}</span><span v-if="llmModel" style="opacity:.7;margin-left:4px">({{llmModel}})</span><button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" @click="testLLM">测试</button></div><button class="icon-btn" title="返回主服务" onclick="location.href='http://'+location.hostname+':8900'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button></div></div>
+<div class="header"><h1>Agent 服务</h1><div class="header-actions"><div class="llm-status"><span :class="['status-dot',llmOk?'on':'off']"></span><span>{{llmOk?'LLM 已连接':'LLM 未配置'}}</span><span v-if="llmModel" style="opacity:.7;margin-left:4px">({{llmModel}})</span><span v-if="llmProvider==='vllm'" class="provider-tag" title="本地 vLLM 原生接口">本地</span><button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" @click="testLLM">测试</button></div><button class="icon-btn" title="LLM API 配置" @click="openLlmCfg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="icon-btn" title="返回主服务" onclick="location.href='http://'+location.hostname+':8900'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button></div></div>
+
+<!-- LLM API 版本管理弹窗 -->
+<div v-if="llmCfgShow" class="upload-overlay" @click.self="llmCfgShow=false">
+  <div class="upload-dialog llm-dialog">
+    <div class="upload-dialog-header"><span>LLM API 版本管理</span><button class="btn btn-ghost btn-sm" @click="llmCfgShow=false">&#10005;</button></div>
+    <div class="upload-dialog-body">
+      <div class="llm-bar">
+        <span class="llm-bar-title">已保存的版本</span>
+        <button class="btn btn-success btn-sm" @click="newLlmVer">+ 新建版本</button>
+      </div>
+
+      <!-- 新建/编辑表单 -->
+      <div v-if="llmForm" class="llm-form">
+        <div class="llm-form-title">{{llmForm.id?'编辑版本':'新建版本'}}</div>
+        <div class="form-row">
+          <div class="form-group"><label>版本名称</label><input v-model="llmForm.name" placeholder="如：本地 vLLM"></div>
+          <div class="form-group"><label>接口类型</label>
+            <select v-model="llmForm.provider">
+              <option value="openai">OpenAI 兼容接口</option>
+              <option value="vllm">本地 vLLM 原生接口</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Base URL</label>
+          <input v-model="llmForm.base_url" :placeholder="llmForm.provider==='vllm'?'http://127.0.0.1:8608':'https://dashscope.aliyuncs.com/compatible-mode/v1'">
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>模型名称</label>
+            <input v-model="llmForm.model_name" :placeholder="llmForm.provider==='vllm'?'如 Qwen3-8B（展示用）':'如 deepseek-v4-flash'">
+          </div>
+          <div class="form-group"><label>API Key{{llmForm.id?'（留空不修改）':''}}</label>
+            <input v-model="llmForm.api_key" :placeholder="llmForm.provider==='vllm'?'本地部署通常留空':'sk-...'">
+          </div>
+        </div>
+        <div class="llm-hint" v-if="llmForm.provider==='vllm'">
+          本地 vLLM 走 <code>/llm/generate</code> 协议，Base URL 填服务根地址即可（自动补全路径）。该协议不支持工具调用，Agent 会自动降级为纯对话。
+        </div>
+        <div class="actions-bar">
+          <button class="btn btn-ghost btn-sm" @click="llmForm=null">取消</button>
+          <button class="btn btn-primary btn-sm" @click="saveLlmVer" :disabled="llmSaving">{{llmSaving?'保存中...':'保存'}}</button>
+        </div>
+      </div>
+
+      <div v-if="llmLoad" class="empty-state" style="padding:24px">加载中...</div>
+      <div v-else-if="!llmVers.length" class="empty-state" style="padding:24px">暂无版本，点击"新建版本"添加</div>
+      <div v-else class="llm-list">
+        <div v-for="v in llmVers" :key="v.id" class="llm-item" :class="{active:v.is_active}">
+          <div class="llm-item-head">
+            <span class="llm-name">{{v.name||'未命名'}}</span>
+            <span v-if="v.is_active" class="llm-active-tag">● 当前激活</span>
+            <span class="llm-prov" :class="v.provider">{{v.provider==='vllm'?'本地 vLLM':'OpenAI 兼容'}}</span>
+            <div class="llm-item-btns">
+              <button v-if="!v.is_active" class="btn btn-success btn-sm" @click="activateLlmVer(v)">激活</button>
+              <button class="btn btn-ghost btn-sm" @click="editLlmVer(v)">编辑</button>
+              <button v-if="!v.is_active" class="btn btn-ghost btn-sm llm-del" @click="delLlmVer(v)">删除</button>
+            </div>
+          </div>
+          <div class="llm-item-meta">{{v.base_url||'-'}} ｜ {{v.model_name||'-'}} ｜ Key: {{v.api_key||'(空)'}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="container"><div class="toolbar">
   <div class="filter-group">
@@ -548,7 +666,7 @@ createApp({
           <span v-else style="font-weight:400;opacity:.6">· 未选机器人（按科室/平台默认配置）</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px">
-          <label class="tool-toggle" title="关闭后 Agent 不调用流程/知识库工具"><input type="checkbox" v-model="cUseTools">工具</label>
+          <label class="tool-toggle" title="仅控制 function calling（工具调用）。关闭后 Agent 仍会使用提示词模板与知识库生成话术，只是不再主动调用工具做检索"><input type="checkbox" v-model="cUseTools">工具调用</label>
           <label class="switch-wrap" :title="cThink?'已开启模型思考（推理模式）':'已关闭模型思考'">
             <span class="switch-label">思考</span>
             <span class="switch" :class="{on:cThink}" @click="cThink=!cThink"><span class="switch-dot"></span></span>
@@ -561,6 +679,8 @@ createApp({
         <span v-if="botCfg.company">· {{botCfg.company}}</span>
         <span>· 提示词 {{botCfg.prompt_name||'内置兜底'}} v{{botCfg.prompt_version||0}}</span>
         <span>· 流程片段 {{botCfg.flow_record_count||0}}</span>
+        <span :title="(botCfg.kb_types||[]).join('、')||'该科室/平台知识库为空'">· 知识条目 {{botCfg.kb_injected||0}}</span>
+        <span v-if="botCfg.leftover_placeholders&&botCfg.leftover_placeholders.length" style="color:#faad14" :title="'模板中未绑定的变量：'+botCfg.leftover_placeholders.join('、')">· 未绑定 {{botCfg.leftover_placeholders.length}}</span>
         <span v-if="botCfg.flow_knowledge_truncated" style="color:#faad14">· 知识已截断</span>
         <span v-if="cSession" style="opacity:.6">· 会话 {{cSession.slice(0,8)}}</span>
       </div>

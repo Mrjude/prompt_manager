@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 import uuid
 from collections import OrderedDict
@@ -85,10 +86,24 @@ def _trim(messages: List[dict]) -> List[dict]:
 
 
 def _split_segments(reply: str) -> List[str]:
-    """切分回复为分句。模型偶尔用换行代替 <sep>，这里做兜底归一化"""
+    """切分回复为分句
+
+    兜底归一化（模型不完全遵守格式约束时的最后一道防线）：
+      - 清理残留的 <think> 标签
+      - 合并连续/首尾的 <sep>
+      - 没有 <sep> 但有换行时，按换行切分
+    """
     if not reply:
         return []
     text = reply.replace("\r\n", "\n")
+    # 清理可能漏出的思考标签
+    text = re.sub(r"</?think>", "", text)
+    # 兼容模型写成 <SEP> / <sep > 等变体
+    text = re.sub(r"<\s*sep\s*>", "<sep>", text, flags=re.IGNORECASE)
+    # 合并连续分句符
+    text = re.sub(r"(<sep>\s*)+", "<sep>", text)
+    text = text.strip().strip("<sep>").strip()
+
     if "<sep>" not in text and "\n" in text:
         text = "<sep>".join(p.strip() for p in text.split("\n") if p.strip())
     return [s.strip() for s in text.split("<sep>") if s.strip()]

@@ -1785,21 +1785,43 @@ def set_setting(key: str, value: str) -> None:
 
 
 def get_llm_config() -> dict:
-    """获取当前激活的 LLM 配置"""
-    active_id = get_setting("llm_active_version_id")
-    if active_id:
-        with get_connection() as conn:
+    """获取当前激活的 LLM 配置
+
+    以 llm_versions.is_active 为准（activate_llm_version 维护该标记）；
+    兼容历史上的 llm_active_version_id 设置；两者都缺失时回退到旧的散装设置项。
+    """
+    _ensure_llm_versions_table()
+    with get_connection() as conn:
+        row = None
+        active_id = get_setting("llm_active_version_id")
+        if active_id:
+            try:
+                row = conn.execute(
+                    "SELECT base_url, api_key, model_name, provider, name FROM llm_versions WHERE id = ?",
+                    (int(active_id),)
+                ).fetchone()
+            except (TypeError, ValueError):
+                row = None
+        if not row:
             row = conn.execute(
-                "SELECT base_url, api_key, model_name FROM llm_versions WHERE id = ?",
-                (int(active_id),)
+                "SELECT base_url, api_key, model_name, provider, name FROM llm_versions "
+                "WHERE is_active = 1 ORDER BY updated_at DESC LIMIT 1"
             ).fetchone()
-            if row:
-                return {"base_url": row["base_url"], "api_key": row["api_key"], "model_name": row["model_name"]}
+        if row:
+            return {
+                "base_url": row["base_url"] or "",
+                "api_key": row["api_key"] or "",
+                "model_name": row["model_name"] or "",
+                "provider": row["provider"] or "openai",
+                "version_name": row["name"] or "",
+            }
     # 回退到旧格式
     return {
         "base_url": get_setting("llm_base_url", "") or "",
         "api_key": get_setting("llm_api_key", "") or "",
         "model_name": get_setting("llm_model_name", "") or "",
+        "provider": get_setting("llm_provider", "openai") or "openai",
+        "version_name": "",
     }
 
 
@@ -1828,6 +1850,12 @@ def _ensure_llm_versions_table():
                 updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
             )
         """)
+        # 迁移：新增 provider 字段，区分 OpenAI 兼容接口与本地 vLLM 原生接口
+        #   openai -> {base_url}/chat/completions，走标准 OpenAI 协议
+        #   vllm   -> service_vllm_llm.py 的 /llm/generate 协议
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(llm_versions)").fetchall()}
+        if "provider" not in cols:
+            conn.execute("ALTER TABLE llm_versions ADD COLUMN provider TEXT NOT NULL DEFAULT 'openai'")
         # 迁移：如果旧设置存在但 llm_versions 为空，自动导入
         count = conn.execute("SELECT COUNT(*) FROM llm_versions").fetchone()[0]
         if count == 0:
@@ -1855,19 +1883,21 @@ def get_llm_version(version_id: int) -> Optional[dict]:
         return dict(row) if row else None
 
 
-def create_llm_version(name: str, base_url: str, api_key: str, model_name: str) -> dict:
+def create_llm_version(name: str, base_url: str, api_key: str, model_name: str,
+                       provider: str = "openai") -> dict:
     _ensure_llm_versions_table()
     with get_connection() as conn:
         cursor = conn.execute(
-            "INSERT INTO llm_versions (name, base_url, api_key, model_name) VALUES (?, ?, ?, ?)",
-            (name, base_url, api_key, model_name)
+            "INSERT INTO llm_versions (name, base_url, api_key, model_name, provider) VALUES (?, ?, ?, ?, ?)",
+            (name, base_url, api_key, model_name, provider or "openai")
         )
         vid = cursor.lastrowid
     return get_llm_version(vid)
 
 
 def update_llm_version(version_id: int, name: str = None, base_url: str = None,
-                        api_key: str = None, model_name: str = None) -> Optional[dict]:
+                        api_key: str = None, model_name: str = None,
+                        provider: str = None) -> Optional[dict]:
     _ensure_llm_versions_table()
     ver = get_llm_version(version_id)
     if not ver:
@@ -1885,6 +1915,9 @@ def update_llm_version(version_id: int, name: str = None, base_url: str = None,
     if model_name is not None:
         fields.append("model_name = ?")
         params.append(model_name)
+    if provider is not None:
+        fields.append("provider = ?")
+        params.append(provider)
     if not fields:
         return ver
     fields.append("updated_at = datetime('now', 'localtime')")
@@ -1907,6 +1940,7 @@ def activate_llm_version(version_id: int) -> Optional[dict]:
     set_setting("llm_base_url", ver["base_url"])
     set_setting("llm_api_key", ver["api_key"])
     set_setting("llm_model_name", ver["model_name"])
+    set_setting("llm_provider", ver.get("provider") or "openai")
     return get_llm_version(version_id)
 
 
